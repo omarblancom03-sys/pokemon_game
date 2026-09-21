@@ -1,0 +1,15 @@
+{
+  "id": 10001,
+  "name": "deoxys-attack",
+  "height": 17,
+  "weight": 608,
+  "sprites": {
+    "front_default": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10001.png",
+    "other": {
+      "official-artwork": { "front_default": null }
+    }
+  },
+  "types": [
+    { "slot": 1, "type": { "name": "psychic", "url": "https://pokeapi.co/api/v2/type/14/" } }
+  ]
+}
