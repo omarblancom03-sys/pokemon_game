@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:pokemon_game/models/generation.dart';
 import 'package:pokemon_game/models/named_resource.dart';
 import 'package:pokemon_game/models/paged_result.dart';
 import 'package:pokemon_game/models/pokemon.dart';
@@ -30,6 +31,24 @@ class FakePokemonRepository implements PokemonRepository {
   final requestedIds = <int>[];
   int speciesCountCalls = 0;
 
+  /// Entries answered by [getGenerations].
+  List<NamedResource> generations = const [
+    NamedResource(
+      name: 'generation-i',
+      url: 'https://pokeapi.co/api/v2/generation/1/',
+    ),
+    NamedResource(
+      name: 'generation-ii',
+      url: 'https://pokeapi.co/api/v2/generation/2/',
+    ),
+  ];
+
+  /// How many species each fake generation contains.
+  int generationSize = 10;
+
+  final requestedGenerationIds = <int>[];
+  int generationsCalls = 0;
+
   Future<void> _maybeFail() async {
     final error = failNext;
     if (error != null) {
@@ -58,4 +77,33 @@ class FakePokemonRepository implements PokemonRepository {
     required int offset,
     required int limit,
   }) => throw UnimplementedError();
+
+  @override
+  Future<PagedResult<NamedResource>> getGenerations() async {
+    generationsCalls++;
+    await _maybeFail();
+    return PagedResult(
+      count: generations.length,
+      next: null,
+      items: generations,
+    );
+  }
+
+  @override
+  Future<Generation> getGeneration(int id) async {
+    requestedGenerationIds.add(id);
+    await _maybeFail();
+    return Generation(
+      id: id,
+      name: 'generation-$id',
+      mainRegion: 'region-$id',
+      species: [
+        for (var i = 1; i <= generationSize; i++)
+          NamedResource(
+            name: 'poke-$i',
+            url: 'https://pokeapi.co/api/v2/pokemon-species/$i/',
+          ),
+      ],
+    );
+  }
 }

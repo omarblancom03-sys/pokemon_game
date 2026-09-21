@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pokemon_game/models/generation.dart';
 import 'package:pokemon_game/models/named_resource.dart';
 import 'package:pokemon_game/models/paged_result.dart';
 import 'package:pokemon_game/models/pokemon.dart';
@@ -40,6 +41,13 @@ class _FakeRepository implements PokemonRepository {
     required int offset,
     required int limit,
   }) => throw UnimplementedError();
+
+  @override
+  Future<PagedResult<NamedResource>> getGenerations() =>
+      throw UnimplementedError();
+
+  @override
+  Future<Generation> getGeneration(int id) => throw UnimplementedError();
 }
 
 /// Returns a fixed value so the id mapping can be asserted exactly.

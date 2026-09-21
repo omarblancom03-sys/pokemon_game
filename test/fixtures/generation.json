@@ -1,0 +1,13 @@
+{
+  "id": 1,
+  "name": "generation-i",
+  "main_region": {
+    "name": "kanto",
+    "url": "https://pokeapi.co/api/v2/region/1/"
+  },
+  "pokemon_species": [
+    { "name": "charmander", "url": "https://pokeapi.co/api/v2/pokemon-species/4/" },
+    { "name": "bulbasaur", "url": "https://pokeapi.co/api/v2/pokemon-species/1/" },
+    { "name": "ivysaur", "url": "https://pokeapi.co/api/v2/pokemon-species/2/" }
+  ]
+}

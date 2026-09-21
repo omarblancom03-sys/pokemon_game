@@ -39,6 +39,15 @@ class MainMenuScreen extends StatelessWidget {
                   icon: const Icon(Icons.catching_pokemon),
                   label: const Text('Pokédex'),
                 ),
+                const SizedBox(height: 16),
+                OutlinedButton.icon(
+                  key: const Key('menu_generations'),
+                  onPressed: () => Navigator.of(
+                    context,
+                  ).pushNamed(AppRoutes.generations),
+                  icon: const Icon(Icons.format_list_numbered),
+                  label: const Text('Generaciones'),
+                ),
               ],
             ),
           ),

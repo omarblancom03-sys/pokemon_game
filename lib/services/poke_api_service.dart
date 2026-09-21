@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import '../models/generation.dart';
 import '../models/json_reader.dart';
 import '../models/named_resource.dart';
 import '../models/paged_result.dart';
@@ -49,6 +50,18 @@ class PokeApiService {
   Future<int> fetchSpeciesCount() async {
     final json = await _getJson('pokemon-species', query: {'limit': '1'});
     return _parse(() => json.readInt('count'));
+  }
+
+  /// `GET /generation`.
+  Future<PagedResult<NamedResource>> fetchGenerations() async {
+    final json = await _getJson('generation', query: {'limit': '50'});
+    return _parse(() => PagedResult.fromJson(json, NamedResource.fromJson));
+  }
+
+  /// `GET /generation/{id}`.
+  Future<Generation> fetchGeneration(int id) async {
+    final json = await _getJson('generation/$id');
+    return _parse(() => Generation.fromJson(json));
   }
 
   Future<Map<String, dynamic>> _getJson(

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import '../models/generation.dart';
 import '../models/named_resource.dart';
 import '../models/paged_result.dart';
 import '../models/pokemon.dart';
@@ -17,6 +18,12 @@ abstract interface class PokemonRepository {
 
   /// Number of species; ids in `[1, count]` are all valid for [getPokemon].
   Future<int> getSpeciesCount();
+
+  /// Every generation as `{name, url}` references.
+  Future<PagedResult<NamedResource>> getGenerations();
+
+  /// One generation, including the species that belong to it.
+  Future<Generation> getGeneration(int id);
 }
 
 /// In-memory cache in front of [PokeApiService].
@@ -30,6 +37,8 @@ class CachedPokemonRepository implements PokemonRepository {
   final _pokemon = <int, Future<Pokemon>>{};
   final _pages = <(int, int), Future<PagedResult<NamedResource>>>{};
   final _speciesCount = <void, Future<int>>{};
+  final _generations = <void, Future<PagedResult<NamedResource>>>{};
+  final _generation = <int, Future<Generation>>{};
 
   @override
   Future<Pokemon> getPokemon(int id) =>
@@ -52,11 +61,21 @@ class CachedPokemonRepository implements PokemonRepository {
   Future<int> getSpeciesCount() =>
       _memoize(_speciesCount, null, _service.fetchSpeciesCount);
 
+  @override
+  Future<PagedResult<NamedResource>> getGenerations() =>
+      _memoize(_generations, null, _service.fetchGenerations);
+
+  @override
+  Future<Generation> getGeneration(int id) =>
+      _memoize(_generation, id, () => _service.fetchGeneration(id));
+
   /// Drops every cached entry (e.g. for a pull-to-refresh).
   void clear() {
     _pokemon.clear();
     _pages.clear();
     _speciesCount.clear();
+    _generations.clear();
+    _generation.clear();
   }
 
   Future<T> _memoize<K, T>(

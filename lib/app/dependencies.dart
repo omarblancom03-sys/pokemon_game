@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
 
 import '../controllers/encounter/encounter_handler.dart';
+import '../controllers/generations_controller.dart';
 import '../controllers/pokedex_controller.dart';
 import '../services/poke_api_service.dart';
 import '../services/pokemon_repository.dart';
@@ -45,6 +46,9 @@ class AppDependencies {
         // App-wide so the loaded gallery survives leaving and re-entering.
         ChangeNotifierProvider(
           create: (_) => PokedexController(repository: repo),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => GenerationsController(repository: repo),
         ),
       ],
     );

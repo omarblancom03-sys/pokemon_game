@@ -13,6 +13,26 @@ String displayName(String apiName) => apiName
 /// `25` → `"#025"`.
 String dexNumber(int id) => '#${id.toString().padLeft(3, '0')}';
 
+/// `"generation-i"` → `"Generación I"`.
+String generationLabel(String apiName) {
+  final numeral = generationNumeral(apiName);
+  return numeral.isEmpty ? displayName(apiName) : 'Generación $numeral';
+}
+
+/// `"generation-i"` → `"I"`; empty when the name carries no numeral.
+String generationNumeral(String apiName) {
+  final parts = apiName.split('-');
+  return parts.length < 2 ? '' : parts.last.toUpperCase();
+}
+
+/// Decimetres (as the API returns them) → `"0.7 m"`.
+String heightLabel(int decimetres) =>
+    '${(decimetres / 10).toStringAsFixed(1)} m';
+
+/// Hectograms (as the API returns them) → `"6.9 kg"`.
+String weightLabel(int hectograms) =>
+    '${(hectograms / 10).toStringAsFixed(1)} kg';
+
 /// User-facing message for a load failure.
 String errorMessage(Object error) => switch (error) {
   PokeApiNetworkException() => 'Sin conexión. Revisa tu internet.',

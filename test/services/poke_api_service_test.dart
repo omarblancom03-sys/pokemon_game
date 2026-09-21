@@ -144,4 +144,68 @@ void main() {
       );
     });
   });
+
+  group('fetchGenerations', () {
+    test('GETs /generation and returns the parsed page', () async {
+      final service = serviceReturning(
+        200,
+        fixtureText('generation_list.json'),
+      );
+
+      final page = await service.fetchGenerations();
+
+      expect(requests.single.method, 'GET');
+      expect(requests.single.url.path, '/api/v2/generation');
+      expect(requests.single.url.queryParameters['limit'], '50');
+      expect(page.count, 9);
+      expect(page.items.map((g) => g.name), [
+        'generation-i',
+        'generation-ii',
+      ]);
+      expect(page.items.first.id, 1);
+    });
+
+    test('throws Server on a 500', () {
+      final service = serviceReturning(500, '{}');
+
+      expect(
+        service.fetchGenerations(),
+        throwsA(isA<PokeApiServerException>()),
+      );
+    });
+  });
+
+  group('fetchGeneration', () {
+    test('GETs /generation/{id} and returns the parsed model', () async {
+      final service = serviceReturning(200, fixtureText('generation.json'));
+
+      final generation = await service.fetchGeneration(1);
+
+      expect(
+        requests.single.url.toString(),
+        'https://pokeapi.co/api/v2/generation/1',
+      );
+      expect(generation.name, 'generation-i');
+      expect(generation.mainRegion, 'kanto');
+      expect(generation.speciesIds, [1, 2, 4]);
+    });
+
+    test('throws NotFound on a 404', () {
+      final service = serviceReturning(404, '{}');
+
+      expect(
+        service.fetchGeneration(99),
+        throwsA(isA<PokeApiNotFoundException>()),
+      );
+    });
+
+    test('throws Parse on a payload missing fields', () {
+      final service = serviceReturning(200, '{"id": 1}');
+
+      expect(
+        service.fetchGeneration(1),
+        throwsA(isA<PokeApiParseException>()),
+      );
+    });
+  });
 }

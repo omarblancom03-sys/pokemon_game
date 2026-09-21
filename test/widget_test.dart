@@ -17,11 +17,12 @@ void main() {
     dependencies: AppDependencies.create(repository: repository),
   );
 
-  testWidgets('main menu shows Jugar and Pokédex entries', (tester) async {
+  testWidgets('main menu shows every entry', (tester) async {
     await tester.pumpWidget(buildApp());
 
     expect(find.byKey(const Key('menu_play')), findsOneWidget);
     expect(find.byKey(const Key('menu_pokedex')), findsOneWidget);
+    expect(find.byKey(const Key('menu_generations')), findsOneWidget);
   });
 
   testWidgets('Jugar navigates to the game screen', (tester) async {
@@ -60,5 +61,51 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Poke 1'), findsOneWidget);
+  });
+
+  testWidgets('Generaciones lists the generations', (tester) async {
+    await tester.pumpWidget(buildApp());
+
+    await tester.tap(find.byKey(const Key('menu_generations')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Generación I'), findsOneWidget);
+    expect(find.text('Generación II'), findsOneWidget);
+  });
+
+  testWidgets('a generation opens its gallery and then a detail', (
+    tester,
+  ) async {
+    repository.generationSize = 3;
+    await tester.pumpWidget(buildApp());
+
+    await tester.tap(find.byKey(const Key('menu_generations')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Generación I'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Poke 1'), findsOneWidget);
+    expect(find.text('¡Generación completa!'), findsOneWidget);
+
+    await tester.tap(find.text('Poke 1'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Altura'), findsOneWidget);
+    expect(find.text('0.1 m'), findsOneWidget);
+  });
+
+  testWidgets('Generaciones shows an error with retry', (tester) async {
+    repository.failNext = const PokeApiNetworkException('offline');
+    await tester.pumpWidget(buildApp());
+
+    await tester.tap(find.byKey(const Key('menu_generations')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Sin conexión. Revisa tu internet.'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('generations_retry')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Generación I'), findsOneWidget);
   });
 }

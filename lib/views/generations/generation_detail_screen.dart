@@ -1,19 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../controllers/pokedex_controller.dart';
+import '../../controllers/generation_detail_controller.dart';
+import '../../services/pokemon_repository.dart';
 import '../common/error_view.dart';
 import '../common/pokemon_formatters.dart';
-import 'widgets/pokemon_card.dart';
+import '../pokedex/widgets/pokemon_card.dart';
+import '../pokemon_detail/pokemon_detail_screen.dart';
 
-class PokedexScreen extends StatefulWidget {
-  const PokedexScreen({super.key});
+/// Window 2: the Pokémon that belong to one generation.
+class GenerationDetailScreen extends StatefulWidget {
+  const GenerationDetailScreen({super.key, required this.title});
+
+  /// Route with its own controller, disposed when the screen is popped.
+  static Route<void> route({
+    required int generationId,
+    required String title,
+  }) => MaterialPageRoute(
+    builder: (_) => ChangeNotifierProvider(
+      create: (context) => GenerationDetailController(
+        repository: context.read<PokemonRepository>(),
+        generationId: generationId,
+      ),
+      child: GenerationDetailScreen(title: title),
+    ),
+  );
+
+  /// Already formatted, e.g. `"Generación I"`.
+  final String title;
 
   @override
-  State<PokedexScreen> createState() => _PokedexScreenState();
+  State<GenerationDetailScreen> createState() => _GenerationDetailScreenState();
 }
 
-class _PokedexScreenState extends State<PokedexScreen> {
+class _GenerationDetailScreenState extends State<GenerationDetailScreen> {
   /// Start loading the next page this many pixels before the end.
   static const _loadMoreThreshold = 600.0;
 
@@ -31,7 +51,7 @@ class _PokedexScreenState extends State<PokedexScreen> {
     super.initState();
     _scrollController.addListener(_maybeLoadMore);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<PokedexController>().loadInitial();
+      context.read<GenerationDetailController>().loadInitial();
     });
   }
 
@@ -43,15 +63,14 @@ class _PokedexScreenState extends State<PokedexScreen> {
 
   void _maybeLoadMore() {
     if (!_scrollController.hasClients) return;
-    final position = _scrollController.position;
-    if (position.extentAfter < _loadMoreThreshold) {
-      context.read<PokedexController>().loadMore();
+    if (_scrollController.position.extentAfter < _loadMoreThreshold) {
+      context.read<GenerationDetailController>().loadMore();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final controller = context.watch<PokedexController>();
+    final controller = context.watch<GenerationDetailController>();
 
     // On large screens a page may not fill the viewport, so no scroll event
     // would ever request the next one.
@@ -59,25 +78,40 @@ class _PokedexScreenState extends State<PokedexScreen> {
       if (mounted) _maybeLoadMore();
     });
 
+    final region = controller.generation?.mainRegion;
+
     return Scaffold(
       backgroundColor: const Color(0xFF0F1A30),
       appBar: AppBar(
         title: Text(
           controller.total == null
-              ? 'Pokédex'
-              : 'Pokédex · ${controller.items.length}/${controller.total}',
+              ? widget.title
+              : '${widget.title} · ${controller.items.length}/'
+                    '${controller.total}',
         ),
+        bottom: region == null
+            ? null
+            : PreferredSize(
+                preferredSize: const Size.fromHeight(28),
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Text(
+                    'Región ${displayName(region)}',
+                    style: const TextStyle(color: Colors.white70, fontSize: 13),
+                  ),
+                ),
+              ),
       ),
       body: _buildBody(controller),
     );
   }
 
-  Widget _buildBody(PokedexController controller) {
+  Widget _buildBody(GenerationDetailController controller) {
     if (controller.hasInitialError) {
       return ErrorView(
         message: errorMessage(controller.error!),
         onRetry: controller.retry,
-        retryKey: const Key('pokedex_retry'),
+        retryKey: const Key('generation_detail_retry'),
       );
     }
 
@@ -95,8 +129,15 @@ class _PokedexScreenState extends State<PokedexScreen> {
               : SliverGrid.builder(
                   gridDelegate: _gridDelegate,
                   itemCount: controller.items.length,
-                  itemBuilder: (_, index) =>
-                      PokemonCard(pokemon: controller.items[index]),
+                  itemBuilder: (_, index) {
+                    final pokemon = controller.items[index];
+                    return GestureDetector(
+                      onTap: () => Navigator.of(
+                        context,
+                      ).push(PokemonDetailScreen.route(pokemon: pokemon)),
+                      child: PokemonCard(pokemon: pokemon),
+                    );
+                  },
                 ),
         ),
         if (!controller.isInitialLoading)
@@ -109,7 +150,7 @@ class _PokedexScreenState extends State<PokedexScreen> {
 class _Footer extends StatelessWidget {
   const _Footer({required this.controller});
 
-  final PokedexController controller;
+  final GenerationDetailController controller;
 
   @override
   Widget build(BuildContext context) {
@@ -120,12 +161,12 @@ class _Footer extends StatelessWidget {
       child = ErrorView(
         message: errorMessage(controller.error!),
         onRetry: controller.retry,
-        retryKey: const Key('pokedex_retry'),
+        retryKey: const Key('generation_detail_retry'),
         compact: true,
       );
     } else if (!controller.hasMore) {
       child = const Text(
-        '¡Pokédex completa!',
+        '¡Generación completa!',
         style: TextStyle(color: Colors.white70),
       );
     } else {
