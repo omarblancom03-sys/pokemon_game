@@ -13,9 +13,11 @@ import 'config/world_config.dart';
 import 'input/keyboard_movement_component.dart';
 import 'input/movement_input.dart';
 
-/// Top-down overworld scene. Knows nothing about HTTP, dialogs or providers:
-/// it reports [onSmokeReached] and is driven through [setPaused] and
-/// [removeSmoke].
+/// LA ESCENA del juego (vista cenital). No sabe nada de HTTP, diálogos ni
+/// providers: avisa con [onSmokeReached] y se maneja desde fuera con
+/// [setPaused] y [removeSmoke].
+///
+/// Los dos "with" añaden capacidades: manejar teclado y detectar colisiones.
 class PokeGame extends FlameGame
     with HasKeyboardHandlerComponents, HasCollisionDetection {
   PokeGame({
@@ -28,9 +30,10 @@ class PokeGame extends FlameGame
 
   final WorldConfig config;
 
-  /// Shared with the on-screen D-pad.
+  /// Se comparte con el D-pad de la pantalla.
   final MovementInput input;
 
+  /// Aviso hacia el controlador: "Ash tocó este humo".
   final void Function(String smokeId) onSmokeReached;
 
   final Random _random;
@@ -38,9 +41,11 @@ class PokeGame extends FlameGame
 
   late final AshComponent ash;
 
+  /// Color de fondo (solo se ve si la cámara se saliera del mapa).
   @override
   Color backgroundColor() => const Color(0xFF0F1A30);
 
+  /// Monta la escena una sola vez, al arrancar el juego.
   @override
   Future<void> onLoad() async {
     ash = AshComponent(
@@ -59,6 +64,7 @@ class PokeGame extends FlameGame
       KeyboardMovementComponent(input: input),
     ]);
 
+    // La cámara sigue a Ash, pero sin salirse del mapa.
     camera.follow(ash);
     camera.setBounds(
       Rectangle.fromLTRB(0, 0, config.width, config.height),
@@ -66,25 +72,30 @@ class PokeGame extends FlameGame
     );
   }
 
+  /// Los humos que hay ahora mismo en el mundo.
   Iterable<SmokeComponent> get smokes =>
       world.children.whereType<SmokeComponent>();
 
-  /// Freezes or unfreezes player movement.
+  /// Congela o descongela al jugador. No para el motor: lo que se apaga es
+  /// la ENTRADA. Se limpia la dirección para que al reanudar Ash no salga
+  /// disparado por una tecla que se quedó pulsada.
   void setPaused(bool paused) {
     input.enabled = !paused;
     if (paused) input.clear();
   }
 
-  /// Removes a consumed smoke and schedules a new one elsewhere.
+  /// Quita el humo ya usado y programa otro en un punto distinto.
   void removeSmoke(String smokeId) {
     for (final smoke in smokes.where((s) => s.id == smokeId).toList()) {
       smoke.removeFromParent();
     }
     world.add(
+      // TimerComponent = temporizador de Flame (aquí, 4 segundos).
       TimerComponent(
         period: config.smokeRespawnSeconds,
         removeOnFinish: true,
         onTick: () => world.add(
+          // Id nuevo para no confundirlo con el humo anterior.
           _buildSmoke('smoke-respawn-${_respawnCount++}', _randomSpawnPoint()),
         ),
       ),
@@ -98,7 +109,8 @@ class PokeGame extends FlameGame
     onAshReached: onSmokeReached,
   );
 
-  /// Random point inside the map, not on top of Ash.
+  /// Punto al azar dentro del mapa, nunca encima de Ash (si no, el
+  /// encuentro saltaría al instante).
   Vector2 _randomSpawnPoint() {
     final margin = config.smokeRadius * 2;
     Vector2 point;

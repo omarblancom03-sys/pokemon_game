@@ -1,6 +1,7 @@
 import 'json_reader.dart';
 
-/// A `{name, url}` reference as returned by PokeAPI list endpoints.
+/// MODELO: una referencia `{name, url}`, que es lo que devuelven las listas
+/// de PokeAPI (no traen los datos completos, solo el nombre y el enlace).
 class NamedResource {
   const NamedResource({required this.name, required this.url});
 
@@ -10,8 +11,8 @@ class NamedResource {
   final String name;
   final String url;
 
-  /// Resource id taken from the URL's last path segment
-  /// (`.../pokemon/25/` → 25), or null if the URL has no numeric id.
+  /// Getter (propiedad calculada): saca el id del final de la URL
+  /// (`.../pokemon/25/` → 25). Devuelve null si la URL no acaba en número.
   int? get id {
     final segments = Uri.tryParse(url)?.pathSegments
         .where((s) => s.isNotEmpty)
@@ -22,6 +23,7 @@ class NamedResource {
 
   Map<String, dynamic> toJson() => {'name': name, 'url': url};
 
+  // Igualdad por contenido (mismo nombre y misma url).
   @override
   bool operator ==(Object other) =>
       other is NamedResource && other.name == name && other.url == url;

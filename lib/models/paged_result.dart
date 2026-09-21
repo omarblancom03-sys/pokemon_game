@@ -1,6 +1,10 @@
 import 'json_reader.dart';
 
-/// One page of a PokeAPI list endpoint (`count`, `next`, `results`).
+/// MODELO genérico: una página de una lista de PokeAPI
+/// (campos `count`, `next` y `results`).
+///
+/// La `<T>` es un hueco de tipo: sirve igual para páginas de Pokémon
+/// que de generaciones.
 class PagedResult<T> {
   const PagedResult({
     required this.count,
@@ -8,6 +12,7 @@ class PagedResult<T> {
     required this.items,
   });
 
+  /// Recibe además una función que sabe convertir cada elemento de la lista.
   factory PagedResult.fromJson(
     Map<String, dynamic> json,
     T Function(Map<String, dynamic> item) parseItem,
@@ -17,10 +22,10 @@ class PagedResult<T> {
     items: List.unmodifiable(json.readObjectList('results').map(parseItem)),
   );
 
-  /// Total number of resources on the server (not the size of this page).
+  /// Total de recursos en el servidor (NO cuántos vienen en esta página).
   final int count;
 
-  /// URL of the next page, or null on the last page.
+  /// URL de la página siguiente, o null si esta es la última.
   final String? next;
 
   final List<T> items;

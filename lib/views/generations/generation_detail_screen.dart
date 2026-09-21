@@ -8,11 +8,13 @@ import '../common/pokemon_formatters.dart';
 import '../pokedex/widgets/pokemon_card.dart';
 import '../pokemon_detail/pokemon_detail_screen.dart';
 
-/// Window 2: the Pokémon that belong to one generation.
+/// VISTA (ventana 2): los Pokémon que pertenecen a una generación.
+/// Funciona igual que la Pokédex, pero al tocar una carta abre el detalle.
 class GenerationDetailScreen extends StatefulWidget {
   const GenerationDetailScreen({super.key, required this.title});
 
-  /// Route with its own controller, disposed when the screen is popped.
+  /// La ruta se construye aquí y crea su PROPIO controlador, que Provider
+  /// destruye al cerrar la pantalla. Quien navega no sabe que existe.
   static Route<void> route({
     required int generationId,
     required String title,
@@ -26,7 +28,7 @@ class GenerationDetailScreen extends StatefulWidget {
     ),
   );
 
-  /// Already formatted, e.g. `"Generación I"`.
+  /// Ya formateado, por ejemplo "Generación I".
   final String title;
 
   @override
@@ -34,7 +36,7 @@ class GenerationDetailScreen extends StatefulWidget {
 }
 
 class _GenerationDetailScreenState extends State<GenerationDetailScreen> {
-  /// Start loading the next page this many pixels before the end.
+  /// Píxeles antes del final a los que se pide la página siguiente.
   static const _loadMoreThreshold = 600.0;
 
   static const _gridDelegate = SliverGridDelegateWithMaxCrossAxisExtent(
@@ -72,8 +74,8 @@ class _GenerationDetailScreenState extends State<GenerationDetailScreen> {
   Widget build(BuildContext context) {
     final controller = context.watch<GenerationDetailController>();
 
-    // On large screens a page may not fill the viewport, so no scroll event
-    // would ever request the next one.
+    // En pantallas grandes una página puede no llenar la ventana y no
+    // habría evento de scroll que pidiera la siguiente.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _maybeLoadMore();
     });
@@ -89,6 +91,7 @@ class _GenerationDetailScreenState extends State<GenerationDetailScreen> {
               : '${widget.title} · ${controller.items.length}/'
                     '${controller.total}',
         ),
+        // La región solo se muestra cuando ya se conoce.
         bottom: region == null
             ? null
             : PreferredSize(
@@ -131,7 +134,10 @@ class _GenerationDetailScreenState extends State<GenerationDetailScreen> {
                   itemCount: controller.items.length,
                   itemBuilder: (_, index) {
                     final pokemon = controller.items[index];
+                    // GestureDetector: hace la carta pulsable.
                     return GestureDetector(
+                      // Se le pasa el Pokémon YA cargado: el detalle no
+                      // tiene que pedir nada a internet.
                       onTap: () => Navigator.of(
                         context,
                       ).push(PokemonDetailScreen.route(pokemon: pokemon)),
@@ -147,6 +153,7 @@ class _GenerationDetailScreenState extends State<GenerationDetailScreen> {
   }
 }
 
+/// Pie: rueda, error pequeño o "¡Generación completa!".
 class _Footer extends StatelessWidget {
   const _Footer({required this.controller});
 
@@ -179,6 +186,7 @@ class _Footer extends StatelessWidget {
   }
 }
 
+/// Hueco gris mientras llega la primera página.
 class _SkeletonCard extends StatelessWidget {
   const _SkeletonCard();
 

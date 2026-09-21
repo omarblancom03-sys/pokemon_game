@@ -1,3 +1,8 @@
+// DOBLE DE PRUEBA: repositorio falso que devuelve Pokémon inventados al
+// instante, sin internet. failNext fuerza un error en la siguiente llamada
+// y el "gate" permite dejar una petición en el aire para comprobar qué se
+// pinta MIENTRAS carga.
+
 import 'dart:async';
 
 import 'package:pokemon_game/models/generation.dart';

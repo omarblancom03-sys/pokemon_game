@@ -1,3 +1,6 @@
+// PRUEBAS del controlador de generaciones: las transiciones de LoadState,
+// que load() no repite la petición y que retry() recupera tras un fallo.
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pokemon_game/controllers/generations_controller.dart';
 import 'package:pokemon_game/models/load_state.dart';

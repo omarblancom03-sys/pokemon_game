@@ -46,3 +46,7 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# Notas de trabajo y material de estudio (no forman parte del proyecto)
+CLAUDE.md
+Guia_del_codigo_Pokemon_Game.pdf

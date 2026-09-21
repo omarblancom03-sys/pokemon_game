@@ -4,13 +4,14 @@ import '../../models/pokemon.dart';
 import '../../models/pokemon_type.dart';
 import '../common/pokemon_formatters.dart';
 
-/// Window 3: one Pokémon in detail.
+/// VISTA (ventana 3): la ficha de un Pokémon.
 ///
-/// Takes an already loaded [Pokemon] — the gallery that opens this screen has
-/// the full model, so there is nothing left to fetch.
+/// No tiene controlador ni pide nada a internet: recibe el [Pokemon] ya
+/// cargado desde la galería que la abre, así que no hay nada que descargar.
 class PokemonDetailScreen extends StatelessWidget {
   const PokemonDetailScreen({super.key, required this.pokemon});
 
+  /// Ruta lista para usar con Navigator.push.
   static Route<void> route({required Pokemon pokemon}) =>
       MaterialPageRoute(builder: (_) => PokemonDetailScreen(pokemon: pokemon));
 
@@ -18,6 +19,7 @@ class PokemonDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Toda la pantalla se tiñe con el color del tipo principal.
     final primary = pokemon.types.isEmpty
         ? PokemonType.unknown.color
         : pokemon.types.first.color;
@@ -44,19 +46,21 @@ class PokemonDetailScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
+          // Los tres datos: altura, peso y número de Pokédex.
+          // Las conversiones de unidades las hacen los formatters.
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               _Stat(
                 icon: Icons.straighten,
                 label: 'Altura',
-                value: heightLabel(pokemon.height),
+                value: heightLabel(pokemon.height), // decímetros → metros
                 color: primary,
               ),
               _Stat(
                 icon: Icons.monitor_weight_outlined,
                 label: 'Peso',
-                value: weightLabel(pokemon.weight),
+                value: weightLabel(pokemon.weight), // hectogramos → kilos
                 color: primary,
               ),
               _Stat(
@@ -73,6 +77,7 @@ class PokemonDetailScreen extends StatelessWidget {
   }
 }
 
+/// Ilustración grande con resplandor del color del tipo.
 class _Artwork extends StatelessWidget {
   const _Artwork({required this.pokemon, required this.glow});
 
@@ -115,6 +120,7 @@ class _Artwork extends StatelessWidget {
   }
 }
 
+/// Icono de repuesto si no hay imagen.
 class _ImageFallback extends StatelessWidget {
   const _ImageFallback();
 
@@ -123,6 +129,7 @@ class _ImageFallback extends StatelessWidget {
       const Icon(Icons.catching_pokemon, color: Colors.white24, size: 96);
 }
 
+/// Etiqueta de tipo, más grande que la de la carta.
 class _TypeChip extends StatelessWidget {
   const _TypeChip({required this.type});
 
@@ -149,6 +156,7 @@ class _TypeChip extends StatelessWidget {
   }
 }
 
+/// Un dato con su icono y su etiqueta (altura, peso o número).
 class _Stat extends StatelessWidget {
   const _Stat({
     required this.icon,

@@ -1,3 +1,7 @@
+// PRUEBAS del sorteo: que el id siempre cae entre 1 y count (probado con
+// muchas semillas), que se alcanzan los extremos, que un count inválido
+// lanza excepción y que los errores del repositorio se propagan.
+
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';

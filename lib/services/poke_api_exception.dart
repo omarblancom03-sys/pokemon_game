@@ -1,5 +1,7 @@
-/// Every failure raised by `PokeApiService`. Sealed so controllers and views
-/// can switch exhaustively over the cases.
+/// Todos los fallos que puede lanzar PokeApiService.
+///
+/// `sealed` = la lista de casos es cerrada, así que la vista puede hacer un
+/// switch completo y el compilador avisa si falta alguno.
 sealed class PokeApiException implements Exception {
   const PokeApiException(this.message);
 
@@ -9,21 +11,22 @@ sealed class PokeApiException implements Exception {
   String toString() => '$runtimeType: $message';
 }
 
-/// No connection, DNS failure, timeout, or the request was aborted.
+/// Sin conexión, DNS caído, tiempo de espera agotado o petición abortada.
 final class PokeApiNetworkException extends PokeApiException {
   const PokeApiNetworkException(super.message, {this.cause});
 
+  /// Error original (de la librería http), por si hace falta depurar.
   final Object? cause;
 }
 
-/// The resource does not exist (HTTP 404).
+/// El recurso no existe (HTTP 404).
 final class PokeApiNotFoundException extends PokeApiException {
   const PokeApiNotFoundException(this.uri) : super('Not found: $uri');
 
   final Uri uri;
 }
 
-/// Any other non-2xx response.
+/// Cualquier otra respuesta que no sea 2xx (por ejemplo, un 500).
 final class PokeApiServerException extends PokeApiException {
   const PokeApiServerException(this.statusCode, this.uri)
     : super('HTTP $statusCode for $uri');
@@ -32,7 +35,7 @@ final class PokeApiServerException extends PokeApiException {
   final Uri uri;
 }
 
-/// The response body was not the JSON shape we expect.
+/// La respuesta no tenía la forma de JSON que esperábamos.
 final class PokeApiParseException extends PokeApiException {
   const PokeApiParseException(super.message, {this.cause});
 

@@ -1,23 +1,26 @@
 import '../../models/pokemon.dart';
 
-/// How an encounter ended, as decided by the capture sequence.
+/// Cómo terminó un encuentro: capturado o huido.
 enum EncounterOutcome { caught, fled }
 
 /// ─── CONTRATO DE ENCUENTRO (punto de enganche para la captura) ───────────
 ///
-/// `GameController` calls [handleEncounter] after Ash touches a smoke AND the
-/// random Pokémon has been resolved from PokeAPI. While the returned Future is
-/// pending the game stays paused (Ash cannot move, no other encounter can
-/// start). When it completes, the smoke is consumed and the game resumes.
+/// El GameController llama a [handleEncounter] cuando Ash ha tocado un humo
+/// Y el Pokémon al azar ya se ha descargado de PokeAPI.
 ///
-/// The Poké Ball throw / capture animation is NOT part of this deliverable:
-/// implement this interface (e.g. push a capture screen or overlay and
-/// complete with its result) and register it in `app/dependencies.dart`,
-/// replacing `StubEncounterHandler`. Nothing else needs to change.
+/// Mientras el Future devuelto no se complete, el juego sigue PAUSADO (Ash
+/// no se mueve y no puede empezar otro encuentro). Al completarse, el humo
+/// se consume y el juego se reanuda.
 ///
-/// Implementations should not throw; if they do, the error is reported and
-/// the encounter is treated as [EncounterOutcome.fled] so the game never
-/// stays frozen.
+/// La animación de la Pokébola NO forma parte de esta entrega: para
+/// añadirla basta con implementar esta interfaz (por ejemplo abriendo una
+/// pantalla de captura y completando con su resultado) y registrarla en
+/// `app/dependencies.dart` en lugar de StubEncounterHandler. No hay que
+/// tocar nada más.
+///
+/// Quien la implemente no debería lanzar excepciones; si lo hace, el error
+/// se registra y el encuentro se da por [EncounterOutcome.fled], para que el
+/// juego nunca se quede congelado.
 abstract interface class EncounterHandler {
   Future<EncounterOutcome> handleEncounter(Pokemon pokemon);
 }

@@ -1,3 +1,8 @@
+// PRUEBAS del controlador del juego: el flujo feliz del encuentro, que
+// ignora humos mientras hay uno en marcha (doble disparo), el fallo de red
+// con reintento y cancelación, y que un handler que lanza excepción nunca
+// deja el juego congelado.
+
 import 'dart:async';
 import 'dart:math';
 

@@ -1,3 +1,8 @@
+// PRUEBAS del modelo Pokemon: que fromJson lee bien los campos, que ordena
+// los tipos por "slot", que usa el sprite normal si no hay ilustración
+// oficial, que un tipo desconocido pasa a unknown, que faltar un campo lanza
+// FormatException y que toJson devuelve lo mismo al reconstruirlo.
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pokemon_game/models/pokemon.dart';
 import 'package:pokemon_game/models/pokemon_type.dart';

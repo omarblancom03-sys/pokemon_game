@@ -1,3 +1,6 @@
+// PRUEBAS de NamedResource (sacar el id del final de la URL) y de
+// PagedResult (leer count, next e items, y saber si hay página siguiente).
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pokemon_game/models/named_resource.dart';
 import 'package:pokemon_game/models/paged_result.dart';

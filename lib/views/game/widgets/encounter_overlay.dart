@@ -3,8 +3,11 @@ import 'package:flutter/material.dart';
 import '../../../controllers/game_controller.dart';
 import '../../common/pokemon_formatters.dart';
 
-/// Loading and error feedback while a random Pokémon is being resolved.
-/// The encounter itself is presented by the `EncounterHandler`.
+/// VISTA: la capa que se pone encima del juego mientras se resuelve un
+/// encuentro (cargando) o si falla (error).
+///
+/// El encuentro en sí lo presenta el EncounterHandler, por eso en el estado
+/// Active esta capa no pinta nada.
 class EncounterOverlay extends StatelessWidget {
   const EncounterOverlay({super.key, required this.controller});
 
@@ -12,6 +15,7 @@ class EncounterOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Un caso por estado; al ser sealed, el compilador obliga a cubrirlos.
     return switch (controller.state) {
       EncounterNone() || EncounterActive() => const SizedBox.shrink(),
       EncounterResolving() => const _Panel(
@@ -22,6 +26,7 @@ class EncounterOverlay extends StatelessWidget {
           Text('¡Algo se mueve entre el humo…!'),
         ],
       ),
+      // Del estado fallido se saca el error para traducirlo a español.
       EncounterFailed(:final error) => _Panel(
         key: const Key('encounter_error'),
         children: [
@@ -33,11 +38,13 @@ class EncounterOverlay extends StatelessWidget {
             spacing: 8,
             children: [
               TextButton(
+                // Cancelar: se reanuda el juego y el humo sigue en el mapa.
                 onPressed: controller.cancel,
                 child: const Text('Cancelar'),
               ),
               FilledButton(
                 key: const Key('encounter_retry'),
+                // Reintentar: vuelve a sortear Pokémon para el mismo humo.
                 onPressed: controller.retry,
                 child: const Text('Reintentar'),
               ),
@@ -49,6 +56,7 @@ class EncounterOverlay extends StatelessWidget {
   }
 }
 
+/// Tarjeta centrada sobre un fondo oscurecido.
 class _Panel extends StatelessWidget {
   const _Panel({super.key, required this.children});
 

@@ -5,10 +5,10 @@ import '../models/named_resource.dart';
 import '../services/poke_api_exception.dart';
 import '../services/pokemon_repository.dart';
 
-/// State for the generations list screen.
+/// CONTROLADOR de la pantalla de generaciones (ventana 1).
 ///
-/// The list is small and never paginated, so the whole screen is a single
-/// [LoadState].
+/// La lista es pequeña y cabe en una sola petición, así que toda la pantalla
+/// se resume en un único [LoadState]: o idle, o cargando, o cargada, o error.
 class GenerationsController extends ChangeNotifier {
   GenerationsController({required this._repository});
 
@@ -19,13 +19,14 @@ class GenerationsController extends ChangeNotifier {
 
   LoadState<List<NamedResource>> get state => _state;
 
-  /// Loads the list once. No-op while a load is running or after it succeeded.
+  /// Carga la lista una vez. Es idempotente: si ya está cargando o cargada,
+  /// llamarlo otra vez no hace nada (no repite la petición).
   Future<void> load() async {
     if (_state case LoadInProgress() || LoadSuccess()) return;
     await _load();
   }
 
-  /// Retries after a failure.
+  /// Reintento tras un fallo (botón "Reintentar").
   Future<void> retry() => _load();
 
   Future<void> _load() async {
@@ -42,6 +43,7 @@ class GenerationsController extends ChangeNotifier {
     _notify();
   }
 
+  // No avisar si la pantalla ya se destruyó.
   void _notify() {
     if (!_disposed) notifyListeners();
   }

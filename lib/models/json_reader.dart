@@ -1,8 +1,12 @@
-/// Typed accessors for decoded JSON maps.
+/// Lectura segura de los mapas JSON que llegan de PokeAPI.
 ///
-/// Every failure is reported as a [FormatException] naming the offending key,
-/// so callers only need to handle a single exception type for malformed data.
+/// Es una "extension": añade métodos a un tipo que ya existe (aquí, a
+/// `Map<String, dynamic>`) sin heredar de él.
+///
+/// Si un campo falta o tiene otro tipo, lanza FormatException diciendo QUÉ
+/// campo falla; así el error salta aquí y no veinte líneas más tarde.
 extension JsonReader on Map<String, dynamic> {
+  // Método común: comprueba el tipo y, si no cuadra, lanza el error.
   T _require<T>(String key) {
     final value = this[key];
     if (value is T) return value;
@@ -15,6 +19,7 @@ extension JsonReader on Map<String, dynamic> {
 
   String readString(String key) => _require<String>(key);
 
+  /// Texto que puede venir vacío (null), pero no de otro tipo.
   String? readStringOrNull(String key) {
     final value = this[key];
     if (value == null || value is String) return value as String?;
@@ -32,7 +37,7 @@ extension JsonReader on Map<String, dynamic> {
     return readMap(key);
   }
 
-  /// Reads a list whose elements are all JSON objects.
+  /// Lee una lista cuyos elementos deben ser todos objetos JSON.
   List<Map<String, dynamic>> readObjectList(String key) {
     final list = _require<List<dynamic>>(key);
     return [

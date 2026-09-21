@@ -1,25 +1,29 @@
 import '../../models/pokemon.dart';
 import '../../services/poke_api_exception.dart';
 
-/// Lifecycle of an encounter. Anything other than [EncounterNone] pauses the
-/// game.
+/// Las cuatro fases de un encuentro. Cualquier estado que no sea
+/// [EncounterNone] mantiene el juego en pausa.
+///
+/// Al ser `sealed`, la vista puede hacer un switch completo y cada estado
+/// lleva dentro los datos que necesita (el Pokémon, el error...).
 sealed class EncounterState {
   const EncounterState();
 }
 
-/// Free roaming.
+/// Paseando libremente: no hay encuentro.
 final class EncounterNone extends EncounterState {
   const EncounterNone();
 }
 
-/// Ash touched [smokeId]; the random Pokémon is being fetched.
+/// Ash tocó [smokeId] y se está descargando el Pokémon al azar.
 final class EncounterResolving extends EncounterState {
   const EncounterResolving(this.smokeId);
 
   final String smokeId;
 }
 
-/// The Pokémon is known and the `EncounterHandler` is running.
+/// Ya se sabe qué Pokémon es y el EncounterHandler está en marcha
+/// (es decir, se está mostrando el encuentro / la captura).
 final class EncounterActive extends EncounterState {
   const EncounterActive(this.smokeId, this.pokemon);
 
@@ -27,7 +31,7 @@ final class EncounterActive extends EncounterState {
   final Pokemon pokemon;
 }
 
-/// Fetching the Pokémon failed; the user can retry or cancel.
+/// Falló la descarga: el usuario puede reintentar o cancelar.
 final class EncounterFailed extends EncounterState {
   const EncounterFailed(this.smokeId, this.error);
 

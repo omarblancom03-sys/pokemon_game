@@ -8,7 +8,7 @@ import '../common/error_view.dart';
 import '../common/pokemon_formatters.dart';
 import 'generation_detail_screen.dart';
 
-/// Window 1: the list of generations.
+/// VISTA (ventana 1): la lista de generaciones.
 class GenerationsScreen extends StatefulWidget {
   const GenerationsScreen({super.key});
 
@@ -20,6 +20,7 @@ class _GenerationsScreenState extends State<GenerationsScreen> {
   @override
   void initState() {
     super.initState();
+    // Se pide la lista tras el primer fotograma (nunca dentro de build).
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<GenerationsController>().load();
     });
@@ -32,10 +33,12 @@ class _GenerationsScreenState extends State<GenerationsScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF0F1A30),
       appBar: AppBar(title: const Text('Generaciones')),
+      // switch sobre el LoadState: un caso por estado posible.
       body: switch (controller.state) {
         LoadIdle() || LoadInProgress() => const Center(
           child: CircularProgressIndicator(),
         ),
+        // ":final error" saca el error de dentro del estado.
         LoadFailure(:final error) => ErrorView(
           message: errorMessage(error),
           onRetry: controller.retry,
@@ -47,6 +50,7 @@ class _GenerationsScreenState extends State<GenerationsScreen> {
   }
 }
 
+/// La lista en sí, con separación entre banners.
 class _GenerationList extends StatelessWidget {
   const _GenerationList({required this.generations});
 
@@ -63,12 +67,12 @@ class _GenerationList extends StatelessWidget {
   }
 }
 
-/// Banner in the same collectible spirit as [PokemonCard]: a two-tone frame
-/// with the generation numeral as the badge.
+/// Banner de una generación, en el mismo estilo de carta que [PokemonCard]:
+/// marco de dos tonos y el número romano como medalla.
 class _GenerationTile extends StatelessWidget {
   const _GenerationTile({required this.generation});
 
-  /// One accent per generation, cycled if PokeAPI ever adds more.
+  /// Un color por generación; si PokeAPI añadiera más, se reutilizan.
   static const _accents = [
     Color(0xFFEE8130),
     Color(0xFF6390F0),
@@ -85,10 +89,11 @@ class _GenerationTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // El id sale de la URL de la referencia (.../generation/1/ → 1).
     final id = generation.id;
     final accent = _accents[((id ?? 1) - 1) % _accents.length];
-    final label = generationLabel(generation.name);
-    final numeral = generationNumeral(generation.name);
+    final label = generationLabel(generation.name); // "Generación I"
+    final numeral = generationNumeral(generation.name); // "I"
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -108,11 +113,14 @@ class _GenerationTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(13),
           child: Material(
             color: const Color(0xFF1E2A44),
+            // InkWell = zona pulsable con efecto de onda.
             child: InkWell(
-              // A generation without a numeric id cannot be opened.
+              // Sin id numérico no se puede abrir (onTap null = desactivado).
               onTap: id == null
                   ? null
                   : () => Navigator.of(context).push(
+                      // La pantalla de detalle se construye a sí misma
+                      // (crea su propio controlador en route()).
                       GenerationDetailScreen.route(
                         generationId: id,
                         title: label,
@@ -159,6 +167,7 @@ class _GenerationTile extends StatelessWidget {
   }
 }
 
+/// La medalla redonda con el número romano.
 class _Numeral extends StatelessWidget {
   const _Numeral({required this.numeral, required this.color});
 

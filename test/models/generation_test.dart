@@ -1,3 +1,7 @@
+// PRUEBAS del modelo Generation: que ordena las especies por número de
+// Pokédex, que las referencias sin id numérico van al final y no salen en
+// speciesIds, y que un JSON mal formado lanza FormatException.
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pokemon_game/models/generation.dart';
 import 'package:pokemon_game/models/named_resource.dart';

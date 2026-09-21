@@ -1,14 +1,16 @@
 import 'package:flame/extensions.dart';
 import 'package:flutter/services.dart';
 
-/// Shared movement intent written by input sources (keyboard, on-screen
-/// D-pad) and read by `AshComponent`. Keeps input devices decoupled from
-/// the character logic.
+/// "Intención de moverse" compartida: la escriben las fuentes de entrada
+/// (teclado y D-pad en pantalla) y la lee AshComponent.
+///
+/// Así el personaje tiene UNA sola forma de saber hacia dónde ir, sin
+/// importar con qué se juegue.
 class MovementInput {
   final Vector2 _keyboard = Vector2.zero();
   final Vector2 _pad = Vector2.zero();
 
-  /// When false (e.g. during an encounter) [direction] is always zero.
+  /// Interruptor de pausa: si es false, [direction] siempre es cero.
   bool enabled = true;
 
   void setKeyboardDirection(Vector2 direction) => _keyboard.setFrom(direction);
@@ -20,14 +22,18 @@ class MovementInput {
     _pad.setZero();
   }
 
-  /// Current direction with length ≤ 1. The D-pad wins over the keyboard.
+  /// Dirección actual, de longitud máxima 1. El D-pad manda sobre el teclado.
   Vector2 get direction {
     if (!enabled) return Vector2.zero();
+    // clone(): se devuelve una copia, para que nadie altere el estado interno.
     final result = (_pad.isZero() ? _keyboard : _pad).clone();
+    // Normalizar la diagonal: (1,1) mide 1,41; sin esto se iría un 41% más
+    // rápido en diagonal que en línea recta.
     if (result.length2 > 1) result.normalize();
     return result;
   }
 
+  // Teclas aceptadas: flechas y WASD.
   static final _left = {LogicalKeyboardKey.arrowLeft, LogicalKeyboardKey.keyA};
   static final _right = {
     LogicalKeyboardKey.arrowRight,
@@ -36,8 +42,8 @@ class MovementInput {
   static final _up = {LogicalKeyboardKey.arrowUp, LogicalKeyboardKey.keyW};
   static final _down = {LogicalKeyboardKey.arrowDown, LogicalKeyboardKey.keyS};
 
-  /// Maps pressed keys (arrows / WASD) to a raw direction. Opposite keys
-  /// cancel out.
+  /// Teclas pulsadas → dirección. Las teclas opuestas se anulan (1 - 1 = 0).
+  /// Ojo: en gráficos la Y crece hacia ABAJO, por eso "abajo" es +1.
   static Vector2 directionFromKeys(Set<LogicalKeyboardKey> keys) {
     double axis(
       Set<LogicalKeyboardKey> negative,
@@ -48,7 +54,7 @@ class MovementInput {
     return Vector2(axis(_left, _right), axis(_up, _down));
   }
 
-  /// Whether [key] is one of the movement keys.
+  /// ¿Es [key] una de las teclas de movimiento?
   static bool isMovementKey(LogicalKeyboardKey key) =>
       _left.contains(key) ||
       _right.contains(key) ||

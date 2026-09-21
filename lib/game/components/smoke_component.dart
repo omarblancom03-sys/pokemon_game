@@ -4,8 +4,10 @@ import 'package:flame/components.dart';
 import '../visuals/smoke_visual.dart';
 import 'ash_component.dart';
 
-/// A spot where a wild Pokémon hides. Reports when Ash enters it; deciding
-/// what happens next is the controller's job.
+/// El humo: el sitio donde se esconde un Pokémon salvaje.
+///
+/// Solo avisa de que Ash ha entrado; QUÉ pasa después lo decide el
+/// controlador (el juego no sabe nada de Pokémon ni de internet).
 class SmokeComponent extends PositionComponent with CollisionCallbacks {
   SmokeComponent({
     required this.id,
@@ -22,19 +24,24 @@ class SmokeComponent extends PositionComponent with CollisionCallbacks {
        );
 
   final String id;
+
+  /// Callback: función que le pasan para avisar cuando Ash entra.
   final void Function(String smokeId) onAshReached;
   final Component _visual;
 
   @override
   Future<void> onLoad() async {
     await addAll([
-      // Solid: otherwise Ash's hitbox being fully inside the circle counts as
-      // "no collision" and crossing the smoke would trigger it twice.
+      // passive: el humo no busca colisiones, solo las recibe.
+      // isSolid: SIN esto, el círculo cuenta solo como borde; al quedar Ash
+      // entero dentro se perdía la colisión y al cruzarlo se disparaba DOS
+      // veces el encuentro.
       CircleHitbox(collisionType: CollisionType.passive, isSolid: true),
       _visual,
     ]);
   }
 
+  /// Lo llama Flame cuando dos hitboxes empiezan a tocarse.
   @override
   void onCollisionStart(
     Set<Vector2> intersectionPoints,

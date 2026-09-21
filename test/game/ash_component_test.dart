@@ -1,3 +1,7 @@
+// PRUEBAS del personaje, con un juego de Flame simulado: que se mueve
+// velocidad x dt, que sin entrada no se mueve, que no sale de los límites
+// del mapa y que informa al dibujo de hacia dónde mira.
+
 import 'package:flame/components.dart';
 import 'package:flame_test/flame_test.dart';
 import 'package:flutter_test/flutter_test.dart';

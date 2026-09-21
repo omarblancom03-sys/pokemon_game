@@ -1,10 +1,11 @@
 import 'json_reader.dart';
 import 'pokemon_type.dart';
 
-/// Immutable Pokémon data used across the app (Pokédex cards and encounters).
+/// MODELO: un Pokémon. Es inmutable (todos los campos son final), así que
+/// nadie puede modificarlo después de crearlo.
 ///
-/// [fromJson] accepts the `GET /pokemon/{id}` payload from PokeAPI; [toJson]
-/// emits the same shape (only the fields we use), so the two round-trip.
+/// [fromJson] lo construye a partir de la respuesta de `GET /pokemon/{id}`;
+/// [toJson] devuelve esa misma forma (solo los campos que usamos).
 class Pokemon {
   const Pokemon({
     required this.id,
@@ -15,13 +16,17 @@ class Pokemon {
     required this.weight,
   });
 
+  /// Constructor de fábrica: convierte el JSON crudo en un objeto limpio.
   factory Pokemon.fromJson(Map<String, dynamic> json) {
+    // La API no garantiza el orden, así que se ordena por "slot":
+    // el tipo principal debe quedar el primero (da el color de la carta).
     final types = json.readObjectList('types')
       ..sort((a, b) => a.readInt('slot').compareTo(b.readInt('slot')));
 
     return Pokemon(
       id: json.readInt('id'),
       name: json.readString('name'),
+      // unmodifiable: la lista queda de solo lectura.
       types: List.unmodifiable([
         for (final slot in types)
           PokemonType.fromApiName(slot.readMap('type').readString('name')),
@@ -32,24 +37,26 @@ class Pokemon {
     );
   }
 
-  /// National Pokédex number.
+  /// Número de la Pokédex nacional.
   final int id;
 
-  /// Lowercase API name, e.g. `"mr-mime"`. Display formatting is a view concern.
+  /// Nombre tal cual lo da la API, en minúsculas ("mr-mime").
+  /// Darle formato bonito es tarea de la vista.
   final String name;
 
-  /// Ordered by slot (primary type first). Never empty for valid API data.
+  /// Ordenados por slot (el principal primero).
   final List<PokemonType> types;
 
-  /// Official artwork when available, otherwise the default sprite, else null.
+  /// Ilustración oficial si existe; si no, el sprite normal; si no, null.
   final String? imageUrl;
 
-  /// In decimetres, as returned by the API.
+  /// En decímetros, como los devuelve la API (la vista los pasa a metros).
   final int height;
 
-  /// In hectograms, as returned by the API.
+  /// En hectogramos, como los devuelve la API (la vista los pasa a kilos).
   final int weight;
 
+  /// Objeto -> JSON (serializar). Sirve para guardar datos y para los tests.
   Map<String, dynamic> toJson() => {
     'id': id,
     'name': name,
@@ -70,6 +77,7 @@ class Pokemon {
     'weight': weight,
   };
 
+  // Prioridad de imagen: ilustración oficial -> sprite normal -> nada.
   static String? _readImageUrl(Map<String, dynamic> sprites) {
     final artwork = sprites
         .readMapOrNull('other')
@@ -78,6 +86,8 @@ class Pokemon {
     return artwork ?? sprites.readStringOrNull('front_default');
   }
 
+  // == define cuándo dos Pokémon se consideran iguales (por sus datos,
+  // no por ser el mismo objeto en memoria).
   @override
   bool operator ==(Object other) =>
       other is Pokemon &&
@@ -88,6 +98,7 @@ class Pokemon {
       other.weight == weight &&
       _sameTypes(other.types, types);
 
+  // Regla: si dos objetos son iguales, su hashCode debe coincidir.
   @override
   int get hashCode =>
       Object.hash(id, name, imageUrl, height, weight, Object.hashAll(types));

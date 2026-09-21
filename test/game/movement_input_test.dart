@@ -1,3 +1,7 @@
+// PRUEBAS de la entrada: flechas y WASD, teclas opuestas que se anulan,
+// diagonales normalizadas a longitud 1, prioridad del D-pad sobre el
+// teclado, input desactivado (pausa) y que el vector devuelto es una copia.
+
 import 'package:flame/extensions.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';

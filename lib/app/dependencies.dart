@@ -11,21 +11,24 @@ import '../services/pokemon_repository.dart';
 import '../services/random_pokemon_picker.dart';
 import '../views/game/stub_encounter_handler.dart';
 
-/// Composition root: the only place where concrete services, controllers and
-/// handlers are instantiated.
+/// Raíz de composición: el ÚNICO sitio donde se crean los servicios,
+/// controladores y handlers concretos. El resto del código los recibe ya
+/// construidos (esto es la "inyección de dependencias").
 class AppDependencies {
   const AppDependencies._({
     required this.providers,
     required this.navigatorKey,
   });
 
-  /// [repository] and [encounterHandler] can be overridden (tests, or the
-  /// partner's capture sequence).
+  /// [repository] y [encounterHandler] se pueden sustituir: en los tests se
+  /// pasan versiones falsas, y aquí se enchufará la captura real (Pokébola).
   factory AppDependencies.create({
     PokemonRepository? repository,
     EncounterHandler? encounterHandler,
   }) {
     final navigatorKey = GlobalKey<NavigatorState>();
+    // Cadena de capas: cliente HTTP -> servicio -> caché (patrón decorador).
+    // Si no se pasa nada, se usa la implementación real.
     final repo =
         repository ??
         CachedPokemonRepository(service: PokeApiService(client: http.Client()));
@@ -37,13 +40,14 @@ class AppDependencies {
 
     return AppDependencies._(
       navigatorKey: navigatorKey,
+      // Todo lo que las pantallas pueden pedir con context.read/watch.
       providers: [
         Provider<PokemonRepository>.value(value: repo),
         Provider<RandomPokemonPicker>.value(
           value: RandomPokemonPicker(repository: repo),
         ),
         Provider<EncounterHandler>.value(value: handler),
-        // App-wide so the loaded gallery survives leaving and re-entering.
+        // A nivel de app: lo ya descargado sobrevive al salir y volver a entrar.
         ChangeNotifierProvider(
           create: (_) => PokedexController(repository: repo),
         ),
@@ -56,6 +60,6 @@ class AppDependencies {
 
   final List<SingleChildWidget> providers;
 
-  /// Lets non-widget code (the stub handler) present dialogs.
+  /// Permite mostrar diálogos desde código que no es un widget.
   final GlobalKey<NavigatorState> navigatorKey;
 }

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 
-/// Load failure with a retry action, shared by the gallery screens.
+/// VISTA reutilizable: mensaje de error con botón "Reintentar".
 ///
-/// [compact] drops the icon so it can sit in a list footer instead of filling
-/// the screen.
+/// La usan la Pokédex, las generaciones y su detalle, para no repetir el
+/// mismo bloque tres veces.
+///
+/// [compact] quita el icono para poder ponerla al final de una lista en vez
+/// de a pantalla completa.
 class ErrorView extends StatelessWidget {
   const ErrorView({
     super.key,
@@ -14,9 +17,11 @@ class ErrorView extends StatelessWidget {
   });
 
   final String message;
+
+  /// Qué hacer al pulsar Reintentar (lo decide la pantalla que la usa).
   final VoidCallback onRetry;
 
-  /// Key for the retry button, so each screen's test can target its own.
+  /// Key del botón, para que cada pantalla tenga la suya en los tests.
   final Key? retryKey;
 
   final bool compact;

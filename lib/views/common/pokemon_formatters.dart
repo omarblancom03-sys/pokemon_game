@@ -3,37 +3,42 @@ import 'package:flutter/material.dart';
 import '../../models/pokemon_type.dart';
 import '../../services/poke_api_exception.dart';
 
-/// `"mr-mime"` → `"Mr Mime"`.
+// Todo el "cómo se le enseña al usuario" está aquí, junto y fuera de los
+// widgets: el modelo guarda los datos crudos de la API y la vista decide el
+// formato y el idioma.
+
+/// "mr-mime" → "Mr Mime".
 String displayName(String apiName) => apiName
     .split('-')
     .where((part) => part.isNotEmpty)
     .map((part) => part[0].toUpperCase() + part.substring(1))
     .join(' ');
 
-/// `25` → `"#025"`.
+/// 25 → "#025" (rellena con ceros hasta tres cifras).
 String dexNumber(int id) => '#${id.toString().padLeft(3, '0')}';
 
-/// `"generation-i"` → `"Generación I"`.
+/// "generation-i" → "Generación I".
 String generationLabel(String apiName) {
   final numeral = generationNumeral(apiName);
   return numeral.isEmpty ? displayName(apiName) : 'Generación $numeral';
 }
 
-/// `"generation-i"` → `"I"`; empty when the name carries no numeral.
+/// "generation-i" → "I"; cadena vacía si el nombre no lleva número romano.
 String generationNumeral(String apiName) {
   final parts = apiName.split('-');
   return parts.length < 2 ? '' : parts.last.toUpperCase();
 }
 
-/// Decimetres (as the API returns them) → `"0.7 m"`.
+/// Decímetros (como los da la API) → "0.7 m".
 String heightLabel(int decimetres) =>
     '${(decimetres / 10).toStringAsFixed(1)} m';
 
-/// Hectograms (as the API returns them) → `"6.9 kg"`.
+/// Hectogramos (como los da la API) → "6.9 kg".
 String weightLabel(int hectograms) =>
     '${(hectograms / 10).toStringAsFixed(1)} kg';
 
-/// User-facing message for a load failure.
+/// Traduce cada tipo de error técnico a un mensaje para el usuario.
+/// El switch es exhaustivo porque PokeApiException es `sealed`.
 String errorMessage(Object error) => switch (error) {
   PokeApiNetworkException() => 'Sin conexión. Revisa tu internet.',
   PokeApiNotFoundException() => 'No se encontró el Pokémon.',
@@ -43,7 +48,10 @@ String errorMessage(Object error) => switch (error) {
   _ => 'Algo salió mal.',
 };
 
+/// Extension: añade color y etiqueta al enum PokemonType, sin meter cosas
+/// de interfaz dentro del modelo.
 extension PokemonTypeStyle on PokemonType {
+  /// Color oficial de cada tipo (marco de la carta, chips, etc.).
   Color get color => switch (this) {
     PokemonType.normal => const Color(0xFFA8A77A),
     PokemonType.fire => const Color(0xFFEE8130),

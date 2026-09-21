@@ -4,8 +4,10 @@ import '../../../models/pokemon.dart';
 import '../../../models/pokemon_type.dart';
 import '../../common/pokemon_formatters.dart';
 
-/// Collectible-style card: type-coloured frame, number badge, artwork,
-/// name banner and type chips.
+/// VISTA: la carta tipo coleccionable. Recibe un Pokémon y lo dibuja:
+/// marco del color de su tipo, número, ilustración, nombre y chips de tipo.
+///
+/// No pide nada ni decide nada: es un widget "puro".
 class PokemonCard extends StatelessWidget {
   const PokemonCard({super.key, required this.pokemon});
 
@@ -13,9 +15,11 @@ class PokemonCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Color principal = el del primer tipo (por eso importa el orden).
     final primary = pokemon.types.isEmpty
         ? PokemonType.unknown.color
         : pokemon.types.first.color;
+    // Segundo color: el del tipo secundario o el principal oscurecido.
     final secondary = pokemon.types.length > 1
         ? pokemon.types[1].color
         : Color.lerp(primary, Colors.black, 0.35)!;
@@ -23,6 +27,7 @@ class PokemonCard extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
+        // Degradado del marco entre los dos colores.
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -65,6 +70,7 @@ class PokemonCard extends StatelessWidget {
   }
 }
 
+/// La ilustración, con resplandor detrás y el número arriba a la izquierda.
 class _Artwork extends StatelessWidget {
   const _Artwork({required this.pokemon, required this.glow});
 
@@ -88,9 +94,11 @@ class _Artwork extends StatelessWidget {
           padding: const EdgeInsets.all(8),
           child: url == null
               ? const _ImageFallback()
+              // Image.network descarga la imagen de internet.
               : Image.network(
                   url,
                   fit: BoxFit.contain,
+                  // Mientras baja: una ruedecita.
                   loadingBuilder: (context, child, progress) => progress == null
                       ? child
                       : const Center(
@@ -99,6 +107,7 @@ class _Artwork extends StatelessWidget {
                             child: CircularProgressIndicator(strokeWidth: 2),
                           ),
                         ),
+                  // Si falla: icono de Pokébola en vez de un hueco roto.
                   errorBuilder: (_, _, _) => const _ImageFallback(),
                 ),
         ),
@@ -113,7 +122,7 @@ class _Artwork extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               child: Text(
-                dexNumber(pokemon.id),
+                dexNumber(pokemon.id), // "#025"
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 11,
@@ -128,6 +137,7 @@ class _Artwork extends StatelessWidget {
   }
 }
 
+/// Icono de repuesto cuando no hay imagen o falla la descarga.
 class _ImageFallback extends StatelessWidget {
   const _ImageFallback();
 
@@ -136,6 +146,7 @@ class _ImageFallback extends StatelessWidget {
       const Icon(Icons.catching_pokemon, color: Colors.white24, size: 48);
 }
 
+/// Franja con el nombre del Pokémon.
 class _NameBanner extends StatelessWidget {
   const _NameBanner({required this.name, required this.color});
 
@@ -152,6 +163,7 @@ class _NameBanner extends StatelessWidget {
           name,
           textAlign: TextAlign.center,
           maxLines: 1,
+          // Si el nombre no cabe, se corta con puntos suspensivos.
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(
             color: Colors.white,
@@ -165,6 +177,7 @@ class _NameBanner extends StatelessWidget {
   }
 }
 
+/// Etiqueta de un tipo, con su color oficial.
 class _TypeChip extends StatelessWidget {
   const _TypeChip({required this.type});
 

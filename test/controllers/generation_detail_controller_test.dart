@@ -1,3 +1,7 @@
+// PRUEBAS del controlador de una generación: paginación sin duplicados,
+// que para al acabarse la generación, que la generación se descarga UNA
+// sola vez aunque haya varias páginas, y el manejo de errores.
+
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';

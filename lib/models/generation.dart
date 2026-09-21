@@ -1,10 +1,12 @@
 import 'json_reader.dart';
 import 'named_resource.dart';
 
-/// One Pokémon generation as returned by `GET /generation/{id}`.
+/// MODELO: una generación de Pokémon, tal y como la devuelve
+/// `GET /generation/{id}`.
 ///
-/// [species] are the generation's Pokémon species references, sorted by
-/// national Pokédex number (the API returns them unordered).
+/// [species] son las especies de esa generación ORDENADAS por número de
+/// Pokédex (la API las devuelve desordenadas; si no se ordenaran, la
+/// galería de Kanto empezaría por Abra).
 class Generation {
   const Generation({
     required this.id,
@@ -17,7 +19,7 @@ class Generation {
     final species = [
       for (final item in json.readObjectList('pokemon_species'))
         NamedResource.fromJson(item),
-    ]..sort(_byDexNumber);
+    ]..sort(_byDexNumber); // ..sort = operador cascada: ordena y devuelve la lista
 
     return Generation(
       id: json.readInt('id'),
@@ -27,24 +29,24 @@ class Generation {
     );
   }
 
-  /// Generation number, e.g. 1 for `generation-i`.
+  /// Número de generación: 1 para "generation-i".
   final int id;
 
-  /// Lowercase API name, e.g. `"generation-i"`. Formatting is a view concern.
+  /// Nombre de la API en minúsculas ("generation-i"). Formatearlo es cosa
+  /// de la vista (generationLabel → "Generación I").
   final String name;
 
-  /// Lowercase region name, e.g. `"kanto"`.
+  /// Región principal en minúsculas ("kanto").
   final String mainRegion;
 
-  /// Species references ordered by Pokédex number.
+  /// Referencias a las especies, ya ordenadas.
   final List<NamedResource> species;
 
-  /// Pokédex numbers of [species], skipping any reference without a numeric id.
-  ///
-  /// A species id maps to `/pokemon/{id}` for every national dex entry, so
-  /// these are the ids controllers fetch details with.
+  /// Solo los números de Pokédex, saltándose las referencias sin id.
+  /// Son los ids con los que los controladores piden `/pokemon/{id}`.
   List<int> get speciesIds => [
     for (final resource in species)
+      // "if (x case final int id)": si es un entero, úsalo; si no, sáltalo.
       if (resource.id case final int id) id,
   ];
 
@@ -70,7 +72,7 @@ class Generation {
   @override
   String toString() => 'Generation(#$id $name, ${species.length} species)';
 
-  /// Sorts by dex number; references without an id go last.
+  /// Ordena por número de Pokédex; las que no tienen id se van al final.
   static int _byDexNumber(NamedResource a, NamedResource b) {
     final idA = a.id;
     final idB = b.id;

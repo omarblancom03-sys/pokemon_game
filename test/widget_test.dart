@@ -1,3 +1,8 @@
+// PRUEBAS DE PANTALLA (widget tests): que el menú muestra sus tres
+// botones, que "Jugar" navega al juego, que la Pokédex pinta cartas y
+// muestra "Reintentar" si falla, y que desde Generaciones se abre una
+// galería y luego el detalle de un Pokémon. Usan un repositorio falso.
+
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';

@@ -4,13 +4,17 @@ import '../../controllers/encounter/encounter_handler.dart';
 import '../../models/pokemon.dart';
 import '../common/pokemon_formatters.dart';
 
-/// TEMPORARY stand-in for the capture sequence (partner's deliverable).
+/// Implementación PROVISIONAL del contrato de encuentro (la secuencia de
+/// captura es la parte del compañero).
 ///
-/// Shows which Pokémon appeared so the flow can be tested end to end.
-/// Replace it in `app/dependencies.dart` with the real `EncounterHandler`.
+/// "Stub" = pieza de relleno que cumple el contrato para poder probar el
+/// flujo completo de punta a punta. Para sustituirla, basta con cambiarla
+/// en `app/dependencies.dart`.
 class StubEncounterHandler implements EncounterHandler {
   StubEncounterHandler({required this._navigatorKey});
 
+  /// Llave del navegador: permite abrir el diálogo desde aquí, que no es
+  /// un widget y por tanto no tiene BuildContext propio.
   final GlobalKey<NavigatorState> _navigatorKey;
 
   @override
@@ -20,13 +24,17 @@ class StubEncounterHandler implements EncounterHandler {
 
     final outcome = await showDialog<EncounterOutcome>(
       context: context,
+      // No se puede cerrar tocando fuera: hay que decidir.
       barrierDismissible: false,
       builder: (_) => _EncounterDialog(pokemon: pokemon),
     );
+    // Si se cerrara sin respuesta, se da por huido: así esta función
+    // SIEMPRE devuelve algo y el juego siempre se reanuda.
     return outcome ?? EncounterOutcome.fled;
   }
 }
 
+/// El diálogo "¡Un X salvaje apareció!" con los botones Huir y Atrapar.
 class _EncounterDialog extends StatelessWidget {
   const _EncounterDialog({required this.pokemon});
 
@@ -69,6 +77,8 @@ class _EncounterDialog extends StatelessWidget {
         ],
       ),
       actions: [
+        // pop(valor): cierra el diálogo devolviendo el resultado, que es lo
+        // que completa el Future que el GameController está esperando.
         TextButton(
           onPressed: () => Navigator.of(context).pop(EncounterOutcome.fled),
           child: const Text('Huir'),

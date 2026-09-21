@@ -3,7 +3,8 @@ import 'package:flutter/services.dart';
 
 import 'movement_input.dart';
 
-/// Translates keyboard state into [MovementInput]. Has no visual.
+/// Componente invisible: su único trabajo es traducir el teclado a
+/// [MovementInput]. No dibuja nada.
 class KeyboardMovementComponent extends Component with KeyboardHandler {
   KeyboardMovementComponent({required this.input});
 
@@ -12,7 +13,8 @@ class KeyboardMovementComponent extends Component with KeyboardHandler {
   @override
   bool onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
     input.setKeyboardDirection(MovementInput.directionFromKeys(keysPressed));
-    // Consume movement keys so the browser does not scroll the page.
+    // Devolver false = "me quedo con esta tecla". Se consumen las de
+    // movimiento para que el navegador no haga scroll de la página.
     return !MovementInput.isMovementKey(event.logicalKey);
   }
 }

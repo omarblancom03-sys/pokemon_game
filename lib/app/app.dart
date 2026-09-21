@@ -9,6 +9,8 @@ import '../views/main_menu/main_menu_screen.dart';
 import '../views/pokedex/pokedex_screen.dart';
 import 'dependencies.dart';
 
+/// Nombres de las rutas (la "dirección" de cada pantalla).
+/// Están en constantes para no escribir el texto a mano en cada sitio.
 abstract final class AppRoutes {
   static const mainMenu = '/';
   static const game = '/game';
@@ -16,6 +18,7 @@ abstract final class AppRoutes {
   static const generations = '/generations';
 }
 
+/// Widget raíz: monta los providers, el tema y la tabla de rutas.
 class PokemonGameApp extends StatelessWidget {
   const PokemonGameApp({super.key, required this.dependencies});
 
@@ -23,20 +26,27 @@ class PokemonGameApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // MultiProvider deja los servicios y controladores al alcance
+    // de cualquier pantalla que haya debajo.
     return MultiProvider(
       providers: dependencies.providers,
       child: MaterialApp(
         title: 'Pokémon Game',
+        // Llave del navegador: permite abrir diálogos desde código
+        // que no es un widget (la usa StubEncounterHandler).
         navigatorKey: dependencies.navigatorKey,
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
+          // Material 3 genera toda la paleta a partir de un color.
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.red),
           useMaterial3: true,
         ),
         initialRoute: AppRoutes.mainMenu,
+        // Mapa "nombre de ruta -> función que construye la pantalla".
         routes: {
           AppRoutes.mainMenu: (_) => const MainMenuScreen(),
-          // A fresh GameController per play session, disposed on exit.
+          // El GameController se crea aquí, por partida: así cada sesión
+          // de juego empieza limpia y al salir se cierran sus streams.
           AppRoutes.game: (_) => ChangeNotifierProvider(
             create: (context) => GameController(
               picker: context.read<RandomPokemonPicker>(),

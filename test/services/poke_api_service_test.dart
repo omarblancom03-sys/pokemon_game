@@ -1,3 +1,7 @@
+// PRUEBAS del servicio HTTP, con un cliente falso (MockClient): no tocan
+// internet. Comprueban los cinco métodos y sus fallos: 404 -> NotFound,
+// 500 -> Server, JSON inválido -> Parse, fallo de red o timeout -> Network.
+
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';

@@ -1,3 +1,8 @@
+// PRUEBAS de la caché: que solo se hace una petición por id, que dos
+// peticiones simultáneas comparten la misma llamada, que los errores NO se
+// cachean y que clear() obliga a pedir de nuevo. Cuenta las peticiones
+// reales interceptando el cliente HTTP.
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';

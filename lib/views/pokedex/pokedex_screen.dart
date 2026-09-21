@@ -6,6 +6,12 @@ import '../common/error_view.dart';
 import '../common/pokemon_formatters.dart';
 import 'widgets/pokemon_card.dart';
 
+/// VISTA: la galería completa de Pokémon, con scroll infinito.
+///
+/// Aquí NO hay ninguna llamada a internet: solo se lee el estado del
+/// controlador y se le avisa cuando hace falta otra página.
+///
+/// Es StatefulWidget porque guarda el ScrollController entre repintados.
 class PokedexScreen extends StatefulWidget {
   const PokedexScreen({super.key});
 
@@ -14,9 +20,12 @@ class PokedexScreen extends StatefulWidget {
 }
 
 class _PokedexScreenState extends State<PokedexScreen> {
-  /// Start loading the next page this many pixels before the end.
+  /// Pide la página siguiente cuando faltan estos píxeles para el final,
+  /// para que las cartas ya estén listas al llegar.
   static const _loadMoreThreshold = 600.0;
 
+  /// Cuadrícula responsiva: tantas columnas como quepan con cartas de
+  /// 190 px como máximo.
   static const _gridDelegate = SliverGridDelegateWithMaxCrossAxisExtent(
     maxCrossAxisExtent: 190,
     childAspectRatio: 0.72,
@@ -26,15 +35,19 @@ class _PokedexScreenState extends State<PokedexScreen> {
 
   final _scrollController = ScrollController();
 
+  /// initState: una sola vez, al crear la pantalla.
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_maybeLoadMore);
+    // Se pide la primera página DESPUÉS del primer fotograma: cambiar el
+    // estado mientras se construye la interfaz es un error en Flutter.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<PokedexController>().loadInitial();
     });
   }
 
+  /// dispose: al salir, se libera el controlador de scroll.
   @override
   void dispose() {
     _scrollController.dispose();
@@ -44,17 +57,20 @@ class _PokedexScreenState extends State<PokedexScreen> {
   void _maybeLoadMore() {
     if (!_scrollController.hasClients) return;
     final position = _scrollController.position;
+    // extentAfter = cuánto queda por debajo de lo que se ve.
     if (position.extentAfter < _loadMoreThreshold) {
+      // read (no watch): aquí solo se llama a un método.
       context.read<PokedexController>().loadMore();
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    // watch: redibuja esta pantalla cada vez que el controlador avisa.
     final controller = context.watch<PokedexController>();
 
-    // On large screens a page may not fill the viewport, so no scroll event
-    // would ever request the next one.
+    // En pantallas grandes una página puede no llenar la ventana; sin
+    // scroll no habría evento y la galería se quedaría a 30 cartas.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _maybeLoadMore();
     });
@@ -72,7 +88,9 @@ class _PokedexScreenState extends State<PokedexScreen> {
     );
   }
 
+  /// Qué se pinta según el estado del controlador.
   Widget _buildBody(PokedexController controller) {
+    // 1) No hay nada y falló: error a pantalla completa.
     if (controller.hasInitialError) {
       return ErrorView(
         message: errorMessage(controller.error!),
@@ -81,17 +99,20 @@ class _PokedexScreenState extends State<PokedexScreen> {
       );
     }
 
+    // Slivers: listas "perezosas", solo construyen lo que se ve.
     return CustomScrollView(
       controller: _scrollController,
       slivers: [
         SliverPadding(
           padding: const EdgeInsets.all(12),
           sliver: controller.isInitialLoading
+              // 2) Primera carga: 12 esqueletos grises.
               ? SliverGrid.builder(
                   gridDelegate: _gridDelegate,
                   itemCount: 12,
                   itemBuilder: (_, _) => const _SkeletonCard(),
                 )
+              // 3) Normal: las cartas.
               : SliverGrid.builder(
                   gridDelegate: _gridDelegate,
                   itemCount: controller.items.length,
@@ -106,6 +127,8 @@ class _PokedexScreenState extends State<PokedexScreen> {
   }
 }
 
+/// Pie de la lista: rueda si carga, error pequeño si falló, o el aviso de
+/// que ya no queda nada por cargar.
 class _Footer extends StatelessWidget {
   const _Footer({required this.controller});
 
@@ -138,6 +161,7 @@ class _Footer extends StatelessWidget {
   }
 }
 
+/// Hueco gris con la forma de una carta, mientras llega la primera página.
 class _SkeletonCard extends StatelessWidget {
   const _SkeletonCard();
 

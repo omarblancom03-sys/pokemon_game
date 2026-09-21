@@ -1,4 +1,7 @@
-/// Elemental types as exposed by PokeAPI (`types[].type.name`).
+/// MODELO: los tipos elementales tal y como los nombra PokeAPI
+/// (campo `types[].type.name`).
+///
+/// Un enum es una lista cerrada de valores: evita textos mal escritos.
 enum PokemonType {
   normal,
   fire,
@@ -20,13 +23,14 @@ enum PokemonType {
   fairy,
   stellar,
 
-  /// Fallback for type names this app does not know yet, so new API data
-  /// never breaks parsing.
+  /// Comodín para tipos que la app aún no conoce: si PokeAPI añade uno
+  /// nuevo, la aplicación no se rompe.
   unknown;
 
-  /// The identifier used by PokeAPI, e.g. `"fire"`.
+  /// El identificador que usa la API, por ejemplo "fire".
   String get apiName => name;
 
+  /// Texto de la API -> valor del enum. Si no lo reconoce, devuelve unknown.
   static PokemonType fromApiName(String apiName) {
     for (final type in values) {
       if (type.apiName == apiName) return type;

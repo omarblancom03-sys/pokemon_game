@@ -3,19 +3,20 @@ import 'dart:ui';
 
 import 'package:flame/components.dart';
 
-/// Direction the character is looking at.
+/// Hacia dónde mira el personaje.
 enum Facing { up, down, left, right }
 
-/// Appearance of Ash. `AshComponent` owns position, movement and hitbox and
-/// only reports state here, so a sprite-sheet implementation (e.g. a
-/// `SpriteAnimationGroupComponent` keyed by facing/moving) can replace the
-/// placeholder without touching logic, controllers or services.
+/// CONTRATO del aspecto de Ash.
+///
+/// AshComponent se ocupa de la posición, el movimiento y la hitbox, y solo
+/// informa aquí del estado. Por eso se puede sustituir este dibujo por una
+/// animación con sprites sin tocar lógica, controladores ni servicios.
 abstract interface class AshVisual implements Component {
   void updateState({required Facing facing, required bool isMoving});
 }
 
-/// Free placeholder: coloured rectangles with a facing indicator and a small
-/// walking bob.
+/// Dibujo provisional (placeholder): figuras de colores con gorra, ojos que
+/// miran hacia donde anda y un pequeño rebote al caminar.
 class AshPlaceholderVisual extends PositionComponent implements AshVisual {
   AshPlaceholderVisual({required Vector2 size}) : super(size: size);
 
@@ -29,6 +30,7 @@ class AshPlaceholderVisual extends PositionComponent implements AshVisual {
   bool _isMoving = false;
   double _time = 0;
 
+  /// Lo llama AshComponent en cada fotograma.
   @override
   void updateState({required Facing facing, required bool isMoving}) {
     _facing = facing;
@@ -38,6 +40,7 @@ class AshPlaceholderVisual extends PositionComponent implements AshVisual {
   @override
   void update(double dt) {
     super.update(dt);
+    // El reloj solo corre mientras anda: así el rebote se para al parar.
     _time = _isMoving ? _time + dt : 0;
   }
 
@@ -45,8 +48,10 @@ class AshPlaceholderVisual extends PositionComponent implements AshVisual {
   void render(Canvas canvas) {
     final w = size.x;
     final h = size.y;
+    // sin() da un vaivén suave: el "bote" de caminar.
     final bob = _isMoving ? sin(_time * 16).abs() * -3 : 0.0;
 
+    // Sombra en el suelo.
     canvas.drawOval(
       Rect.fromLTWH(w * 0.1, h * 0.85, w * 0.8, h * 0.2),
       _shadowPaint,
@@ -54,6 +59,7 @@ class AshPlaceholderVisual extends PositionComponent implements AshVisual {
     canvas.save();
     canvas.translate(0, bob);
 
+    // Cuerpo, cara y gorra.
     final body = RRect.fromRectAndRadius(
       Rect.fromLTWH(w * 0.15, h * 0.45, w * 0.7, h * 0.5),
       const Radius.circular(4),
@@ -65,7 +71,7 @@ class AshPlaceholderVisual extends PositionComponent implements AshVisual {
       _capPaint,
     );
 
-    // Eyes show where Ash is looking; hidden when facing away.
+    // Los ojos indican la dirección; de espaldas no se ven.
     final eyeY = h * 0.36;
     switch (_facing) {
       case Facing.down:

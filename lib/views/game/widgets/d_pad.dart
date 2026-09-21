@@ -1,17 +1,21 @@
 import 'package:flame/extensions.dart';
 import 'package:flutter/material.dart';
 
-/// On-screen directional pad for touch devices. Reports a direction while a
-/// button is held and [Vector2.zero] on release.
+/// VISTA: cruceta en pantalla para jugar con el dedo (móvil o tableta).
+///
+/// Envía una dirección mientras el botón está PULSADO y Vector2.zero() al
+/// soltarlo.
 class DPad extends StatelessWidget {
   const DPad({super.key, required this.onDirectionChanged});
 
+  /// A quién avisar de la dirección (aquí, al MovementInput del juego).
   final ValueChanged<Vector2> onDirectionChanged;
 
   static const _buttonSize = 56.0;
 
   @override
   Widget build(BuildContext context) {
+    // Función local: crea un botón con su dirección (x, y).
     Widget button(IconData icon, double x, double y) => _DPadButton(
       icon: icon,
       size: _buttonSize,
@@ -23,6 +27,7 @@ class DPad extends StatelessWidget {
       dimension: _buttonSize * 3,
       child: Stack(
         children: [
+          // Ojo: en gráficos la Y crece hacia abajo, por eso arriba es -1.
           Align(
             alignment: Alignment.topCenter,
             child: button(Icons.keyboard_arrow_up, 0, -1),
@@ -45,6 +50,7 @@ class DPad extends StatelessWidget {
   }
 }
 
+/// Un botón de la cruceta.
 class _DPadButton extends StatelessWidget {
   const _DPadButton({
     required this.icon,
@@ -60,9 +66,11 @@ class _DPadButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Listener y no onTap: hace falta saber cuándo se MANTIENE pulsado.
     return Listener(
       onPointerDown: (_) => onPressed(),
       onPointerUp: (_) => onReleased(),
+      // Si el sistema interrumpe el gesto, Ash no se queda andando solo.
       onPointerCancel: (_) => onReleased(),
       child: Container(
         width: size,

@@ -5,14 +5,17 @@ import 'package:flame/components.dart';
 
 import '../config/world_config.dart';
 
-/// Placeholder ground: checkered grass, a dirt path, decorative trees/flowers
-/// and a border. Purely visual; replace with a tilemap later.
+/// El suelo provisional: césped a cuadros, dos caminos de tierra, árboles,
+/// flores y un borde. Es solo decoración (no tiene lógica ni colisiones);
+/// más adelante se puede sustituir por un mapa de baldosas real.
 class MapComponent extends PositionComponent {
   MapComponent({required this.config})
+    // priority -1: se dibuja por debajo de todo lo demás.
     : super(size: config.worldSize, priority: -1);
 
   final WorldConfig config;
 
+  // Paint = "brocha": el color con el que se pinta cada cosa.
   static final _grassA = Paint()..color = const Color(0xFF7EC850);
   static final _grassB = Paint()..color = const Color(0xFF74BE48);
   static final _path = Paint()..color = const Color(0xFFD9B77A);
@@ -29,7 +32,7 @@ class MapComponent extends PositionComponent {
 
   @override
   Future<void> onLoad() async {
-    // Fixed seed: the decoration layout is identical on every run.
+    // Semilla fija (7): la decoración sale IGUAL en cada partida.
     final random = Random(7);
     Offset randomPoint() => Offset(
       random.nextDouble() * (config.width - 80) + 40,
@@ -43,8 +46,10 @@ class MapComponent extends PositionComponent {
     }
   }
 
+  /// render: dibuja el fotograma. Se ejecuta ~60 veces por segundo.
   @override
   void render(Canvas canvas) {
+    // Césped: dos verdes alternados como un tablero de ajedrez.
     final t = config.tileSize;
     for (var y = 0; y * t < config.height; y++) {
       for (var x = 0; x * t < config.width; x++) {
@@ -55,6 +60,7 @@ class MapComponent extends PositionComponent {
       }
     }
 
+    // Dos caminos de tierra en cruz.
     canvas.drawRect(
       Rect.fromLTWH(0, config.height / 2 - t / 2, config.width, t),
       _path,
@@ -67,6 +73,7 @@ class MapComponent extends PositionComponent {
     for (final f in _flowers) {
       canvas.drawCircle(f, 3, _flower);
     }
+    // Cada árbol: tronco (rectángulo) + copa (círculo).
     for (final tree in _trees) {
       canvas.drawRect(
         Rect.fromCenter(center: tree.translate(0, 14), width: 8, height: 16),

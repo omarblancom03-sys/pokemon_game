@@ -1,3 +1,7 @@
+// PRUEBAS del controlador de la Pokédex: estados de carga, que loadMore no
+// duplica ni se pasa del total, que dos llamadas a la vez piden la página
+// una sola vez, el error inicial, el reintento y que no avisa tras dispose.
+
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';

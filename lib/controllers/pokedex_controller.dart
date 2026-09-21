@@ -7,69 +7,78 @@ import '../models/pokemon.dart';
 import '../services/poke_api_exception.dart';
 import '../services/pokemon_repository.dart';
 
-/// State and pagination for the Pokédex gallery.
+/// CONTROLADOR de la Pokédex: estado y paginación de la galería.
 ///
-/// Pages are built from contiguous species ids (`1..speciesCount`), fetching
-/// each page's details in parallel. This skips alternate forms (ids ≥ 10001)
-/// that `/pokemon` lists after the national dex.
+/// Es un ChangeNotifier: cuando algo cambia llama a notifyListeners() y la
+/// pantalla se redibuja. No conoce ningún widget.
+///
+/// Las páginas se forman con ids contiguos (1..total de especies) y se piden
+/// en paralelo; así se saltan las formas alternativas (ids ≥ 10001).
 class PokedexController extends ChangeNotifier {
   PokedexController({required this._repository, this.pageSize = 30})
     : assert(pageSize > 0);
 
+  // Depende de la INTERFAZ, no del servicio HTTP: por eso es testeable.
   final PokemonRepository _repository;
   final int pageSize;
 
+  // Estado interno (privado: el guion bajo significa "solo en este archivo").
   final List<Pokemon> _items = [];
   int? _total;
   bool _isLoading = false;
   PokeApiException? _error;
   bool _disposed = false;
 
+  /// Lista de solo lectura: la vista no puede añadir ni quitar elementos.
   UnmodifiableListView<Pokemon> get items => UnmodifiableListView(_items);
 
-  /// Total species, known after the first successful load.
+  /// Total de especies; se sabe tras la primera carga correcta.
   int? get total => _total;
 
   bool get isLoading => _isLoading;
 
-  /// Error from the last load attempt; cleared when a new attempt starts.
+  /// Error del último intento; se limpia al empezar uno nuevo.
   PokeApiException? get error => _error;
 
   bool get hasMore => _total == null || _items.length < _total!;
 
-  /// Nothing to show yet and a load is in progress: views render skeletons.
+  /// No hay nada que mostrar y está cargando → la vista pinta esqueletos.
   bool get isInitialLoading => _isLoading && _items.isEmpty;
 
-  /// Nothing to show and the load failed: views render a full-screen error.
+  /// No hay nada y falló → la vista pinta el error a pantalla completa.
   bool get hasInitialError => _error != null && _items.isEmpty;
 
-  /// Loads the first page. No-op if data is already present or loading.
+  /// Primera página. No hace nada si ya hay datos (así volver a entrar en la
+  /// pantalla no recarga todo).
   Future<void> loadInitial() async {
     if (_items.isNotEmpty) return;
     await _loadNextPage();
   }
 
-  /// Loads the next page when scrolling. Does not auto-retry after an error,
-  /// so a failing network cannot cause a request loop; use [retry].
+  /// Página siguiente al hacer scroll. Tras un error NO reintenta solo: si
+  /// no, con la red caída el scroll pediría sin parar. Para eso está retry().
   Future<void> loadMore() async {
     if (_error != null) return;
     await _loadNextPage();
   }
 
-  /// Retries the page that failed.
+  /// Reintento explícito del usuario (botón "Reintentar").
   Future<void> retry() => _loadNextPage();
 
   Future<void> _loadNextPage() async {
+    // Guardas: ni dos cargas a la vez, ni pedir más allá del total.
     if (_isLoading || !hasMore) return;
 
     _isLoading = true;
     _error = null;
-    _notify();
+    _notify(); // la vista pinta la rueda de carga
 
     try {
+      // ??= pide el total solo la primera vez y luego lo reutiliza.
       final total = _total ??= await _repository.getSpeciesCount();
       final firstId = _items.length + 1;
-      final lastId = min(firstId + pageSize - 1, total);
+      final lastId = min(firstId + pageSize - 1, total); // recorta la última
+      // Future.wait: las 30 peticiones van EN PARALELO (una sola espera).
       final page = await Future.wait([
         for (var id = firstId; id <= lastId; id++) _repository.getPokemon(id),
       ]);
@@ -77,11 +86,14 @@ class PokedexController extends ChangeNotifier {
     } on PokeApiException catch (e) {
       _error = e;
     } finally {
+      // finally = pase lo que pase: la rueda nunca se queda girando.
       _isLoading = false;
       _notify();
     }
   }
 
+  // Si la respuesta llega después de salir de la pantalla, avisar lanzaría
+  // un error de Flutter; esta bandera lo evita.
   void _notify() {
     if (!_disposed) notifyListeners();
   }

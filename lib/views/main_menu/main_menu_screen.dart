@@ -2,15 +2,21 @@ import 'package:flutter/material.dart';
 
 import '../../app/app.dart';
 
+/// VISTA: menú principal. Tres botones que navegan a las otras pantallas.
+///
+/// StatelessWidget = no guarda nada que cambie; solo se dibuja.
 class MainMenuScreen extends StatelessWidget {
   const MainMenuScreen({super.key});
 
+  /// build() describe la pantalla devolviendo widgets.
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    // Scaffold = esqueleto de pantalla (barra, cuerpo, etc.).
     return Scaffold(
       body: Center(
         child: ConstrainedBox(
+          // Ancho máximo para que en pantallas grandes no se estire.
           constraints: const BoxConstraints(maxWidth: 320),
           child: Padding(
             padding: const EdgeInsets.all(24),
@@ -25,7 +31,9 @@ class MainMenuScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 48),
                 FilledButton.icon(
+                  // Las Key sirven para que los tests encuentren el botón.
                   key: const Key('menu_play'),
+                  // pushNamed apila la pantalla del juego encima de esta.
                   onPressed: () =>
                       Navigator.of(context).pushNamed(AppRoutes.game),
                   icon: const Icon(Icons.play_arrow),
