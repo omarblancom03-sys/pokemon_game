@@ -24,6 +24,9 @@
     alcanzan empieza el encuentro (combate, de otro equipo). Agáchate con C para ir despacio y en
     silencio; dentro de la hierba alta casi no te ven ("Escondido en la hierba").
   - El encuentro usa por ahora el diálogo provisional (Atrapar / Huir). El combate lo hace otro equipo.
+  - **Minimapa** (arriba a la derecha): gira con la cámara (arriba = adelante), "N" = norte. Puntos
+    rojos = Poké Balls en el suelo; Pokémon en blanco (tranquilo), amarillo (sospecha), naranja (te vio)
+    o rojo latiendo (viene a por ti).
   - **Poké Balls en el campo:** puñados de Poké/Super/Ultra Balls flotando con un haz de luz (se ven de
     lejos). Se recogen al pasar por encima; reaparecen en otro sitio a los 12 s. Bolsa arriba a la
     izquierda (toca una bola para elegirla) con el número de capturados; avisos arriba en el centro.

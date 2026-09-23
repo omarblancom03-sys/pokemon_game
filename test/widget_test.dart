@@ -61,6 +61,7 @@ void main() {
     expect(find.byType(Game3DScreen), findsOneWidget);
     expect(find.byKey(const Key('fake_scene')), findsOneWidget);
     expect(find.byKey(const Key('game3d_dpad')), findsOneWidget);
+    expect(find.byKey(const Key('game3d_minimap')), findsOneWidget);
   });
 
   testWidgets('3D HUD: picking up balls fills the bag and shows a notice', (

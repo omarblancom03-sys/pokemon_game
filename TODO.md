@@ -60,7 +60,7 @@ El combate lo hace OTRO equipo (se engancha por el contrato EncounterHandler). N
 ## 8.9 Andar por el campo
 - [x] La cámara no atraviesa árboles ni casas (se acerca al instante y se aleja poco a poco;
       de espaldas a un árbol o casa sube para mirar desde arriba — OrbitCamera.avoidObstacles)
-- [ ] Minimapa
+- [x] Minimapa (redondo, arriba a la derecha, girado con la cámara; bolas y Pokémon por estado)
 - [ ] Más vida en el mundo (suelo con variación, polvo al correr, detalles)
 
 ## Mejoras continuas

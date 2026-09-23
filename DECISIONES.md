@@ -105,3 +105,9 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
   de espaldas a un árbol o casa no cabe (< 2,8 m libres), en vez de meterse dentro SUBE hasta 86°
   (vista cenital, como en los juegos de plataformas) y baja despacio al salir. La inclinación elegida
   por el jugador no cambia: el tiro "a ojo" sigue usando esa.
+- **2026-09-23 — Minimapa girado con la cámara** (arriba = hacia donde mira la cámara, que es también
+  "adelante" en el teclado), radio 26 m, con una "N" en el borde. Marca bolas del suelo y Pokémon con
+  el color de lo que saben de ti (blanco / amarillo "?" / naranja "!" / rojo que late si vienen a por
+  ti): refuerza el sigilo sin tener que mirar alrededor. Las cuentas están en `sim/minimap.dart`
+  (testeadas); la vista solo pinta. El mapa de casillas se graba una vez en un `ui.Picture` y se
+  coloca girado en cada fotograma. La ayuda de controles pasa debajo de la bolsa (izquierda).

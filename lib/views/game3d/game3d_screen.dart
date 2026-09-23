@@ -19,8 +19,9 @@ import '../../game3d/sim/world3d_sim.dart';
 import '../../models/poke_ball.dart';
 import '../game/widgets/d_pad.dart';
 import '../game/widgets/encounter_overlay.dart';
-import 'widgets/world_overlay.dart';
 import 'widgets/field_hud.dart';
+import 'widgets/minimap.dart';
+import 'widgets/world_overlay.dart';
 
 /// VISTA: exploración en 3D (tercera persona) y captura con Poké Balls.
 ///
@@ -243,13 +244,24 @@ class _Game3DScreenState extends State<Game3DScreen> {
                 ),
               ),
             ),
-            const Positioned(right: 16, top: 16, child: _Hint()),
+            Positioned(
+              right: 16,
+              top: 16,
+              child: Minimap(key: const Key('game3d_minimap'), sim: _sim),
+            ),
             Positioned(
               left: 16,
               top: 16,
-              child: ListenableBuilder(
-                listenable: _trainer,
-                builder: (_, _) => BagBar(trainer: _trainer),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ListenableBuilder(
+                    listenable: _trainer,
+                    builder: (_, _) => BagBar(trainer: _trainer),
+                  ),
+                  const SizedBox(height: 8),
+                  const _Hint(),
+                ],
               ),
             ),
             Positioned(
