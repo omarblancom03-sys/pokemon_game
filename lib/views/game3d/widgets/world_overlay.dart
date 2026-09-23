@@ -5,6 +5,7 @@ import 'package:flutter/scheduler.dart';
 
 import 'package:vector_math/vector_math.dart' show Vector3;
 
+import '../../../controllers/capture/capture_calculator.dart';
 import '../../../game3d/sim/wild_pokemon.dart';
 import '../../../game3d/sim/world3d_sim.dart';
 
@@ -15,6 +16,8 @@ import '../../../game3d/sim/world3d_sim.dart';
 ///  - SIGILO: "?" sobre los Pokémon que sospechan y "!" sobre los que te
 ///    han descubierto (rojo si van a por ti), y abajo cómo te notan
 ///    (escondido, agachado, haciendo ruido).
+///  - AL GOLPEAR: sobre el Pokémon, qué bonus de sigilo ha tenido el tiro
+///    ("¡No te vio!", "¡Por la espalda!"), que sube y se desvanece.
 ///
 /// Se repinta en cada fotograma leyendo el estado de la simulación; no
 /// cambia nada de ella.
@@ -82,6 +85,10 @@ class _WorldPainter extends CustomPainter {
       return Offset((p.x + 1) / 2 * size.width, (1 - p.y) / 2 * size.height);
     }
 
+    for (final ball in sim.balls) {
+      _paintHitBonus(canvas, ball, onScreen);
+    }
+
     for (final w in sim.wild) {
       if (!w.isFree || (!w.isAlert && !w.isSuspicious)) continue;
       final head = onScreen(w.position..y = w.displayHeight + 0.35);
@@ -133,6 +140,83 @@ class _WorldPainter extends CustomPainter {
         textDirection: TextDirection.ltr,
       )..layout();
       text.paint(canvas, mid + Offset(radius + 6, -text.height / 2));
+    }
+  }
+
+  /// Segundos que se ve el texto del bonus tras el golpe.
+  static const _bonusSeconds = 1.6;
+
+  /// Multiplicador en español: 2 → "2", 1.5 → "1,5".
+  static String _factor(double f) => f == f.roundToDouble()
+      ? f.toInt().toString()
+      : f.toString().replaceAll('.', ',');
+
+  /// El bonus del golpe sobre el Pokémon: sube y se desvanece.
+  void _paintHitBonus(
+    Canvas canvas,
+    ThrownBall ball,
+    Offset? Function(Vector3 world) onScreen,
+  ) {
+    final hit = ball.hit;
+    final since = ball.sinceHit;
+    final target = ball.target;
+    if (hit == null || since == null || target == null) return;
+    if (since > _bonusSeconds) return;
+    final lines = [
+      if (hit.unaware)
+        (
+          '¡No te vio! ×${_factor(CaptureCalculator.unawareBonus)}',
+          Colors.amberAccent,
+        ),
+      if (hit.fromBehind)
+        (
+          '¡Por la espalda! ×${_factor(CaptureCalculator.backStrikeBonus)}',
+          Colors.lightGreenAccent,
+        ),
+    ];
+    if (lines.isEmpty) return;
+    // Donde golpeó la bola (a media altura del Pokémon).
+    final anchor = onScreen(target.position..y = target.displayHeight * 0.55);
+    if (anchor == null) return;
+    final t = since / _bonusSeconds;
+    // Aparece de golpe (un pelín grande), sube y se va apagando al final.
+    final pop = 1 + 0.25 * math.max(0, 1 - since / 0.15);
+    final alpha = t < 0.7 ? 1.0 : (1 - t) / 0.3;
+    final texts = [
+      for (final (label, color) in lines)
+        TextPainter(
+          text: TextSpan(
+            text: label,
+            style: TextStyle(
+              color: color.withValues(alpha: alpha),
+              fontSize: 17 * pop,
+              fontWeight: FontWeight.w900,
+              shadows: [
+                Shadow(
+                  blurRadius: 4,
+                  color: Colors.black.withValues(alpha: 0.8 * alpha),
+                ),
+              ],
+            ),
+          ),
+          textDirection: TextDirection.ltr,
+        )..layout(),
+    ];
+    final height = texts.fold(0.0, (h, text) => h + text.height);
+    final width = texts.fold(0.0, (w, text) => math.max(w, text.width));
+    // Sube 40 px, pero nunca se sale por arriba (Pokémon muy altos).
+    var y = math.max(12.0, anchor.dy - 40 * t - height);
+    // Fondo oscuro para que se lea sobre cualquier cosa.
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(anchor.dx - width / 2 - 8, y - 3, width + 16, height + 6),
+        const Radius.circular(10),
+      ),
+      Paint()..color = Colors.black.withValues(alpha: 0.45 * alpha),
+    );
+    for (final text in texts) {
+      text.paint(canvas, Offset(anchor.dx - text.width / 2, y));
+      y += text.height;
     }
   }
 

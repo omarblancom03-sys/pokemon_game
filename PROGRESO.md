@@ -41,6 +41,7 @@
     vuelve rojo y entra, la bola cae, se sacude 0–3 veces y... ¡estrellas y "capturado"! o se abre y el
     Pokémon sale de un salto (y queda alerta). Si falla, rebota y rueda (también contra árboles y
     casas) y queda en el suelo brillando para recogerla. Por la espalda y sin ser visto es más fácil.
+    Al golpear se ve el bonus conseguido: "¡No te vio! ×1,5" y/o "¡Por la espalda! ×2".
 
 ## Cómo probar la captura
 1. Jugar 3D → ve hacia el prado de hierba alta (arriba a la derecha al empezar).

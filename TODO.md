@@ -66,5 +66,19 @@ El combate lo hace OTRO equipo (se engancha por el contrato EncounterHandler). N
   - [x] Polvo al correr (una nubecilla por pisada), al frenar en seco y al botar una bola
   - [x] Mariposas en las flores (se espantan al pasar; más lejos si corres, agachado te acercas)
 
+## 8.10 Captura: pulido (añadido 2026-09-23)
+- [x] Texto del bonus al golpear ("¡No te vio! ×1,5", "¡Por la espalda! ×2") sobre el Pokémon
+- [ ] Botón de la bola que parpadea en rojo en cada sacudida y se apaga con el "clic"
+- [ ] Estela de la bola en vuelo (del color de la bola)
+- [ ] Tarjeta "¡Capturado!" con el arte, número y tipos + panel "Mis capturas"
+- [ ] Captura crítica (a veces una sola sacudida, con efecto especial)
+
+## 8.11 Exploración: más vida (añadido 2026-09-23)
+- [ ] Hierba que se agita: Pokémon escondidos en la hierba alta que salen al acercarte
+- [ ] Briznas de hierba al correr por la hierba alta
+- [ ] Carteles que se pueden leer
+- [ ] Recentrar la cámara detrás del jugador
+- [ ] Nubes que pasan (sombras) y pájaros
+
 ## Mejoras continuas
 - [ ] (se irán añadiendo)

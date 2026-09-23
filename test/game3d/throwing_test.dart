@@ -288,7 +288,16 @@ void main() {
       );
       step(s, 0.1);
       s.throwBall(PokeBallType.poke);
-      step(s, 6);
+      // Justo tras el golpe la bola cuenta cómo fue (para enseñarlo).
+      while (s.balls.isEmpty || s.balls.single.phase == BallPhase.flying) {
+        s.update(1 / 60);
+      }
+      final ball = s.balls.single;
+      expect(ball.hit, (unaware: true, fromBehind: true));
+      expect(ball.sinceHit, closeTo(0, 0.02));
+      step(s, 0.5);
+      expect(ball.sinceHit, closeTo(0.5, 0.03));
+      step(s, 5.5);
       expect(
         events.whereType<PokemonCaught>().single.result.chance,
         closeTo(0.4, 1e-9),
@@ -304,7 +313,9 @@ void main() {
       step(s, 0.1);
       expect(s.lockedTarget, front);
       s.throwBall(PokeBallType.poke);
-      step(s, 6);
+      step(s, 0.6);
+      expect(s.balls.single.hit, (unaware: false, fromBehind: false));
+      step(s, 5.4);
       expect(
         events.whereType<PokemonCaught>().single.result.chance,
         closeTo(0.2, 1e-9),

@@ -129,3 +129,11 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
   que el sigilo de los Pokémon (el jugador aprende que agachado se acerca más). Se dibujan con tres
   mallas instanciadas (ala izq., ala der., cuerpo); la transformación de simulación pasa al motor con
   F·M·F (F = invertir Z). Dibujadas a ×1,6 para que se vean. Azar propio (semilla fija).
+- **2026-09-23 — Texto del bonus al golpear:** la bola guarda cómo fue el golpe (`ThrownBall.hit`:
+  sin ser visto / por la espalda) y cuándo (`sinceHit`); la capa 2D pinta "¡No te vio! ×1,5" y
+  "¡Por la espalda! ×2" (los números salen de CaptureCalculator) a media altura del Pokémon, sube
+  40 px y se apaga en 1,6 s, con fondo oscuro para leerse sobre cualquier cosa. Si no hubo bonus no
+  se enseña nada (solo refuerzo positivo). Enseña al jugador POR QUÉ el sigilo ayuda.
+- **2026-09-23 — Vista previa sin ensuciar el repo:** el parche TEMP-PREVIEW (jugador junto al prado
+  y un Pokémon de espaldas 8 m delante) se guarda como `preview.patch` en el scratchpad y solo se
+  aplica para compilar la web; se revierte antes de probar y hacer commit.
