@@ -68,7 +68,7 @@ El combate lo hace OTRO equipo (se engancha por el contrato EncounterHandler). N
 
 ## 8.10 Captura: pulido (añadido 2026-09-23)
 - [x] Texto del bonus al golpear ("¡No te vio! ×1,5", "¡Por la espalda! ×2") sobre el Pokémon
-- [ ] Botón de la bola que parpadea en rojo en cada sacudida y se apaga con el "clic"
+- [x] Botón de la bola que se enciende en rojo (con halo) en cada sacudida y destello blanco en el "clic"
 - [ ] Estela de la bola en vuelo (del color de la bola)
 - [ ] Tarjeta "¡Capturado!" con el arte, número y tipos + panel "Mis capturas"
 - [ ] Captura crítica (a veces una sola sacudida, con efecto especial)

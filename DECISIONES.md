@@ -137,3 +137,8 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
 - **2026-09-23 — Vista previa sin ensuciar el repo:** el parche TEMP-PREVIEW (jugador junto al prado
   y un Pokémon de espaldas 8 m delante) se guarda como `preview.patch` en el scratchpad y solo se
   aplica para compilar la web; se revierte antes de probar y hacer commit.
+- **2026-09-23 — Botón de la bola:** se enciende en rojo durante cada sacudida (seno de la
+  sacudida: sube y baja) y se apaga en la pausa entre sacudidas; al capturar, un destello blanco
+  de 0,35 s ("¡clic!"). Además un halo rojo suave alrededor de la bola (la bola es pequeña y en
+  la hierba alta casi no se veía el botón solo). Los valores (`buttonGlow`, `clickFlash`) son
+  puros en ThrownBall y tienen test; el renderer solo los pinta.

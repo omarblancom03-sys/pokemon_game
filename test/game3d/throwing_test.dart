@@ -415,4 +415,35 @@ void main() {
     ball.phaseTime = ThrownBall.shakeSettle + ThrownBall.shakeCycle * 1.2;
     expect(ball.wobble, 0, reason: 'second shake is not in the result');
   });
+
+  test('the button glows red with each shake and clicks white when caught', () {
+    final ball =
+        ThrownBall(
+            id: 'b',
+            ball: PokeBallType.poke,
+            position: Vector3.zero(),
+            velocity: Vector3.zero(),
+          )
+          ..result = const CaptureResult(chance: 0.5, shakes: 2, caught: true)
+          ..setPhase(BallPhase.shaking);
+    expect(ball.buttonGlow, 0, reason: 'settling after the fall');
+    ball.phaseTime = ThrownBall.shakeSettle + ThrownBall.shakeTime / 2;
+    expect(ball.buttonGlow, closeTo(1, 1e-9), reason: 'middle of shake 1');
+    ball.phaseTime = ThrownBall.shakeSettle + ThrownBall.shakeTime + 0.1;
+    expect(ball.buttonGlow, 0, reason: 'pause between shakes');
+    ball.phaseTime =
+        ThrownBall.shakeSettle +
+        ThrownBall.shakeCycle +
+        ThrownBall.shakeTime / 2;
+    expect(ball.buttonGlow, closeTo(1, 1e-9), reason: 'middle of shake 2');
+    ball.phaseTime = ThrownBall.shakeSettle + ThrownBall.shakeCycle * 2.5;
+    expect(ball.buttonGlow, 0, reason: 'no third shake');
+    expect(ball.clickFlash, 0);
+
+    ball.setPhase(BallPhase.caught);
+    expect(ball.clickFlash, 1);
+    expect(ball.buttonGlow, 0);
+    ball.phaseTime = ThrownBall.clickTime;
+    expect(ball.clickFlash, 0);
+  });
 }

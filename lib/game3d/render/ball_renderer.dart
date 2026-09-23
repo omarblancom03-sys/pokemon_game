@@ -13,8 +13,9 @@ import '../sim/throwing.dart';
 /// simulación (fase y tiempo de cada bola):
 ///  - en vuelo y rodando: gira sobre sí misma;
 ///  - al absorber: la tapa se abre y se cierra con un destello rojo;
-///  - en el suelo: se sacude mirando a la cámara;
-///  - ¡capturado!: estallido de estrellas;
+///  - en el suelo: se sacude mirando a la cámara, con el botón encendido
+///    en rojo en cada sacudida;
+///  - ¡capturado!: "clic" (destello blanco del botón) y estrellas;
 ///  - se escapa: la tapa salta, destello blanco y la bola desaparece.
 /// Además, al apuntar, la trayectoria prevista (puntos) y dónde caerá.
 class BallRenderer {
@@ -25,6 +26,17 @@ class BallRenderer {
       _bases[type] = toMesh(parts.bottom);
     }
     _star = _unlit(buildStar(vm.Vector4(2.4, 2.0, 0.5, 1)));
+    // Luz del botón: un disco algo por delante del botón (+Z en la
+    // simulación), que solo se ve cuando se enciende.
+    _button = Mesh(
+      MeshGeometry.fromArrays(
+        positions: _buttonDisc.positions,
+        normals: _buttonDisc.normals,
+        colors: _buttonDisc.colors,
+        indices: _buttonDisc.indices,
+      ),
+      UnlitMaterial()..alphaMode = AlphaMode.blend,
+    );
     _flash = Mesh(
       SphereGeometry(radius: 1),
       UnlitMaterial()
@@ -74,6 +86,7 @@ class BallRenderer {
   final Map<PokeBallType, Mesh> _bases = {};
   late final Mesh _star;
   late final Mesh _flash;
+  late final Mesh _button;
   late final InstancedMesh _dots;
   late final Node _marker;
   late final Node _lockedMarker;
@@ -102,6 +115,15 @@ class BallRenderer {
       UnlitMaterial()..alphaMode = AlphaMode.blend,
     );
   }
+
+  static final _buttonDisc =
+      (MeshBuilder()..gem(
+            vm.Vector3(0, 0, ballRadius * 1.02),
+            vm.Vector3(ballRadius * 0.4, ballRadius * 0.4, ballRadius * 0.08),
+            vm.Vector4(1, 1, 1, 1),
+          ))
+          .build()
+          .toEngineSpace();
 
   static vm.Vector3 _engine(vm.Vector3 v) => vm.Vector3(v.x, v.y, -v.z);
 
@@ -135,9 +157,17 @@ class BallRenderer {
     final lidPivot = Node()
       ..position = vm.Vector3(0, 0, ballRadius)
       ..add(lid);
+    final buttonMaterial = UnlitMaterial()
+      ..alphaMode = AlphaMode.blend
+      ..baseColorFactor = vm.Vector4(1, 1, 1, 0);
+    final button =
+        Node(mesh: Mesh(_button.primitives.first.geometry, buttonMaterial))
+          ..castsShadows = false
+          ..visible = false;
     final orient = Node()
       ..add(base)
-      ..add(lidPivot);
+      ..add(lidPivot)
+      ..add(button);
     final flashMaterial = UnlitMaterial()
       ..alphaMode = AlphaMode.blend
       ..baseColorFactor = vm.Vector4(1, 1, 1, 0);
@@ -161,6 +191,8 @@ class BallRenderer {
       lidPivot: lidPivot,
       flash: flash,
       flashMaterial: flashMaterial,
+      button: button,
+      buttonMaterial: buttonMaterial,
       stars: stars,
     );
   }
@@ -201,6 +233,12 @@ class BallRenderer {
         // El botón mira a la cámara y se balancea de lado a lado.
         rotation =
             _heading(cameraYaw) * vm.Quaternion.axisAngle(_z, ball.wobble);
+        // Halo rojo suave mientras el botón está encendido.
+        final glow = ball.buttonGlow;
+        if (glow > 0) {
+          flashColor = vm.Vector4(3, 0.3, 0.25, 0.28 * glow);
+          flashSize = 0.2 + 0.04 * glow;
+        }
       case BallPhase.caught:
         rotation = _heading(cameraYaw);
         // "Clic": un saltito y, al final, se desvanece.
@@ -228,6 +266,13 @@ class BallRenderer {
     v.flash
       ..visible = flashColor.w > 0.01
       ..scale = vm.Vector3.all(flashSize);
+    // Botón: rojo en cada sacudida; blanco en el "clic" de la captura.
+    final glow = ball.buttonGlow;
+    final click = ball.clickFlash;
+    v.buttonMaterial.baseColorFactor = click > 0
+        ? vm.Vector4(3, 3, 2.6, click)
+        : vm.Vector4(4, 0.3, 0.25, glow);
+    v.button.visible = glow > 0.01 || click > 0.01;
     _placeStars(v, ball);
   }
 
@@ -297,6 +342,8 @@ class _BallVisual {
     required this.lidPivot,
     required this.flash,
     required this.flashMaterial,
+    required this.button,
+    required this.buttonMaterial,
     required this.stars,
   });
 
@@ -305,6 +352,10 @@ class _BallVisual {
   final Node lidPivot;
   final Node flash;
   final UnlitMaterial flashMaterial;
+
+  /// Luz del botón (roja al sacudirse, blanca en el "clic").
+  final Node button;
+  final UnlitMaterial buttonMaterial;
   final List<Node> stars;
 
   /// Último rumbo conocido (para que no gire de golpe al pararse).

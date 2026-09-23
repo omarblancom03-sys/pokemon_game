@@ -158,6 +158,25 @@ class ThrownBall {
     return math.sin(s * 3 * math.pi) * 0.55 * (1 - s);
   }
 
+  /// Luz roja del botón (0..1): se enciende con cada sacudida y se apaga
+  /// en la pausa entre una y otra, como en los juegos.
+  double get buttonGlow {
+    if (phase != BallPhase.shaking) return 0;
+    final t = phaseTime - shakeSettle;
+    if (t < 0) return 0;
+    final cycle = (t / shakeCycle).floor();
+    if (cycle >= (result?.shakes ?? 0)) return 0;
+    final inCycle = t - cycle * shakeCycle;
+    if (inCycle > shakeTime) return 0;
+    return math.sin(inCycle / shakeTime * math.pi);
+  }
+
+  /// "¡Clic!" al capturar: destello blanco del botón (1 → 0 en [clickTime]).
+  double get clickFlash =>
+      phase == BallPhase.caught ? math.max(0, 1 - phaseTime / clickTime) : 0;
+
+  static const clickTime = 0.35;
+
   /// 0..1 mientras absorbe al Pokémon (para encogerlo hacia la bola).
   double get absorbProgress => switch (phase) {
     BallPhase.absorbing => (phaseTime / absorbTime).clamp(0.0, 1.0),
