@@ -64,6 +64,17 @@ void main() {
     expect(field.notices.first.shakes, 2);
   });
 
+  test('a capture says whether the species is new for the trainer', () {
+    final trainer = TrainerController();
+    final field = newField(trainer)
+      ..onWorldEvent(PokemonCaught(wild(7), PokeBallType.poke, caught))
+      ..onWorldEvent(PokemonCaught(wild(7), PokeBallType.great, caught))
+      ..onWorldEvent(PokemonCaught(wild(9), PokeBallType.poke, caught));
+
+    expect(field.notices.map((n) => n.isNew), [true, false, true]);
+    expect(trainer.captured, hasLength(3));
+  });
+
   test('only the newest notices are kept; dismiss removes one', () {
     final field = newField(TrainerController());
     for (var i = 0; i < 5; i++) {

@@ -19,6 +19,7 @@ import '../../game3d/sim/world3d_sim.dart';
 import '../../models/poke_ball.dart';
 import '../game/widgets/d_pad.dart';
 import '../game/widgets/encounter_overlay.dart';
+import 'widgets/capture_card.dart';
 import 'widgets/field_hud.dart';
 import 'widgets/minimap.dart';
 import 'widgets/world_overlay.dart';
@@ -52,6 +53,9 @@ class _Game3DScreenState extends State<Game3DScreen> {
   bool _aimKey = false;
   bool _aimButton = false;
 
+  // El panel "Mis capturas" está abierto (el mundo, congelado).
+  bool _capturesOpen = false;
+
   // Para distinguir un clic (lanzar) de un arrastre (girar la cámara).
   int _buttons = 0;
   double _dragDistance = 0;
@@ -81,7 +85,7 @@ class _Game3DScreenState extends State<Game3DScreen> {
     if (kIsWeb) unawaited(BrowserContextMenu.disableContextMenu());
   }
 
-  void _syncPause() => _sim.setPaused(_controller.isPaused);
+  void _syncPause() => _sim.setPaused(_controller.isPaused || _capturesOpen);
 
   /// La bola que se ve en la mano / con la que se calcula la probabilidad.
   void _syncReadyBall() => _sim.readyBall =
@@ -91,6 +95,25 @@ class _Game3DScreenState extends State<Game3DScreen> {
 
   /// Agacharse / levantarse (sigilo).
   void _toggleCrouch() => setState(() => _sim.crouching = !_sim.crouching);
+
+  /// Abre "Mis capturas". El mundo se congela mientras está abierto (y se
+  /// sueltan las teclas: el panel se queda con el teclado).
+  Future<void> _showCaptures() async {
+    if (_capturesOpen) return;
+    _capturesOpen = true;
+    _aimKey = false;
+    _aimMouse = false;
+    _syncAim();
+    _sim
+      ..setPaused(true)
+      ..cameraInput.clear();
+    await showDialog<void>(
+      context: context,
+      builder: (_) => CapturesPanel(trainer: _trainer),
+    );
+    _capturesOpen = false;
+    if (mounted) _syncPause();
+  }
 
   /// Lanzar: saca una bola de la bolsa (si hay) y la simulación la lanza.
   void _throw() {
@@ -127,6 +150,10 @@ class _Game3DScreenState extends State<Game3DScreen> {
         key == LogicalKeyboardKey.controlLeft ||
         key == LogicalKeyboardKey.controlRight) {
       if (down) _toggleCrouch();
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.keyP) {
+      if (down) unawaited(_showCaptures());
       return KeyEventResult.handled;
     }
     if (key == LogicalKeyboardKey.keyR) {
@@ -257,7 +284,10 @@ class _Game3DScreenState extends State<Game3DScreen> {
                 children: [
                   ListenableBuilder(
                     listenable: _trainer,
-                    builder: (_, _) => BagBar(trainer: _trainer),
+                    builder: (_, _) => BagBar(
+                      trainer: _trainer,
+                      onShowCaptures: () => unawaited(_showCaptures()),
+                    ),
                   ),
                   const SizedBox(height: 8),
                   const _Hint(),
@@ -361,7 +391,8 @@ class _Hint extends StatelessWidget {
         child: Text(
           'WASD mover · Mayús correr · Arrastrar / Q-E cámara · Rueda zoom\n'
           'Clic der. / F apuntar · Clic / Espacio lanzar · R / 1-3 cambiar bola\n'
-          'C agacharse: en la hierba alta no te ven · Correr hace ruido',
+          'C agacharse: en la hierba alta no te ven · Correr hace ruido · '
+          'P tus capturas',
           style: TextStyle(color: Colors.white),
         ),
       ),

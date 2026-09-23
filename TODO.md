@@ -70,7 +70,7 @@ El combate lo hace OTRO equipo (se engancha por el contrato EncounterHandler). N
 - [x] Texto del bonus al golpear ("¡No te vio! ×1,5", "¡Por la espalda! ×2") sobre el Pokémon
 - [x] Botón de la bola que se enciende en rojo (con halo) en cada sacudida y destello blanco en el "clic"
 - [x] Estela de la bola en vuelo (del color de la bola)
-- [ ] Tarjeta "¡Capturado!" con el arte, número y tipos + panel "Mis capturas"
+- [x] Tarjeta "¡Capturado!" con el arte, número, tipos, bola y "¡Nuevo!" + panel "Mis capturas" (P)
 - [ ] Captura crítica (a veces una sola sacudida, con efecto especial)
 
 ## 8.11 Exploración: más vida (añadido 2026-09-23)

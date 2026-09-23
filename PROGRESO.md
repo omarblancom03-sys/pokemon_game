@@ -28,6 +28,8 @@
     alcanzan empieza el encuentro (combate, de otro equipo). Agáchate con C para ir despacio y en
     silencio; dentro de la hierba alta casi no te ven ("Escondido en la hierba").
   - El encuentro usa por ahora el diálogo provisional (Atrapar / Huir). El combate lo hace otro equipo.
+  - **Tus capturas:** cada captura enseña una tarjeta (arte, número, tipos, bola y "¡Nuevo!" si es
+    la primera de su especie). Pulsa P (o toca "Capturados") para ver todas tus cartas.
   - **Minimapa** (arriba a la derecha): gira con la cámara (arriba = adelante), "N" = norte. Puntos
     rojos = Poké Balls en el suelo; Pokémon en blanco (tranquilo), amarillo (sospecha), naranja (te vio)
     o rojo latiendo (viene a por ti).

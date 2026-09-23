@@ -13,7 +13,10 @@ import 'package:pokemon_game/services/poke_api_exception.dart';
 import 'package:pokemon_game/views/game3d/game3d_screen.dart';
 
 import 'package:pokemon_game/game3d/sim/world3d_sim.dart';
+import 'package:pokemon_game/game3d/sim/wild_pokemon.dart';
+import 'package:pokemon_game/models/capture_result.dart';
 import 'package:pokemon_game/models/poke_ball.dart';
+import 'package:pokemon_game/views/pokedex/widgets/pokemon_card.dart';
 
 import 'fakes/fake_pokemon_repository.dart';
 import 'fakes/fake_scene_renderer.dart';
@@ -103,6 +106,83 @@ void main() {
     await tester.pump(const Duration(seconds: 3));
     await tester.pump();
     expect(find.text('+1 Ultra Ball'), findsNothing);
+  });
+
+  testWidgets('3D: a capture shows its card; "Mis capturas" lists it', (
+    tester,
+  ) async {
+    final renderer = FakeSceneRenderer();
+    await tester.pumpWidget(
+      PokemonGameApp(
+        dependencies: AppDependencies.create(
+          repository: repository,
+          sceneRenderer: renderer,
+        ),
+      ),
+    );
+    await tester.tap(find.byKey(const Key('menu_play_3d')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+
+    final sim = renderer.lastSim!;
+    final wild = WildPokemon(
+      id: 'w',
+      pokemon: fakePokemon(25),
+      position: Vector3.zero(),
+    );
+    const result = CaptureResult(chance: 0.5, shakes: 3, caught: true);
+    sim.onEvent!(PokemonCaught(wild, PokeBallType.great, result));
+    await tester.pump();
+    expect(find.byKey(const Key('capture_card')), findsOneWidget);
+    expect(find.text('Poke 25'), findsOneWidget);
+    expect(find.text('#025'), findsOneWidget);
+    expect(find.byKey(const Key('capture_card_new')), findsOneWidget);
+
+    // La misma especie otra vez: ya no es nueva.
+    sim.onEvent!(PokemonCaught(wild, PokeBallType.poke, result));
+    await tester.pump();
+    expect(find.byKey(const Key('capture_card')), findsNWidgets(2));
+    expect(find.byKey(const Key('capture_card_new')), findsOneWidget);
+    await tester.pump(const Duration(seconds: 4));
+    await tester.pump();
+    expect(find.byKey(const Key('capture_card')), findsNothing);
+
+    // Tocar "Capturados" abre el panel y congela el mundo.
+    await tester.tap(find.byKey(const Key('bag_captured')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.byKey(const Key('captures_panel')), findsOneWidget);
+    expect(find.text('Mis capturas (2)'), findsOneWidget);
+    expect(find.byType(PokemonCard), findsNWidgets(2));
+    expect(sim.isPaused, isTrue);
+
+    await tester.tap(find.byKey(const Key('captures_close')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.byKey(const Key('captures_panel')), findsNothing);
+    expect(sim.isPaused, isFalse);
+  });
+
+  testWidgets('3D: "Mis capturas" with nothing caught explains how', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      PokemonGameApp(
+        dependencies: AppDependencies.create(
+          repository: repository,
+          sceneRenderer: FakeSceneRenderer(),
+        ),
+      ),
+    );
+    await tester.tap(find.byKey(const Key('menu_play_3d')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+
+    await tester.tap(find.byKey(const Key('bag_captured')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text('Mis capturas (0)'), findsOneWidget);
+    expect(find.textContaining('Aún no has capturado'), findsOneWidget);
   });
 
   testWidgets('3D: the throw button spends a ball; an empty bag warns', (

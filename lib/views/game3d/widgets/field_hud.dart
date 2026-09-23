@@ -6,6 +6,7 @@ import '../../../controllers/field_controller.dart';
 import '../../../controllers/trainer_controller.dart';
 import '../../../models/poke_ball.dart';
 import '../../common/pokemon_formatters.dart';
+import 'capture_card.dart';
 
 /// Texto de cada aviso del campo (la vista decide el idioma y el formato).
 String noticeText(FieldNotice n) {
@@ -89,11 +90,15 @@ class _BallPainter extends CustomPainter {
 }
 
 /// La BOLSA: cuántas bolas quedan de cada tipo y cuál está elegida (se
-/// puede tocar para elegir otra). Debajo, cuántos Pokémon llevas.
+/// puede tocar para elegir otra). Debajo, cuántos Pokémon llevas (al
+/// tocarlo se abren tus capturas).
 class BagBar extends StatelessWidget {
-  const BagBar({super.key, required this.trainer});
+  const BagBar({super.key, required this.trainer, this.onShowCaptures});
 
   final TrainerController trainer;
+
+  /// Abre el panel "Mis capturas".
+  final VoidCallback? onShowCaptures;
 
   @override
   Widget build(BuildContext context) {
@@ -121,12 +126,35 @@ class BagBar extends StatelessWidget {
                   ),
               ],
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(6, 4, 6, 2),
-              child: Text(
-                'Capturados: ${trainer.captured.length}',
-                key: const Key('bag_captured'),
-                style: const TextStyle(color: Colors.white70, fontSize: 12),
+            GestureDetector(
+              key: const Key('bag_captured'),
+              onTap: onShowCaptures,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(6, 4, 6, 2),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Capturados: ${trainer.captured.length}',
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 12,
+                      ),
+                    ),
+                    if (onShowCaptures != null) ...[
+                      const SizedBox(width: 4),
+                      const Icon(
+                        Icons.grid_view_rounded,
+                        color: Colors.white54,
+                        size: 13,
+                      ),
+                      const Text(
+                        ' P',
+                        style: TextStyle(color: Colors.white38, fontSize: 11),
+                      ),
+                    ],
+                  ],
+                ),
               ),
             ),
           ],
@@ -254,30 +282,33 @@ class _NoticeChipState extends State<_NoticeChip> {
       duration: const Duration(milliseconds: 220),
       curve: Curves.easeOutBack,
       builder: (context, t, child) => Transform.scale(scale: t, child: child),
-      child: Container(
-        margin: const EdgeInsets.only(top: 6),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.9),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (n.ball != null) ...[
-              BallIcon(n.ball!, size: 18),
-              const SizedBox(width: 8),
-            ],
-            Text(
-              noticeText(n),
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
+      // Las capturas se celebran con una tarjeta; lo demás, con un aviso.
+      child: n.kind == FieldNoticeKind.caught && n.pokemon != null
+          ? CaptureCard(notice: n)
+          : Container(
+              margin: const EdgeInsets.only(top: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.9),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (n.ball != null) ...[
+                    BallIcon(n.ball!, size: 18),
+                    const SizedBox(width: 8),
+                  ],
+                  Text(
+                    noticeText(n),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
-      ),
     );
   }
 }

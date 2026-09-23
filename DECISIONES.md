@@ -147,3 +147,13 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
   fotograma hasta desaparecer. Se pinta con UNA malla instanciada compartida por todas las bolas
   (bolitas sin luz semitransparentes, con un punto intermedio entre cada dos para que parezca una
   línea), del color de la bola: roja, azul o amarilla, más gruesa y opaca cerca de la bola.
+- **2026-09-23 — Tarjeta de captura y "Mis capturas":** una captura ya no es un aviso pequeño sino
+  una tarjeta (arte oficial, nombre, número, tipos, bola usada y "¡Nuevo!" si es la primera de su
+  especie: `FieldNotice.isNew`, lo decide el controlador antes de registrar la captura). El panel
+  "Mis capturas" (tecla P o tocar "Capturados") reutiliza la carta de la Pokédex con la bola en la
+  esquina; mientras está abierto el mundo se congela (`_capturesOpen` entra en `_syncPause`, así un
+  encuentro que termine no lo descongela) y se sueltan apuntar y las teclas de cámara.
+- **2026-09-23 — Vista previa: script, no parche git.** Un `git diff` regenerado arrastró cambios
+  sin commit y un `git checkout` los quitó (se recuperaron del parche). Ahora `preview_on.sh` inserta
+  líneas marcadas `// TEMP-PREVIEW` y `preview_off.sh` las borra con `sed`; nunca `git checkout` ni
+  `dart format` con la vista previa puesta. URL: `?sure` (ratio 255) y `?card` (captura a los 9 s).
