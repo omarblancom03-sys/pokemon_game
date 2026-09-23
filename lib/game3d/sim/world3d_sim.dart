@@ -9,6 +9,7 @@ import '../../game/map/map_layout.dart';
 import '../../models/poke_ball.dart';
 import '../../models/pokemon.dart';
 import 'aiming.dart';
+import 'butterflies.dart';
 import 'camera_input.dart';
 import 'dust.dart';
 import 'field_items.dart';
@@ -118,6 +119,13 @@ class World3DSim {
   /// Polvo que levantan los pies al correr y las bolas al botar. Es solo
   /// decorado: usa su propio azar para no alterar el del juego.
   final DustSystem dust = DustSystem(random: math.Random(7));
+
+  /// Mariposas sobre los macizos de flores (decorado, con su propio azar).
+  late final ButterflySwarm butterflies = ButterflySwarm.fromLayout(
+    layout,
+    config.tileSize,
+    random: math.Random(11),
+  );
 
   /// Encuentros al azar andando por la hierba alta (como en los juegos
   /// clásicos). En 3D van apagados: los Pokémon ya se ven y se capturan
@@ -407,6 +415,12 @@ class World3DSim {
     if (_paused) return;
 
     _kickUpDust(dt, wish);
+    butterflies.update(
+      dt,
+      player.position,
+      stealth: stealth,
+      moving: player.isMoving,
+    );
     fieldItems.update(dt, player.position, _emit);
     for (final w in wild.toList()) {
       _updateWild(w, dt);

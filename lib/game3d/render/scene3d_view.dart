@@ -11,6 +11,7 @@ import '../sim/orbit_camera.dart';
 import '../sim/trainer_pose.dart';
 import '../sim/world3d_sim.dart';
 import 'ball_renderer.dart';
+import 'butterfly_renderer.dart';
 import 'dust_renderer.dart';
 import 'grass_renderer.dart';
 import 'item_renderer.dart';
@@ -43,6 +44,7 @@ class _Scene3DViewState extends State<Scene3DView> {
   late ItemRenderer _items;
   late BallRenderer _balls;
   late DustRenderer _dust;
+  late ButterflyRenderer _butterflies;
   Object? _error;
 
   World3DSim get _sim => widget.sim;
@@ -132,6 +134,8 @@ class _Scene3DViewState extends State<Scene3DView> {
 
     _dust = DustRenderer();
     scene.add(_dust.node);
+    _butterflies = ButterflyRenderer(_sim.butterflies, _mesh);
+    scene.add(_butterflies.node);
 
     _trainer = TrainerRig(_mesh);
     scene.add(_trainer.root);
@@ -185,6 +189,7 @@ class _Scene3DViewState extends State<Scene3DView> {
     _wild.update(_sim.wild, _sim.balls, _sim.camera.yaw, _sim.time);
     _items.update(_sim.fieldItems.items, _sim.time);
     _dust.update(_sim.dust.puffs);
+    _butterflies.update();
     _balls.update(
       _sim.balls,
       preview: _sim.aimPreview,

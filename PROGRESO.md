@@ -20,6 +20,7 @@
     teclado. WASD/flechas mueven relativo a la cámara; Mayús corre. D-pad en pantalla. La cámara no
     atraviesa árboles ni casas: se acerca si algo estorba y, de espaldas a un árbol, mira desde arriba.
   - Hierba alta 3D que se mece con el viento y se aparta al pasar.
+  - Mariposas de colores sobre las flores: se espantan si te acercas (agachado puedes verlas de cerca).
   - Pokémon salvajes VISIBLES (arte oficial de PokeAPI) que deambulan por la hierba alta.
   - **Sigilo:** los Pokémon ven en un cono delante de ellos y oyen tus pasos (correr se oye de lejos).
     Si sospechan sale "?" y se giran; si te descubren, "!" y reaccionan según su carácter: los

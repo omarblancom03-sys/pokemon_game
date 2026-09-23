@@ -123,3 +123,9 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
   `sim/dust.dart` (máx. 40 a la vez, la más vieja se va); se dibuja con UNA malla instanciada con 40
   huecos, material sin luz semitransparente (la opacidad va en el color de cada instancia). Usa su
   propio azar (semilla fija): es decorado y no debe cambiar el azar del juego ni de los tests.
+- **2026-09-23 — Mariposas:** una por macizo de flores (`,`), máx. 12 y separadas ≥ 5 m. Revolotean
+  sobre sus flores (radio 1,3 m, 0,35–1,3 m de alto) y huyen hacia arriba y lejos del jugador si se
+  acerca: 4,5 m corriendo, 2,6 m andando, 1 m agachado; quieto solo si estás pegado. Mismo lenguaje
+  que el sigilo de los Pokémon (el jugador aprende que agachado se acerca más). Se dibujan con tres
+  mallas instanciadas (ala izq., ala der., cuerpo); la transformación de simulación pasa al motor con
+  F·M·F (F = invertir Z). Dibujadas a ×1,6 para que se vean. Azar propio (semilla fija).
