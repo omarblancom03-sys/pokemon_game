@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../controllers/field_controller.dart';
 import '../controllers/game_controller.dart';
 import '../services/random_pokemon_picker.dart';
 import '../views/game/game_screen.dart';
@@ -56,12 +57,20 @@ class PokemonGameApp extends StatelessWidget {
             ),
             child: const GameScreen(),
           ),
-          // El 3D usa el mismo controlador de encuentros, también por partida.
-          AppRoutes.game3d: (_) => ChangeNotifierProvider(
-            create: (context) => GameController(
-              picker: context.read<RandomPokemonPicker>(),
-              encounterHandler: context.read(),
-            ),
+          // El 3D usa el mismo controlador de encuentros, también por
+          // partida, más el de la captura en el campo (bolsa y avisos).
+          AppRoutes.game3d: (_) => MultiProvider(
+            providers: [
+              ChangeNotifierProvider(
+                create: (context) => GameController(
+                  picker: context.read<RandomPokemonPicker>(),
+                  encounterHandler: context.read(),
+                ),
+              ),
+              ChangeNotifierProvider(
+                create: (context) => FieldController(trainer: context.read()),
+              ),
+            ],
             child: const Game3DScreen(),
           ),
           AppRoutes.pokedex: (_) => const PokedexScreen(),

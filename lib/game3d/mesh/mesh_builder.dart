@@ -84,7 +84,19 @@ class MeshBuilder {
   }
 
   /// Un triángulo de color sólido. Antihorario visto desde fuera.
-  void triangle(Vector3 a, Vector3 b, Vector3 c, Vector4 color) {
+  void triangle(Vector3 a, Vector3 b, Vector3 c, Vector4 color) =>
+      shadedTriangle(a, b, c, color, color, color);
+
+  /// Un triángulo con un color por vértice (la GPU los mezcla por dentro):
+  /// sirve para degradados, como un haz de luz que se desvanece arriba.
+  void shadedTriangle(
+    Vector3 a,
+    Vector3 b,
+    Vector3 c,
+    Vector4 colorA,
+    Vector4 colorB,
+    Vector4 colorC,
+  ) {
     final pa = _current.transformed3(a);
     final pb = _current.transformed3(b);
     final pc = _current.transformed3(c);
@@ -92,7 +104,7 @@ class MeshBuilder {
     if (normal.length2 == 0) return; // triángulo degenerado: se ignora
     normal.normalize();
     final base = _positions.length ~/ 3;
-    for (final p in [pa, pb, pc]) {
+    for (final (p, color) in [(pa, colorA), (pb, colorB), (pc, colorC)]) {
       _positions.addAll([p.x, p.y, p.z]);
       _normals.addAll([normal.x, normal.y, normal.z]);
       _colors.addAll([color.x, color.y, color.z, color.w]);
@@ -162,8 +174,16 @@ class MeshBuilder {
     }
   }
 
-  /// Esfera facetada (icosaedro subdividido [detail] veces).
-  void gem(Vector3 center, Vector3 radii, Vector4 color, {int detail = 1}) {
+  /// Esfera facetada (icosaedro subdividido [detail] veces). Con
+  /// [colorAt] cada cara toma el color que toque según su dirección desde
+  /// el centro (así se pinta una Poké Ball: arriba roja, abajo blanca...).
+  void gem(
+    Vector3 center,
+    Vector3 radii,
+    Vector4 color, {
+    int detail = 1,
+    Vector4 Function(Vector3 direction)? colorAt,
+  }) {
     const t = 1.618033988749895;
     final verts = [
       Vector3(-1, t, 0),
@@ -221,7 +241,10 @@ class MeshBuilder {
     Vector3 place(Vector3 unit) =>
         center + Vector3(unit.x * radii.x, unit.y * radii.y, unit.z * radii.z);
     for (final f in faces) {
-      triangle(place(f[0]), place(f[1]), place(f[2]), color);
+      final faceColor = colorAt == null
+          ? color
+          : colorAt((f[0] + f[1] + f[2])..normalize());
+      triangle(place(f[0]), place(f[1]), place(f[2]), faceColor);
     }
   }
 

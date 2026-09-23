@@ -18,7 +18,10 @@
   - Hierba alta 3D que se mece con el viento y se aparta al pasar.
   - Pokémon salvajes VISIBLES (arte oficial de PokeAPI) que deambulan por la hierba alta; al tocarlos
     empieza el encuentro. Andar por la hierba también puede dar encuentros al azar.
-  - El encuentro usa por ahora el diálogo provisional (Atrapar / Huir). El combate llega en la Fase 8.6.
+  - El encuentro usa por ahora el diálogo provisional (Atrapar / Huir). El combate lo hace otro equipo.
+  - **Poké Balls en el campo:** puñados de Poké/Super/Ultra Balls flotando con un haz de luz (se ven de
+    lejos). Se recogen al pasar por encima; reaparecen en otro sitio a los 12 s. Bolsa arriba a la
+    izquierda (toca una bola para elegirla) con el número de capturados; avisos arriba en el centro.
 
 ## Cómo probar el 3D
 1. Menú → **Jugar 3D**. Espera a que cargue (círculo de progreso).

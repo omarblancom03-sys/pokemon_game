@@ -5,7 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
+import '../../controllers/field_controller.dart';
 import '../../controllers/game_controller.dart';
+import '../../controllers/trainer_controller.dart';
 import '../../game/input/movement_input.dart';
 import '../../game/map/map_layout.dart';
 import '../../game/map/world_map.dart';
@@ -14,6 +16,7 @@ import '../../game3d/sim/camera_input.dart';
 import '../../game3d/sim/world3d_sim.dart';
 import '../game/widgets/d_pad.dart';
 import '../game/widgets/encounter_overlay.dart';
+import 'widgets/field_hud.dart';
 
 /// VISTA: exploración en 3D (tercera persona).
 ///
@@ -33,6 +36,7 @@ class Game3DScreen extends StatefulWidget {
 
 class _Game3DScreenState extends State<Game3DScreen> {
   late final GameController _controller;
+  late final FieldController _field;
   late final World3DSim _sim;
   late final StreamSubscription<String> _consumedSub;
 
@@ -40,6 +44,7 @@ class _Game3DScreenState extends State<Game3DScreen> {
   void initState() {
     super.initState();
     _controller = context.read<GameController>();
+    _field = context.read<FieldController>();
     // Igual que en 2D: si se creara en build(), cada repintado reiniciaría.
     _sim = World3DSim(
       layout: MapLayout.parse(worldMapRows),
@@ -48,6 +53,7 @@ class _Game3DScreenState extends State<Game3DScreen> {
       onWildContact: (wild) =>
           unawaited(_controller.onWildEncounter(wild.id, wild.pokemon)),
       onGrassEncounter: () => unawaited(_controller.onGrassEncounter()),
+      onEvent: _field.onWorldEvent,
     );
     _controller.addListener(_syncPause);
     _consumedSub = _controller.smokeConsumed.listen(_sim.removeWild);
@@ -80,6 +86,7 @@ class _Game3DScreenState extends State<Game3DScreen> {
   Widget build(BuildContext context) {
     final renderer = context.read<SceneRenderer>();
     final controller = context.watch<GameController>();
+    final trainer = context.read<TrainerController>();
     return Scaffold(
       appBar: AppBar(title: const Text('Jugar 3D')),
       body: Focus(
@@ -111,6 +118,25 @@ class _Game3DScreenState extends State<Game3DScreen> {
               ),
             ),
             const Positioned(right: 16, top: 16, child: _Hint()),
+            Positioned(
+              left: 16,
+              top: 16,
+              child: ListenableBuilder(
+                listenable: trainer,
+                builder: (_, _) => BagBar(trainer: trainer),
+              ),
+            ),
+            Positioned(
+              left: 0,
+              right: 0,
+              top: 16,
+              child: IgnorePointer(
+                child: ListenableBuilder(
+                  listenable: _field,
+                  builder: (_, _) => NoticeStack(field: _field),
+                ),
+              ),
+            ),
             Positioned.fill(
               child: EncounterOverlay(
                 controller: controller,

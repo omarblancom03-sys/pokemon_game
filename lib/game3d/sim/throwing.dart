@@ -116,25 +116,3 @@ class ThrownBall {
     return math.sin(t / shakeTime * 2 * math.pi) * 0.5;
   }
 }
-
-/// Algo que se puede recoger del suelo: Poké Balls.
-class GroundItem {
-  GroundItem({
-    required this.id,
-    required this.ball,
-    required this.count,
-    required Vector3 position,
-    this.dropped = false,
-  }) : position = position.clone();
-
-  final String id;
-  final PokeBallType ball;
-  final int count;
-  final Vector3 position;
-
-  /// true si es una bola lanzada que falló (no cuenta para reaparecer).
-  final bool dropped;
-
-  /// Segundos desde que apareció (brillo y rebote visual).
-  double age = 0;
-}

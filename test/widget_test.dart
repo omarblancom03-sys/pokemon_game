@@ -12,6 +12,9 @@ import 'package:pokemon_game/game/poke_game.dart';
 import 'package:pokemon_game/services/poke_api_exception.dart';
 import 'package:pokemon_game/views/game3d/game3d_screen.dart';
 
+import 'package:pokemon_game/game3d/sim/world3d_events.dart';
+import 'package:pokemon_game/models/poke_ball.dart';
+
 import 'fakes/fake_pokemon_repository.dart';
 import 'fakes/fake_scene_renderer.dart';
 
@@ -58,6 +61,47 @@ void main() {
     expect(find.byType(Game3DScreen), findsOneWidget);
     expect(find.byKey(const Key('fake_scene')), findsOneWidget);
     expect(find.byKey(const Key('game3d_dpad')), findsOneWidget);
+  });
+
+  testWidgets('3D HUD: picking up balls fills the bag and shows a notice', (
+    tester,
+  ) async {
+    final renderer = FakeSceneRenderer();
+    await tester.pumpWidget(
+      PokemonGameApp(
+        dependencies: AppDependencies.create(
+          repository: repository,
+          sceneRenderer: renderer,
+        ),
+      ),
+    );
+    await tester.tap(find.byKey(const Key('menu_play_3d')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('bag_poke')),
+        matching: find.text('×5'),
+      ),
+      findsOneWidget,
+    );
+    renderer.lastSim!.onEvent!(const BallsPickedUp(PokeBallType.ultra, 1));
+    await tester.pump();
+
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('bag_ultra')),
+        matching: find.text('×1'),
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('+1 Ultra Ball'), findsOneWidget);
+
+    // El aviso se va solo.
+    await tester.pump(const Duration(seconds: 3));
+    await tester.pump();
+    expect(find.text('+1 Ultra Ball'), findsNothing);
   });
 
   testWidgets('Pokédex shows a gallery of cards', (tester) async {

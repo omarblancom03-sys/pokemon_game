@@ -7,11 +7,16 @@ import '../../game/input/movement_input.dart';
 import '../../game/map/map_layout.dart';
 import '../../models/pokemon.dart';
 import 'camera_input.dart';
+import 'field_items.dart';
 import 'grass_field.dart';
 import 'orbit_camera.dart';
 import 'player_body.dart';
 import 'wild_pokemon.dart';
 import 'world3d_config.dart';
+import 'world3d_events.dart';
+
+export 'field_items.dart' show GroundItem;
+export 'world3d_events.dart';
 
 /// Pide un Pokémon para hacer aparecer en la hierba (null = ahora no).
 typedef WildSpawnSource = Future<Pokemon?> Function();
@@ -35,6 +40,8 @@ class World3DSim {
     this.spawnWild,
     this.onWildContact,
     this.onGrassEncounter,
+    this.onEvent,
+    int maxFieldItems = 6,
   }) : input = input ?? MovementInput(),
        cameraInput = cameraInput ?? CameraInput(),
        camera = camera ?? OrbitCamera(),
@@ -51,6 +58,12 @@ class World3DSim {
         if (layout.tileAt(cell.col, cell.row) == TileKind.tallGrass) cell,
     ];
     _lastDistance = player.distanceWalked;
+    fieldItems = FieldItems(
+      layout: layout,
+      tileSize: config.tileSize,
+      random: _random,
+      maxItems: maxFieldItems,
+    )..fill(player.position);
   }
 
   final MapLayout layout;
@@ -63,9 +76,15 @@ class World3DSim {
   late final PlayerBody player;
   late final GrassField grass;
 
+  /// Poké Balls en el suelo para recoger.
+  late final FieldItems fieldItems;
+
   final WildSpawnSource? spawnWild;
   final void Function(WildPokemon wild)? onWildContact;
   final void Function()? onGrassEncounter;
+
+  /// Recogidas, capturas, bolas falladas... (ver [World3DEvent]).
+  final void Function(World3DEvent event)? onEvent;
 
   final math.Random _random;
   late final List<({int col, int row})> _tallGrassCells;
@@ -140,6 +159,8 @@ class World3DSim {
     }
   }
 
+  void _emit(World3DEvent event) => onEvent?.call(event);
+
   /// Quita un Pokémon salvaje (tras su encuentro).
   void removeWild(String id) => wild.removeWhere((w) => w.id == id);
 
@@ -161,6 +182,7 @@ class World3DSim {
     _lastDistance = player.distanceWalked;
     if (_paused) return;
 
+    fieldItems.update(dt, player.position, _emit);
     for (final w in wild) {
       _wander(w, dt);
     }

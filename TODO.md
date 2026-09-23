@@ -43,7 +43,8 @@ El combate lo hace OTRO equipo (se engancha por el contrato EncounterHandler). N
 - [x] CaptureCalculator (probabilidad + sacudidas, bonus por sigilo/espalda) con tests
 
 ## 8.7 Captura: en el mundo
-- [ ] Poké Balls en el suelo para recoger (brillo), reaparecen; las falladas se pueden recoger
+- [x] Poké Balls en el suelo para recoger (brillo), reaparecen; las falladas se pueden recoger
+      (FieldItems + ItemRenderer + FieldController con bolsa y avisos)
 - [ ] Lanzar: apuntar (cámara al hombro, mira), fijar objetivo, física parabólica, choques
 - [ ] Secuencia: absorber, caer, sacudidas, ¡capturado! (estrellas) o se escapa
 - [ ] HUD: bolsa y bola elegida, mira, avisos, capturados

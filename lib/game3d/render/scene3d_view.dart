@@ -10,6 +10,7 @@ import '../mesh/terrain_mesh.dart';
 import '../sim/trainer_pose.dart';
 import '../sim/world3d_sim.dart';
 import 'grass_renderer.dart';
+import 'item_renderer.dart';
 import 'trainer_rig.dart';
 import 'wild_renderer.dart';
 
@@ -36,6 +37,7 @@ class _Scene3DViewState extends State<Scene3DView> {
   late TrainerRig _trainer;
   late GrassRenderer _grass;
   late WildRenderer _wild;
+  late ItemRenderer _items;
   Object? _error;
 
   World3DSim get _sim => widget.sim;
@@ -115,6 +117,10 @@ class _Scene3DViewState extends State<Scene3DView> {
     scene.add(wildRoot);
     _wild = WildRenderer(root: wildRoot, loadImage: widget.loadImage);
 
+    final itemsRoot = Node(name: 'items');
+    scene.add(itemsRoot);
+    _items = ItemRenderer(root: itemsRoot, toMesh: _mesh);
+
     _trainer = TrainerRig(_mesh);
     scene.add(_trainer.root);
     _syncPlayer();
@@ -161,6 +167,7 @@ class _Scene3DViewState extends State<Scene3DView> {
     _syncPlayer();
     _grass.update(_sim.time, _sim.grassPushers);
     _wild.update(_sim.wild, _sim.camera.yaw, _sim.time);
+    _items.update(_sim.fieldItems.items, _sim.time);
   }
 
   Camera _camera(Duration _) {
