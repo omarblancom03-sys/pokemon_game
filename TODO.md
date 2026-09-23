@@ -26,7 +26,7 @@
 - [x] Luz direccional + cielo
 
 ## 8.4 Entrenador
-- [ ] Modelo low-poly + ciclo de caminar + orientación suave + sombra
+- [x] Modelo low-poly + ciclo de caminar + orientación suave + sombra
 
 ## 8.5 Hierba alta + Pokémon salvajes
 - [ ] Hierba alta animada

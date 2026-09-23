@@ -7,7 +7,9 @@ import 'package:vector_math/vector_math.dart' as vm;
 import '../mesh/mesh_builder.dart';
 import '../mesh/props.dart';
 import '../mesh/terrain_mesh.dart';
+import '../sim/trainer_pose.dart';
 import '../sim/world3d_sim.dart';
+import 'trainer_rig.dart';
 
 /// VISTA 3D: dibuja la [World3DSim] con flutter_scene.
 ///
@@ -26,7 +28,7 @@ class Scene3DView extends StatefulWidget {
 
 class _Scene3DViewState extends State<Scene3DView> {
   Scene? _scene;
-  late Node _player;
+  late TrainerRig _trainer;
   Object? _error;
 
   World3DSim get _sim => widget.sim;
@@ -99,16 +101,8 @@ class _Scene3DViewState extends State<Scene3DView> {
       );
     scene.add(Node(mesh: _mesh(outer.build())));
 
-    _player = Node(
-      mesh: Mesh(
-        CapsuleGeometry(radius: 0.35, height: 1),
-        PhysicallyBasedMaterial()
-          ..baseColorFactor = srgb(0xE53935)
-          ..metallicFactor = 0
-          ..roughnessFactor = 0.7,
-      ),
-    );
-    scene.add(_player);
+    _trainer = TrainerRig(_mesh);
+    scene.add(_trainer.root);
     _syncPlayer();
     return scene;
   }
@@ -135,11 +129,16 @@ class _Scene3DViewState extends State<Scene3DView> {
 
   void _syncPlayer() {
     final p = _sim.player;
-    // La cápsula mide 1.7 m y su centro está a media altura.
-    _player
-      ..position = _toEngine(p.position + vm.Vector3(0, 0.85, 0))
-      // Con Z invertida, el giro también cambia de signo.
-      ..rotation = vm.Quaternion.axisAngle(vm.Vector3(0, 1, 0), -p.facing);
+    _trainer.apply(
+      feet: p.position,
+      facing: p.facing,
+      pose: TrainerPose.fromMotion(
+        distanceWalked: p.distanceWalked,
+        speed: p.speed,
+        walkSpeed: _sim.config.walkSpeed,
+        runSpeed: _sim.config.runSpeed,
+      ),
+    );
   }
 
   void _tick(Duration _, double dt) {
