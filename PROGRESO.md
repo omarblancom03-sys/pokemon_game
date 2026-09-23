@@ -16,8 +16,12 @@
   - Cámara en tercera persona: arrastrar con el ratón para girar, rueda para zoom, Q/E para girar con
     teclado. WASD/flechas mueven relativo a la cámara; Mayús corre. D-pad en pantalla.
   - Hierba alta 3D que se mece con el viento y se aparta al pasar.
-  - Pokémon salvajes VISIBLES (arte oficial de PokeAPI) que deambulan por la hierba alta; al tocarlos
-    empieza el encuentro. Andar por la hierba también puede dar encuentros al azar.
+  - Pokémon salvajes VISIBLES (arte oficial de PokeAPI) que deambulan por la hierba alta.
+  - **Sigilo:** los Pokémon ven en un cono delante de ellos y oyen tus pasos (correr se oye de lejos).
+    Si sospechan sale "?" y se giran; si te descubren, "!" y reaccionan según su carácter: los
+    asustadizos huyen, los curiosos se acercan a mirarte y los agresivos (¡rojo!) cargan: si te
+    alcanzan empieza el encuentro (combate, de otro equipo). Agáchate con C para ir despacio y en
+    silencio; dentro de la hierba alta casi no te ven ("Escondido en la hierba").
   - El encuentro usa por ahora el diálogo provisional (Atrapar / Huir). El combate lo hace otro equipo.
   - **Poké Balls en el campo:** puñados de Poké/Super/Ultra Balls flotando con un haz de luz (se ven de
     lejos). Se recogen al pasar por encima; reaparecen en otro sitio a los 12 s. Bolsa arriba a la
@@ -34,6 +38,7 @@
 1. Jugar 3D → ve hacia el prado de hierba alta (arriba a la derecha al empezar).
 2. Mantén clic derecho: mira, arco y anillo con el %. Suelta clic izquierdo para lanzar.
 3. Recoge bolas brillantes del suelo (y las que falles). Cambia de bola con R o 1-2-3.
+4. Agáchate (C) en la hierba alta y acércate por la espalda: sin "?" ni "!" la captura es más fácil.
 
 ## Cómo probar el 3D
 1. Menú → **Jugar 3D**. Espera a que cargue (círculo de progreso).

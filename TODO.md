@@ -52,8 +52,10 @@ El combate lo hace OTRO equipo (se engancha por el contrato EncounterHandler). N
 - [x] Ratio de captura real al aparecer (FieldController.pickWildSpawn)
 
 ## 8.8 Comportamiento y sigilo
-- [ ] Agacharse (sigilo), ruido al correr, la hierba alta oculta
-- [ ] Pokémon con carácter: se alertan (?/!), huyen, curiosean o atacan (→ EncounterHandler)
+- [x] Agacharse (sigilo), ruido al correr, la hierba alta oculta (C/Ctrl o botón; indicador abajo)
+- [x] Pokémon con carácter: se alertan (?/!), huyen, curiosean o atacan (→ EncounterHandler)
+      (wild_behavior.dart: vista en cono + oído; una bola que cae cerca los asusta)
+- [x] Encuentros al azar en la hierba apagados por defecto en 3D (flag grassEncounters)
 
 ## 8.9 Andar por el campo
 - [ ] La cámara no atraviesa árboles ni casas

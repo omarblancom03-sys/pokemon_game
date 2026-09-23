@@ -19,7 +19,7 @@ import '../../game3d/sim/world3d_sim.dart';
 import '../../models/poke_ball.dart';
 import '../game/widgets/d_pad.dart';
 import '../game/widgets/encounter_overlay.dart';
-import 'widgets/aim_overlay.dart';
+import 'widgets/world_overlay.dart';
 import 'widgets/field_hud.dart';
 
 /// VISTA: exploración en 3D (tercera persona) y captura con Poké Balls.
@@ -88,6 +88,9 @@ class _Game3DScreenState extends State<Game3DScreen> {
 
   void _syncAim() => _sim.aiming = _aimMouse || _aimKey || _aimButton;
 
+  /// Agacharse / levantarse (sigilo).
+  void _toggleCrouch() => setState(() => _sim.crouching = !_sim.crouching);
+
   /// Lanzar: saca una bola de la bolsa (si hay) y la simulación la lanza.
   void _throw() {
     if (!_sim.canThrow) return;
@@ -117,6 +120,12 @@ class _Game3DScreenState extends State<Game3DScreen> {
     }
     if (key == LogicalKeyboardKey.space) {
       if (down) _throw();
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.keyC ||
+        key == LogicalKeyboardKey.controlLeft ||
+        key == LogicalKeyboardKey.controlRight) {
+      if (down) _toggleCrouch();
       return KeyEventResult.handled;
     }
     if (key == LogicalKeyboardKey.keyR) {
@@ -207,7 +216,7 @@ class _Game3DScreenState extends State<Game3DScreen> {
               },
               child: renderer.buildView(_sim),
             ),
-            Positioned.fill(child: AimOverlay(sim: _sim)),
+            Positioned.fill(child: WorldOverlay(sim: _sim)),
             Positioned(
               left: 16,
               bottom: 16,
@@ -224,6 +233,8 @@ class _Game3DScreenState extends State<Game3DScreen> {
                 builder: (_, _) => _ThrowButtons(
                   ball: _trainer.selected,
                   aiming: _aimButton,
+                  crouching: _sim.crouching,
+                  onCrouch: _toggleCrouch,
                   onAim: () {
                     setState(() => _aimButton = !_aimButton);
                     _syncAim();
@@ -265,17 +276,22 @@ class _Game3DScreenState extends State<Game3DScreen> {
   }
 }
 
-/// Botones táctiles: apuntar (se queda activo) y lanzar la bola elegida.
+/// Botones táctiles: agacharse y apuntar (se quedan activos) y lanzar la
+/// bola elegida.
 class _ThrowButtons extends StatelessWidget {
   const _ThrowButtons({
     required this.ball,
     required this.aiming,
+    required this.crouching,
+    required this.onCrouch,
     required this.onAim,
     required this.onThrow,
   });
 
   final PokeBallType ball;
   final bool aiming;
+  final bool crouching;
+  final VoidCallback onCrouch;
   final VoidCallback onAim;
   final VoidCallback onThrow;
 
@@ -284,6 +300,16 @@ class _ThrowButtons extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
+        FloatingActionButton.small(
+          key: const Key('game3d_crouch'),
+          heroTag: null,
+          tooltip: 'Agacharse (C / Ctrl)',
+          backgroundColor: crouching ? Colors.greenAccent : Colors.black54,
+          foregroundColor: crouching ? Colors.black : Colors.white,
+          onPressed: onCrouch,
+          child: const Icon(Icons.accessibility_new),
+        ),
+        const SizedBox(width: 8),
         FloatingActionButton.small(
           key: const Key('game3d_aim'),
           heroTag: null,
@@ -322,7 +348,8 @@ class _Hint extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         child: Text(
           'WASD mover · Mayús correr · Arrastrar / Q-E cámara · Rueda zoom\n'
-          'Clic der. / F apuntar · Clic / Espacio lanzar · R / 1-3 cambiar bola',
+          'Clic der. / F apuntar · Clic / Espacio lanzar · R / 1-3 cambiar bola\n'
+          'C agacharse: en la hierba alta no te ven · Correr hace ruido',
           style: TextStyle(color: Colors.white),
         ),
       ),

@@ -63,12 +63,18 @@ void main() {
     return s;
   }
 
-  WildPokemon addWild(World3DSim s, Vector3 at, {int captureRate = 45}) {
+  WildPokemon addWild(
+    World3DSim s,
+    Vector3 at, {
+    int captureRate = 45,
+    Temperament temperament = Temperament.curious,
+  }) {
     final w = WildPokemon(
       id: 'w${s.wild.length}',
       pokemon: fakePokemon(25),
       position: at,
       captureRate: captureRate,
+      temperament: temperament,
       facing: pi / 2, // mira hacia +X (de espaldas al jugador)
     )..idleTime = 1e9; // que no se mueva
     s.wild.add(w);
@@ -288,10 +294,11 @@ void main() {
         closeTo(0.4, 1e-9),
       );
 
-      // De frente y ya alerta: sin bonus.
+      // De frente y ya alerta: sin bonus. (Curioso y a 3 m: se queda
+      // quieto mirándote.)
       events.clear();
       final front =
-          addWild(s, s.player.position + Vector3(8, 0, 0), captureRate: 51)
+          addWild(s, s.player.position + Vector3(3, 0, 0), captureRate: 51)
             ..facing = -pi / 2
             ..alertTime = 30;
       step(s, 0.1);

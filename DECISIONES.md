@@ -85,3 +85,16 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
 - **2026-09-23 — Verificación visual con un parche TEMP-PREVIEW** (jugador junto al prado con un
   Pokémon delante, ratio por `?rate=`) y puppeteer con GPU (`scratchpad/drive2.mjs` entra por el menú;
   `sheet.mjs` junta capturas en una hoja). Parche retirado tras comprobarlo.
+- **2026-09-23 — Sigilo (números):** vista en cono de ±60° y 13 m; oído según ruido: correr 14 m,
+  andar 6 m, agachado 1,8 m, agachado en hierba alta 1,2 m, quieto 0. Agachado en la hierba alta
+  solo te ven a < 2,6 m. Pegado a ellos (< 1,4 m) siempre te notan. La sospecha sube más rápido
+  cuanto más cerca; con "?" se paran y se giran hacia ti; con "!" reaccionan 5 s tras perderte.
+  Tras calmarse se quedan con sospecha 0,6 (no vuelven a asustarse al instante ni se olvidan).
+- **2026-09-23 — Reacciones:** asustadizos huyen a 4,4 m/s (rodeando obstáculos) y a > 24 m se
+  pierden (desaparecen: deja sitio a otro); curiosos se acercan a 3,2 m y se quedan mirándote (más
+  fáciles de alcanzar, pero te ven: sin bonus de sigilo); agresivos cargan y, si te alcanzan, empieza
+  el encuentro (EncounterHandler, el combate del otro equipo). Tocar a uno tranquilo solo lo asusta.
+- **2026-09-23 — Correr te levanta** (no se puede correr agachado). Agacharse: C, Ctrl o botón táctil
+  (conmutador, como en Leyendas Arceus).
+- **2026-09-23 — Los encuentros al azar en la hierba quedan tras el flag `grassEncounters`** (false por
+  defecto en 3D, como ya decía la decisión de 2026-09-22 pero no estaba implementado).

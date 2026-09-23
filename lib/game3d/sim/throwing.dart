@@ -183,6 +183,7 @@ class BallSystem {
 
   final List<ThrownBall> _balls = [];
   int _count = 0;
+  void Function(Vector3 at)? _impact;
 
   List<ThrownBall> get balls => List.unmodifiable(_balls);
 
@@ -216,14 +217,17 @@ class BallSystem {
 
   /// Avanza [dt] segundos. [wild] son los Pokémon a los que se puede
   /// golpear; [drop] deja en el suelo una bola fallada; [remove] saca del
-  /// mundo al Pokémon capturado.
+  /// mundo al Pokémon capturado; [impact] avisa del primer golpe de una
+  /// bola fallada contra el suelo u otra cosa (el ruido asusta).
   void update(
     double dt, {
     required List<WildPokemon> wild,
     required void Function(PokeBallType ball, Vector3 at) drop,
     required void Function(WildPokemon wild) remove,
     required void Function(World3DEvent event) emit,
+    void Function(Vector3 at)? impact,
   }) {
+    _impact = impact;
     for (final ball in _balls.toList()) {
       ball
         ..age += dt
@@ -339,7 +343,9 @@ class BallSystem {
 
   /// Tras el primer choque sin golpear a nadie, ya es un fallo.
   void _toMissed(ThrownBall ball) {
-    if (ball.phase == BallPhase.flying) ball.setPhase(BallPhase.missed);
+    if (ball.phase != BallPhase.flying) return;
+    ball.setPhase(BallPhase.missed);
+    _impact?.call(ball.position);
   }
 
   /// El primer Pokémon libre cuyo "cilindro" contiene el punto [p].

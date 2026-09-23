@@ -166,18 +166,41 @@ void main() {
       expect(w.age, closeTo(20, 1e-6));
     });
 
-    test('touching one fires a single contact; removeWild drops it', () {
+    test('an aggressive one that reaches you fires ONE contact', () {
       final contacts = <WildPokemon>[];
       final s = World3DSim(layout: layout, onWildContact: contacts.add);
-      final w = s.spawn(fakePokemon(9))!..idleTime = 1e9; // que no se mueva
+      final w = s.spawn(fakePokemon(9))!;
+      s.wild[0] = WildPokemon(
+        id: w.id,
+        pokemon: w.pokemon,
+        position: w.position,
+        temperament: Temperament.aggressive,
+      )..alertTime = 10;
       s.player.teleport(w.position + Vector3(0.3, 0, 0));
 
       step(s, 0.5);
-      expect(contacts, [w]);
-      expect(w.engaged, isTrue);
+      expect(contacts.map((c) => c.id), [w.id]);
+      expect(s.wild.single.engaged, isTrue);
 
       s.removeWild(w.id);
       expect(s.wild, isEmpty);
+    });
+
+    test('touching a calm one only startles it (no encounter)', () {
+      final contacts = <WildPokemon>[];
+      final s = World3DSim(layout: layout, onWildContact: contacts.add);
+      final w = s.spawn(fakePokemon(9))!;
+      s.wild[0] = WildPokemon(
+        id: w.id,
+        pokemon: w.pokemon,
+        position: w.position,
+        temperament: Temperament.curious,
+      )..idleTime = 1e9;
+      s.player.teleport(w.position + Vector3(0.3, 0, 0));
+
+      step(s, 0.5);
+      expect(contacts, isEmpty);
+      expect(s.wild.single.isAlert, isTrue);
     });
 
     test('display size grows with the real height, within limits', () {
@@ -205,6 +228,7 @@ void main() {
         layout: layout,
         random: _FixedRandom(roll),
         onGrassEncounter: onGrass,
+        grassEncounters: true,
       );
       s.player.teleport(s.cellCenter(10, 2));
       return s;
@@ -216,6 +240,19 @@ void main() {
       s.input.setKeyboardDirection(Vector2(1, 0));
       step(s, 1.5);
       expect(count, greaterThanOrEqualTo(1));
+    });
+
+    test('off by default in 3D', () {
+      var count = 0;
+      final s = World3DSim(
+        layout: layout,
+        random: _FixedRandom(0),
+        onGrassEncounter: () => count++,
+      );
+      s.player.teleport(s.cellCenter(10, 2));
+      s.input.setKeyboardDirection(Vector2(1, 0));
+      step(s, 1.5);
+      expect(count, 0);
     });
 
     test('a lucky roll never does', () {

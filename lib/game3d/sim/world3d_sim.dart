@@ -15,12 +15,14 @@ import 'grass_field.dart';
 import 'orbit_camera.dart';
 import 'player_body.dart';
 import 'throwing.dart';
+import 'wild_behavior.dart';
 import 'wild_pokemon.dart';
 import 'world3d_config.dart';
 import 'world3d_events.dart';
 
 export 'field_items.dart' show GroundItem;
 export 'throwing.dart' show BallPhase, ThrownBall;
+export 'wild_behavior.dart' show PlayerStealth;
 export 'world3d_events.dart';
 
 /// Un Pokémon para hacer aparecer, con su ratio de captura real.
@@ -34,9 +36,10 @@ typedef WildSpawnSource = Future<WildSpawn?> Function();
 ///
 /// No dibuja nada ni conoce el motor: el renderer llama a [update] en cada
 /// fotograma y luego lee el estado para colocar la escena. Avisa hacia
-/// fuera con [onWildContact] (tocó un Pokémon visible) y [onGrassEncounter]
-/// (encuentro al azar andando por la hierba). Por eso toda la jugabilidad
-/// se puede probar con tests normales.
+/// fuera con [onWildContact] (un Pokémon agresivo te alcanzó: combate),
+/// [onGrassEncounter] (encuentro al azar en la hierba, desactivado por
+/// defecto) y [onEvent] (recogidas, capturas...). Por eso toda la
+/// jugabilidad se puede probar con tests normales.
 class World3DSim {
   World3DSim({
     required this.layout,
@@ -51,6 +54,7 @@ class World3DSim {
     this.onEvent,
     int maxFieldItems = 6,
     CaptureCalculator? calculator,
+    this.grassEncounters = false,
   }) : input = input ?? MovementInput(),
        cameraInput = cameraInput ?? CameraInput(),
        camera = camera ?? OrbitCamera(),
@@ -72,6 +76,15 @@ class World3DSim {
         if (layout.tileAt(cell.col, cell.row) == TileKind.tallGrass) cell,
     ];
     _lastDistance = player.distanceWalked;
+    behavior = WildBehavior(
+      random: _random,
+      isWalkable: (p) {
+        final c = cellAt(p);
+        return layout.isWalkable(c.col, c.row);
+      },
+      isTallGrass: isTallGrass,
+      nearbyGrass: _nearbyGrass,
+    );
     fieldItems = FieldItems(
       layout: layout,
       tileSize: config.tileSize,
@@ -95,6 +108,20 @@ class World3DSim {
 
   /// Poké Balls lanzadas (vuelo, choques y secuencia de captura).
   late final BallSystem ballSystem;
+
+  /// Vista, oído y reacciones de los Pokémon salvajes.
+  late final WildBehavior behavior;
+
+  /// Encuentros al azar andando por la hierba alta (como en los juegos
+  /// clásicos). En 3D van apagados: los Pokémon ya se ven y se capturan
+  /// en el mundo (ver DECISIONES.md).
+  final bool grassEncounters;
+
+  /// El jugador quiere ir agachado (sigilo). Correr lo levanta.
+  bool crouching = false;
+
+  /// 0 de pie … 1 agachado, suavizado (para la postura).
+  double crouchAmount = 0;
 
   /// El jugador está apuntando (botón derecho / tecla): la cámara se pone
   /// al hombro, el cuerpo mira adonde apunta la cámara y no se corre.
@@ -351,12 +378,16 @@ class World3DSim {
     // el cuerpo mira al objetivo aunque camine de lado.
     final dir = input.direction; // x: derecha, y: abajo (convención 2D)
     final wish = camera.right * dir.x + camera.forward * -dir.y;
+    final running = cameraInput.running && input.enabled && !aiming;
+    if (running && wish.length2 > 0.01) crouching = false;
     player.update(
       dt,
       wish,
-      running: cameraInput.running && input.enabled && !aiming,
+      running: running,
+      crouching: crouching,
       face: aiming || _throwTime != null ? _aimDirection : null,
     );
+    crouchAmount += ((crouching ? 1 : 0) - crouchAmount) * math.min(1, dt * 10);
 
     final moved = player.distanceWalked - _lastDistance;
     _lastDistance = player.distanceWalked;
@@ -372,6 +403,7 @@ class World3DSim {
       drop: _dropBall,
       remove: (w) => removeWild(w.id),
       emit: _emit,
+      impact: _startleAround,
     );
     _maybeSpawn(dt);
 
@@ -380,7 +412,7 @@ class World3DSim {
       return;
     }
     if (_checkContacts()) return;
-    _checkGrassSteps(moved);
+    if (grassEncounters) _checkGrassSteps(moved);
   }
 
   void _updateCamera(double dt) {
@@ -450,10 +482,30 @@ class World3DSim {
     return w;
   }
 
-  /// Relojes del Pokémon y su movimiento (si no está dentro de una bola).
+  /// ¿Cuánto se deja notar el jugador? (agachado, corriendo, en la hierba)
+  PlayerStealth get stealth {
+    if (crouching) {
+      return isTallGrass(player.position)
+          ? PlayerStealth.hidden
+          : PlayerStealth.crouching;
+    }
+    if (player.speed > config.walkSpeed * 1.15) return PlayerStealth.noisy;
+    return PlayerStealth.normal;
+  }
+
+  /// Relojes del Pokémon, lo que percibe y cómo reacciona (si no está
+  /// dentro de una bola).
   void _updateWild(WildPokemon w, double dt) {
     w.age += dt;
-    if (w.alertTime > 0) w.alertTime = math.max(0, w.alertTime - dt);
+    if (w.alertTime > 0) {
+      w.alertTime -= dt;
+      if (w.alertTime <= 0) {
+        // Se calma, pero sigue algo mosqueado un rato.
+        w
+          ..alertTime = 0
+          ..awareness = 0.6;
+      }
+    }
     final released = w.releasedFor;
     if (released != null) {
       w.releasedFor = released + dt > 0.6 ? null : released + dt;
@@ -462,47 +514,37 @@ class World3DSim {
       w.velocity = Vector3.zero();
       return;
     }
+    behavior.perceive(
+      w,
+      player: player.position,
+      stealth: stealth,
+      moving: player.isMoving,
+      dt: dt,
+    );
     final before = w.position;
-    _wander(w, dt);
+    final fled = behavior.act(w, player.position, dt);
     w.velocity = dt > 0 ? (w.position - before) / dt : Vector3.zero();
+    if (fled) removeWild(w.id);
   }
 
-  /// Paseo aleatorio sin salir de la hierba alta.
-  void _wander(WildPokemon w, double dt) {
-    final target = w.target;
-    if (target == null) {
-      w.idleTime -= dt;
-      if (w.idleTime <= 0) w.target = _pickWanderTarget(w);
-      return;
+  /// Una bola que cae cerca asusta a los Pokémon de alrededor.
+  void _startleAround(Vector3 at) {
+    for (final w in wild) {
+      if (w.isFree && w.position.distanceTo(Vector3(at.x, 0, at.z)) < 4) {
+        behavior.startle(w);
+      }
     }
-    final toTarget = target - w.position
-      ..y = 0;
-    final dist = toTarget.length;
-    if (dist < 0.1) {
-      w
-        ..target = null
-        ..idleTime = 1 + _random.nextDouble() * 2.5;
-      return;
-    }
-    final step = math.min(dist, WildPokemon.wanderSpeed * dt);
-    final next = w.position + toTarget.normalized() * step;
-    if (!isTallGrass(next)) {
-      w
-        ..target = null
-        ..idleTime = 0.5;
-      return;
-    }
-    w
-      ..position = next
-      ..distanceMoved += step
-      ..facing = math.atan2(toTarget.x, toTarget.z);
   }
 
-  Vector3? _pickWanderTarget(WildPokemon w) {
-    final here = cellAt(w.position);
+  /// Un punto de hierba alta al azar a menos de [radius] casillas de [p]
+  /// (null si no hay ninguna).
+  Vector3? _nearbyGrass(Vector3 p, int radius) {
+    final here = cellAt(p);
     final near = _tallGrassCells
         .where(
-          (c) => (c.col - here.col).abs() <= 3 && (c.row - here.row).abs() <= 3,
+          (c) =>
+              (c.col - here.col).abs() <= radius &&
+              (c.row - here.row).abs() <= radius,
         )
         .toList();
     if (near.isEmpty) return null;
@@ -518,16 +560,20 @@ class World3DSim {
 
   // --- Encuentros --------------------------------------------------------
 
-  /// ¿Toca el jugador algún Pokémon? Dispara como mucho uno.
+  /// ¿Toca el jugador algún Pokémon? Solo un AGRESIVO alerta que te
+  /// alcanza empieza un encuentro (el combate, de otro equipo); a los
+  /// demás, tocarlos solo los asusta. Dispara como mucho uno.
   bool _checkContacts() {
     final p = player.position;
     for (final w in wild) {
       if (w.engaged || !w.isFree) continue;
-      if (w.position.distanceTo(p) < w.contactRadius) {
+      if (w.position.distanceTo(p) >= w.contactRadius) continue;
+      if (w.temperament == Temperament.aggressive && w.isAlert) {
         w.engaged = true;
         onWildContact?.call(w);
         return true;
       }
+      if (!w.isAlert) behavior.startle(w);
     }
     return false;
   }

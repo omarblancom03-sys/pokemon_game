@@ -148,6 +148,11 @@ void main() {
     await tester.tap(find.byKey(const Key('game3d_aim')));
     await tester.pump();
     expect(sim.aiming, isTrue);
+
+    // Botón de agacharse (sigilo).
+    await tester.tap(find.byKey(const Key('game3d_crouch')));
+    await tester.pump();
+    expect(sim.crouching, isTrue);
     await tester.pump(const Duration(seconds: 3));
   });
 
