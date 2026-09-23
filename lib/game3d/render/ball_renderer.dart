@@ -11,7 +11,8 @@ import '../sim/throwing.dart';
 
 /// Dibuja las Poké Balls LANZADAS y sus efectos, a partir del estado de la
 /// simulación (fase y tiempo de cada bola):
-///  - en vuelo y rodando: gira sobre sí misma;
+///  - en vuelo y rodando: gira sobre sí misma, con una estela brillante del
+///    color de la bola;
 ///  - al absorber: la tapa se abre y se cierra con un destello rojo;
 ///  - en el suelo: se sacude mirando a la cámara, con el botón encendido
 ///    en rojo en cada sacudida;
@@ -66,6 +67,36 @@ class BallRenderer {
         ..frustumCulled = false
         ..addComponent(InstancedMeshComponent(_dots)),
     );
+    // Estela de las bolas en vuelo: bolitas brillantes, todas en UNA malla
+    // instanciada; el color y la opacidad van en cada instancia.
+    final spark =
+        (MeshBuilder()..gem(
+              vm.Vector3.zero(),
+              vm.Vector3.all(1),
+              vm.Vector4(1, 1, 1, 1),
+            ))
+            .build()
+            .toEngineSpace();
+    _trail = InstancedMesh(
+      geometry: MeshGeometry.fromArrays(
+        positions: spark.positions,
+        normals: spark.normals,
+        colors: spark.colors,
+        indices: spark.indices,
+      ),
+      material: UnlitMaterial()..alphaMode = AlphaMode.blend,
+      sortTransparentInstances: false,
+    );
+    for (var i = 0; i < _maxTrail; i++) {
+      _trail.addInstance(_hidden, color: vm.Vector4.zero());
+    }
+    root.add(
+      Node(name: 'ballTrails')
+        ..castsShadows = false
+        ..frustumCulled = false
+        ..addComponent(InstancedMeshComponent(_trail)),
+    );
+
     _marker = Node(
       name: 'aimMarker',
       mesh: _unlit(buildRing(vm.Vector4(1.6, 1.6, 1.5, 0.9), inner: 0.72)),
@@ -88,11 +119,13 @@ class BallRenderer {
   late final Mesh _flash;
   late final Mesh _button;
   late final InstancedMesh _dots;
+  late final InstancedMesh _trail;
   late final Node _marker;
   late final Node _lockedMarker;
   final Map<String, _BallVisual> _visuals = {};
 
   static const _maxDots = 48;
+  static const _maxTrail = 3 * 2 * ThrownBall.trailLength;
   static final _hidden = vm.Matrix4.compose(
     vm.Vector3(0, -50, 0),
     vm.Quaternion.identity(),
@@ -148,6 +181,7 @@ class BallRenderer {
       _place(_visuals[ball.id] ??= _create(ball), ball, cameraYaw);
     }
     _updatePreview(preview, locked);
+    _updateTrails(balls);
   }
 
   _BallVisual _create(ThrownBall ball) {
@@ -295,6 +329,62 @@ class BallRenderer {
         )
         ..rotation = vm.Quaternion.axisAngle(_y, t * 5 + i)
         ..scale = vm.Vector3.all(0.11 * fade * math.min(1, t / 0.1));
+    }
+  }
+
+  /// Brillo de la estela según la bola (más de 1 para que el "bloom" la
+  /// haga relucir).
+  static vm.Vector4 _trailColor(PokeBallType type) => switch (type) {
+    PokeBallType.poke => vm.Vector4(1.5, 0.3, 0.25, 1),
+    PokeBallType.great => vm.Vector4(0.3, 0.65, 1.7, 1),
+    PokeBallType.ultra => vm.Vector4(1.6, 1.3, 0.25, 1),
+  };
+
+  /// Estelas: de la cola (pequeña y transparente) a la bola (grande).
+  void _updateTrails(List<ThrownBall> balls) {
+    final sparks = <(vm.Vector3, double, vm.Vector4)>[];
+    for (final ball in balls) {
+      final trail = ball.trail;
+      final color = _trailColor(ball.ball);
+      // Con un punto intermedio entre cada dos: parece una línea continua.
+      final points = [
+        for (var i = 0; i < trail.length; i++) ...[
+          if (i > 0) (trail[i - 1] + trail[i]) * 0.5,
+          trail[i],
+        ],
+        if (trail.isNotEmpty && ball.phase == BallPhase.flying)
+          (trail.last + ball.position) * 0.5,
+      ];
+      for (var i = 0; i < points.length; i++) {
+        final f = (i + 1) / points.length; // 0 cola … 1 bola
+        sparks.add((
+          points[i],
+          ballRadius * (0.3 + 0.6 * f),
+          vm.Vector4(color.x, color.y, color.z, 0.1 + 0.6 * f),
+        ));
+      }
+    }
+    _trail.updateInstanceTransforms((transforms) {
+      for (var i = 0; i < transforms.length; i++) {
+        if (i < sparks.length) {
+          final (at, size, _) = sparks[i];
+          transforms[i].setFrom(
+            vm.Matrix4.compose(
+              _engine(at),
+              vm.Quaternion.identity(),
+              vm.Vector3.all(size),
+            ),
+          );
+        } else {
+          transforms[i].setFrom(_hidden);
+        }
+      }
+    }, recomputeWinding: false);
+    for (var i = 0; i < _maxTrail; i++) {
+      _trail.setInstanceColor(
+        i,
+        i < sparks.length ? sparks[i].$3 : vm.Vector4.zero(),
+      );
     }
   }
 

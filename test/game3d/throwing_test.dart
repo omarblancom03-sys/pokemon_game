@@ -446,4 +446,49 @@ void main() {
     ball.phaseTime = ThrownBall.clickTime;
     expect(ball.clickFlash, 0);
   });
+
+  test('a flying ball leaves a short trail that fades once it lands', () {
+    final system = BallSystem(
+      layout: MapLayout.parse(['T' * 20, 'T@${'.' * 17}T', 'T' * 20]),
+      tileSize: 2,
+      calculator: CaptureCalculator(random: Random(1)),
+    );
+    final ball = system.launch(
+      PokeBallType.great,
+      Vector3(3, 1.5, 3),
+      Vector3(12, 3, 0),
+    );
+    void update() => system.update(
+      1 / 60,
+      wild: const [],
+      drop: (_, _) {},
+      remove: (_) {},
+      emit: (_) {},
+    );
+
+    for (var i = 0; i < 20; i++) {
+      update();
+    }
+    expect(ball.trail.length, greaterThan(3));
+    expect(ball.trail.length, lessThanOrEqualTo(ThrownBall.trailLength));
+    // Todos los puntos quedan detrás de la bola (va hacia +X).
+    for (final p in ball.trail) {
+      expect(p.x, lessThanOrEqualTo(ball.position.x));
+    }
+    for (var i = 1; i < ball.trail.length; i++) {
+      expect(
+        ball.trail[i].distanceTo(ball.trail[i - 1]),
+        greaterThanOrEqualTo(ThrownBall.trailSpacing - 1e-6),
+      );
+    }
+
+    // Tras el primer bote ya no vuela: la estela se acorta hasta desaparecer.
+    while (ball.phase == BallPhase.flying) {
+      update();
+    }
+    for (var i = 0; i < ThrownBall.trailLength; i++) {
+      update();
+    }
+    expect(ball.trail, isEmpty);
+  });
 }

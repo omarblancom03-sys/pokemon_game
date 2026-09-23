@@ -124,6 +124,26 @@ class ThrownBall {
   /// Rebotes contra el suelo.
   int bounces = 0;
 
+  /// Estela: últimos puntos por los que pasó volando (el más reciente al
+  /// final). Al dejar de volar se va acortando hasta desaparecer.
+  final List<Vector3> trail = [];
+
+  /// Separación entre puntos de la estela (m) y cuántos como mucho.
+  static const trailSpacing = 0.3;
+  static const trailLength = 12;
+
+  /// Apunta la posición actual en la estela (si está volando) o la acorta.
+  void updateTrail() {
+    if (phase != BallPhase.flying) {
+      if (trail.isNotEmpty) trail.removeAt(0);
+      return;
+    }
+    if (trail.isEmpty || trail.last.distanceTo(position) >= trailSpacing) {
+      trail.add(position.clone());
+      if (trail.length > trailLength) trail.removeAt(0);
+    }
+  }
+
   /// Duraciones de cada fase (s).
   static const absorbTime = 0.55;
   static const shakeSettle = 0.4;
@@ -265,6 +285,7 @@ class BallSystem {
       ball
         ..age += dt
         ..phaseTime += dt;
+      ball.updateTrail();
       switch (ball.phase) {
         case BallPhase.flying || BallPhase.missed:
           _fly(ball, dt, wild);

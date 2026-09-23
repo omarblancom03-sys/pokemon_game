@@ -142,3 +142,8 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
   de 0,35 s ("¡clic!"). Además un halo rojo suave alrededor de la bola (la bola es pequeña y en
   la hierba alta casi no se veía el botón solo). Los valores (`buttonGlow`, `clickFlash`) son
   puros en ThrownBall y tienen test; el renderer solo los pinta.
+- **2026-09-23 — Estela de la bola:** la bola guarda sus últimos 12 puntos de vuelo (cada 0,3 m;
+  `ThrownBall.trail`, con test); al dejar de volar (golpe o primer bote) se acorta un punto por
+  fotograma hasta desaparecer. Se pinta con UNA malla instanciada compartida por todas las bolas
+  (bolitas sin luz semitransparentes, con un punto intermedio entre cada dos para que parezca una
+  línea), del color de la bola: roja, azul o amarilla, más gruesa y opaca cerca de la bola.
