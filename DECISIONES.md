@@ -23,3 +23,13 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
   Se añadieron `vector_math` y `hooks` como dependencias directas (los importan nuestro código y el hook).
 - **2026-09-22 — Test flaky observado:** `smoke_collision_test` falló una vez mientras se compilaba web en
   paralelo (máquina cargada); repetido aislado y en suite completa pasa. No ejecutar builds y tests a la vez.
+- **2026-09-22 — Mano izquierda.** flutter_scene usa coordenadas de mano izquierda (la primera captura
+  salió espejada). La simulación sigue en mano derecha y la conversión ocurre en UN sitio:
+  `MeshBuffers.toEngineSpace()` (Z invertida + triángulos al revés) y `_toEngine` en `Scene3DView`
+  (posiciones, cámara, luz; el giro del jugador cambia de signo).
+- **2026-09-22 — Suelo plano (y = 0).** Relieve descartado por ahora: física exacta y simple, y el
+  mapa ASCII ya da variedad. Se puede añadir relieve en los bordes del mapa más adelante.
+- **2026-09-22 — Verificación visual con puppeteer** (`scratchpad/drive.mjs`): pulsa teclas, arrastra y
+  captura. En swiftshader va a pocos FPS y el `dt` se limita a 0.1 s, así que en capturas el
+  jugador avanza lento; la dirección es correcta. La primera tecla tras navegar a veces se pierde en
+  web headless (foco); no afecta al uso real.

@@ -15,10 +15,10 @@
 - [~] Verificar `flutter build windows` (sin Visual Studio en esta máquina; ver DECISIONES)
 
 ## 8.2 Simulación (Dart puro)
-- [ ] OrbitCamera (yaw/pitch/distancia, límites)
-- [ ] PlayerMotion (WASD relativo a cámara, colisión deslizante con MapLayout)
-- [ ] Input: arrastrar ratón, rueda, Q/E, WASD, D-pad
-- [ ] Render: suelo + jugador provisional siguiendo la cámara
+- [x] OrbitCamera (yaw/pitch/distancia, límites)
+- [x] PlayerMotion (WASD relativo a cámara, colisión deslizante con MapLayout)
+- [x] Input: arrastrar ratón, rueda, Q/E, WASD, D-pad
+- [x] Render: suelo + jugador provisional siguiendo la cámara
 
 ## 8.3 Mundo low-poly
 - [ ] Terreno desde MapLayout (césped, camino, flores, hierba alta)

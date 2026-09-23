@@ -57,6 +57,7 @@ void main() {
 
     expect(find.byType(Game3DScreen), findsOneWidget);
     expect(find.byKey(const Key('fake_scene')), findsOneWidget);
+    expect(find.byKey(const Key('game3d_dpad')), findsOneWidget);
   });
 
   testWidgets('Pokédex shows a gallery of cards', (tester) async {
