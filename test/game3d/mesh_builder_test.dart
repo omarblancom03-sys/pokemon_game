@@ -109,16 +109,17 @@ void main() {
     }
   });
 
-  test('terrain has one upward quad per cell, colored by tile kind', () {
+  test('terrain: upward squares (2x2 per cell), colored by tile kind', () {
     final layout = MapLayout.parse(const ['.=', '"@']);
     final m = buildTerrain(layout, 2);
+    const perCell = terrainSubdivisions * terrainSubdivisions * 2;
 
-    expect(m.triangleCount, 2 * 4);
+    expect(m.triangleCount, perCell * 4);
     for (var t = 0; t < m.triangleCount; t++) {
       expect(_faceNormal(m, t).y, closeTo(1, 1e-6));
     }
-    // Primer vértice de la casilla (1,0) = camino.
-    final pathColor = groundColor(TileKind.path, 1, 0);
-    expect(m.colors[6 * 4], closeTo(pathColor.x, 1e-6));
+    // Primer vértice de la casilla (1,0) = camino, en su esquina (2, 0).
+    final pathColor = groundColorAt(TileKind.path, 2, 0);
+    expect(m.colors[perCell * 3 * 4], closeTo(pathColor.x, 1e-6));
   });
 }

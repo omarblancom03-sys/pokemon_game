@@ -151,7 +151,9 @@ void main() {
         facing: pi, // mira hacia -Z: el jugador queda a su espalda
       );
       s
-        ..camera.yaw = -pi / 2 // adelante = +X
+        ..camera.yaw =
+            -pi /
+            2 // adelante = +X
         ..cameraInput.running = true
         ..input.setKeyboardDirection(Vector2(0, -1));
       step(s, 0.5);

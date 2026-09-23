@@ -61,7 +61,10 @@ El combate lo hace OTRO equipo (se engancha por el contrato EncounterHandler). N
 - [x] La cámara no atraviesa árboles ni casas (se acerca al instante y se aleja poco a poco;
       de espaldas a un árbol o casa sube para mirar desde arriba — OrbitCamera.avoidObstacles)
 - [x] Minimapa (redondo, arriba a la derecha, girado con la cámara; bolas y Pokémon por estado)
-- [ ] Más vida en el mundo (suelo con variación, polvo al correr, detalles)
+- [ ] Más vida en el mundo:
+  - [x] Suelo con variación (manchas, zonas frondosas y secas, granulado) + matas bajas y piedrecitas
+  - [ ] Polvo al correr (y al rebotar una bola)
+  - [ ] Mariposas en las flores (se espantan al pasar)
 
 ## Mejoras continuas
 - [ ] (se irán añadiendo)

@@ -19,3 +19,22 @@ int _mul32(int a, int b) {
   final hi = ((a32 >> 16) * b) & 0xFFFF;
   return (lo + (hi << 16)) & 0xFFFFFFFF;
 }
+
+/// Ruido SUAVE (0..1) en el plano: en los puntos enteros vale [cellNoise]
+/// y entre ellos se mezcla con una curva suave, así que no tiene saltos.
+/// Sirve para manchas grandes (dividir las coordenadas por el tamaño de
+/// mancha deseado).
+double smoothNoise(double x, double z, [int salt = 0]) {
+  final x0 = x.floor();
+  final z0 = z.floor();
+  double ease(double t) => t * t * (3 - 2 * t);
+  final tx = ease(x - x0);
+  final tz = ease(z - z0);
+  final a = cellNoise(x0, z0, salt);
+  final b = cellNoise(x0 + 1, z0, salt);
+  final c = cellNoise(x0, z0 + 1, salt);
+  final d = cellNoise(x0 + 1, z0 + 1, salt);
+  final top = a + (b - a) * tx;
+  final bottom = c + (d - c) * tx;
+  return top + (bottom - top) * tz;
+}

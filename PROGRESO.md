@@ -9,6 +9,8 @@
 - **Menú:** Jugar 2D · Jugar 3D · Pokédex · Generaciones.
 - **2D (Flame):** mapa de baldosas, Ash animado, humos que disparan encuentros.
 - **3D (flutter_scene):**
+  - Suelo con manchas de color (zonas frondosas y secas), matas bajas en el césped y piedrecitas en
+    el camino.
   - Mundo low-poly generado por código a partir del mismo mapa ASCII del 2D: césped, caminos, casas con
     tejado, árboles, pinos, árboles otoñales, arbustos con bayas, vallas, setas, flores y un bosque que
     rodea el mapa. Luz de sol con sombras, cielo en degradado, niebla ligera y aspecto "stylized".

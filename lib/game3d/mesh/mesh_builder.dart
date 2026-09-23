@@ -118,6 +118,21 @@ class MeshBuilder {
     triangle(a, c, d, color);
   }
 
+  /// Cuadrilátero con un color por esquina (degradado suave).
+  void shadedQuad(
+    Vector3 a,
+    Vector3 b,
+    Vector3 c,
+    Vector3 d,
+    Vector4 colorA,
+    Vector4 colorB,
+    Vector4 colorC,
+    Vector4 colorD,
+  ) {
+    shadedTriangle(a, b, c, colorA, colorB, colorC);
+    shadedTriangle(a, c, d, colorA, colorC, colorD);
+  }
+
   /// Caja alineada a los ejes, entre [min] y [max].
   void box(Vector3 min, Vector3 max, Vector4 color, {Vector4? topColor}) {
     final x0 = min.x, y0 = min.y, z0 = min.z;

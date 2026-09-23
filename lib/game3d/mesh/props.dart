@@ -92,6 +92,8 @@ MeshBuffers buildProps(MapLayout layout, double tile) {
           TileKind.mushroom => addMushrooms(b, col, row),
           TileKind.flowers => addFlowers(b, col, row),
           TileKind.stone => addSteppingStone(b, n),
+          TileKind.grass => addGrassTufts(b, col, row),
+          TileKind.path => addPebbles(b, col, row),
           _ => null,
         },
       );
@@ -276,6 +278,54 @@ void addFlowers(MeshBuilder b, int col, int row) {
         bottomCap: false,
       )
       ..gem(Vector3(x, 0.2, z), Vector3(0.08, 0.04, 0.08), color, detail: 0);
+  }
+}
+
+/// Colores de las matas bajas: algo distintos del césped para que se vean.
+final _tuftLight = srgb(0x8FD05E);
+final _tuftDark = srgb(0x62B54C);
+
+/// Matas bajas de césped (0 a 2 por casilla, en sitios fijos): rompen la
+/// llanura del suelo sin tapar nada (≤ 35 cm).
+void addGrassTufts(MeshBuilder b, int col, int row) {
+  final tufts = (cellNoise(col, row, 31) * 3).floor();
+  for (var t = 0; t < tufts; t++) {
+    final x = (cellNoise(col, row, 32 + t) - 0.5) * 1.6;
+    final z = (cellNoise(col, row, 36 + t) - 0.5) * 1.6;
+    final color = cellNoise(col, row, 40 + t) > 0.5 ? _tuftLight : _tuftDark;
+    for (var i = 0; i < 5; i++) {
+      final n = cellNoise(col, row, 50 + t * 5 + i);
+      b.withTransform(
+        Matrix4.translation(Vector3(x, 0, z))
+          ..rotateY(i * 2 * math.pi / 5 + n)
+          ..rotateX(0.25 + n * 0.3), // cada hoja se abre hacia fuera
+        () => b.prism(
+          base: Vector3.zero(),
+          bottomRadius: 0.035,
+          topRadius: 0,
+          height: 0.2 + n * 0.12,
+          sides: 3,
+          color: color,
+          bottomCap: false,
+        ),
+      );
+    }
+  }
+}
+
+/// Piedrecitas sueltas en el camino (0 a 2 por casilla).
+void addPebbles(MeshBuilder b, int col, int row) {
+  final pebbles = (cellNoise(col, row, 61) * 3).floor();
+  for (var i = 0; i < pebbles; i++) {
+    final n = cellNoise(col, row, 62 + i);
+    final x = (cellNoise(col, row, 64 + i) - 0.5) * 1.7;
+    final z = (cellNoise(col, row, 66 + i) - 0.5) * 1.7;
+    b.gem(
+      Vector3(x, 0.01, z),
+      Vector3(0.06 + n * 0.06, 0.035, 0.05 + n * 0.05),
+      n > 0.5 ? Palette.stone : Palette.chimney,
+      detail: 0,
+    );
   }
 }
 

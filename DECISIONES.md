@@ -111,3 +111,9 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
   ti): refuerza el sigilo sin tener que mirar alrededor. Las cuentas están en `sim/minimap.dart`
   (testeadas); la vista solo pinta. El mapa de casillas se graba una vez en un `ui.Picture` y se
   coloca girado en cada fotograma. La ayuda de controles pasa debajo de la bolsa (izquierda).
+- **2026-09-23 — Suelo sin damero:** el damero daba aspecto de "tablero". Ahora cada casilla son 2x2
+  cuadrados con color por vértice: manchas de ~6 m (±15 % de brillo), zonas de césped frondosas o
+  secas de ~11 m y un granulado fino, con un ruido suave (`smoothNoise`) que solo depende de la
+  posición → casillas vecinas del mismo tipo se funden sin costuras y los bordes entre tipos (camino
+  / césped) siguen nítidos. Matas bajas (≤ 35 cm) en el césped y piedrecitas en el camino, dentro de
+  la malla única de objetos (sin coste de llamadas de dibujo).
