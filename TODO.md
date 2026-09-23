@@ -9,10 +9,10 @@
 - [x] Menú con "Jugar 2D" / "Jugar 3D" y ruta `/game3d` (pantalla temporal)
 
 ## 8.1 Spike del motor 3D
-- [ ] Añadir flutter_scene e inicializar
-- [ ] Cubo iluminado girando en `/game3d` detrás de la interfaz `SceneRenderer`
-- [ ] Verificar `flutter build web` + captura headless
-- [ ] Verificar `flutter build windows`
+- [x] Añadir flutter_scene e inicializar
+- [x] Cubo iluminado girando en `/game3d` detrás de la interfaz `SceneRenderer`
+- [x] Verificar `flutter build web` + captura headless
+- [~] Verificar `flutter build windows` (sin Visual Studio en esta máquina; ver DECISIONES)
 
 ## 8.2 Simulación (Dart puro)
 - [ ] OrbitCamera (yaw/pitch/distancia, límites)

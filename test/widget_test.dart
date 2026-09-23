@@ -13,6 +13,7 @@ import 'package:pokemon_game/services/poke_api_exception.dart';
 import 'package:pokemon_game/views/game3d/game3d_screen.dart';
 
 import 'fakes/fake_pokemon_repository.dart';
+import 'fakes/fake_scene_renderer.dart';
 
 void main() {
   late FakePokemonRepository repository;
@@ -20,7 +21,10 @@ void main() {
   setUp(() => repository = FakePokemonRepository(speciesCount: 40));
 
   Widget buildApp() => PokemonGameApp(
-    dependencies: AppDependencies.create(repository: repository),
+    dependencies: AppDependencies.create(
+      repository: repository,
+      sceneRenderer: FakeSceneRenderer(),
+    ),
   );
 
   testWidgets('main menu shows every entry', (tester) async {
@@ -52,6 +56,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
 
     expect(find.byType(Game3DScreen), findsOneWidget);
+    expect(find.byKey(const Key('fake_scene')), findsOneWidget);
   });
 
   testWidgets('Pokédex shows a gallery of cards', (tester) async {

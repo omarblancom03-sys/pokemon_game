@@ -6,6 +6,7 @@ import 'package:provider/single_child_widget.dart';
 import '../controllers/encounter/encounter_handler.dart';
 import '../controllers/generations_controller.dart';
 import '../controllers/pokedex_controller.dart';
+import '../game3d/render/scene_renderer.dart';
 import '../services/poke_api_service.dart';
 import '../services/pokemon_repository.dart';
 import '../services/random_pokemon_picker.dart';
@@ -25,6 +26,7 @@ class AppDependencies {
   factory AppDependencies.create({
     PokemonRepository? repository,
     EncounterHandler? encounterHandler,
+    SceneRenderer? sceneRenderer,
   }) {
     final navigatorKey = GlobalKey<NavigatorState>();
     // Cadena de capas: cliente HTTP -> servicio -> caché (patrón decorador).
@@ -47,6 +49,10 @@ class AppDependencies {
           value: RandomPokemonPicker(repository: repo),
         ),
         Provider<EncounterHandler>.value(value: handler),
+        // Motor 3D. En los tests se pasa uno falso (allí no hay GPU).
+        Provider<SceneRenderer>.value(
+          value: sceneRenderer ?? const FlutterSceneRenderer(),
+        ),
         // A nivel de app: lo ya descargado sobrevive al salir y volver a entrar.
         ChangeNotifierProvider(
           create: (_) => PokedexController(repository: repo),

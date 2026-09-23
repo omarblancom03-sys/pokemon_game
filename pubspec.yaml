@@ -37,6 +37,9 @@ dependencies:
   flame: ^1.38.2
   provider: ^6.1.5+1
   http: ^1.6.0
+  flutter_scene: ^0.23.0
+  vector_math: ^2.4.3
+  hooks: ^2.2.0
 
 dev_dependencies:
   flutter_test:
@@ -64,6 +67,7 @@ flutter:
   # Arte del juego (licencia CC0, ver assets/CREDITS.md).
   assets:
     - assets/images/
+    - flutter_scene_generated/
 
   # To add assets to your application, add an assets section, like this:
   # assets:
