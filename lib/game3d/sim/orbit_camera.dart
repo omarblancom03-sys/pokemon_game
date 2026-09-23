@@ -27,6 +27,10 @@ class OrbitCamera {
   double pitch;
   double distance;
 
+  /// 0 = cámara normal, 1 = apuntando (más cerca y sobre el hombro
+  /// derecho, como en los juegos de acción). Se anima entre ambos.
+  double aim = 0;
+
   final double minPitch;
   final double maxPitch;
   final double minDistance;
@@ -48,20 +52,37 @@ class OrbitCamera {
     distance = (distance + delta).clamp(minDistance, maxDistance);
   }
 
-  /// Punto que mira la cámara, a partir de los pies del jugador.
+  /// Acerca [aim] a 1 (apuntando) o a 0 con suavidad.
+  void updateAim(double dt, {required bool aiming}) {
+    final goal = aiming ? 1.0 : 0.0;
+    aim += (goal - aim) * math.min(1, dt * 10);
+  }
+
+  /// Distancia real teniendo en cuenta el modo apuntar.
+  double get effectiveDistance => distance * (1 - 0.5 * aim);
+
+  /// Punto que mira la cámara, a partir de los pies del jugador. Al apuntar
+  /// se desplaza sobre el hombro derecho para no tapar la mira.
   Vector3 targetFor(Vector3 playerFeet) =>
-      playerFeet + Vector3(0, targetHeight, 0);
+      playerFeet +
+      Vector3(0, targetHeight + 0.15 * aim, 0) +
+      right * (0.65 * aim);
 
   /// Posición de la cámara (el "ojo") para un jugador en [playerFeet].
   Vector3 eyeFor(Vector3 playerFeet) {
-    final horizontal = math.cos(pitch) * distance;
+    final d = effectiveDistance;
+    final horizontal = math.cos(pitch) * d;
     return targetFor(playerFeet) +
         Vector3(
           math.sin(yaw) * horizontal,
-          math.sin(pitch) * distance,
+          math.sin(pitch) * d,
           math.cos(yaw) * horizontal,
         );
   }
+
+  /// Dirección en la que mira la cámara (del ojo al objetivo), unitaria.
+  Vector3 lookDirection(Vector3 playerFeet) =>
+      (targetFor(playerFeet) - eyeFor(playerFeet))..normalize();
 
   /// "Adelante" en el suelo (de la cámara hacia el jugador), unitario.
   Vector3 get forward => Vector3(-math.sin(yaw), 0, -math.cos(yaw));

@@ -25,6 +25,9 @@ abstract interface class PokemonRepository {
 
   /// Una generación concreta, con las especies que le pertenecen.
   Future<Generation> getGeneration(int id);
+
+  /// Ratio de captura de la especie (3..255).
+  Future<int> getCaptureRate(int id);
 }
 
 /// Caché en memoria por delante del servicio (patrón DECORADOR: cumple la
@@ -44,6 +47,7 @@ class CachedPokemonRepository implements PokemonRepository {
   final _speciesCount = <void, Future<int>>{};
   final _generations = <void, Future<PagedResult<NamedResource>>>{};
   final _generation = <int, Future<Generation>>{};
+  final _captureRate = <int, Future<int>>{};
 
   @override
   Future<Pokemon> getPokemon(int id) =>
@@ -75,8 +79,13 @@ class CachedPokemonRepository implements PokemonRepository {
   Future<Generation> getGeneration(int id) =>
       _memoize(_generation, id, () => _service.fetchGeneration(id));
 
+  @override
+  Future<int> getCaptureRate(int id) =>
+      _memoize(_captureRate, id, () => _service.fetchCaptureRate(id));
+
   /// Vacía la caché entera (pensado para un "deslizar para refrescar").
   void clear() {
+    _captureRate.clear();
     _pokemon.clear();
     _pages.clear();
     _speciesCount.clear();

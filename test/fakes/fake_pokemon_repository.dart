@@ -69,6 +69,15 @@ class FakePokemonRepository implements PokemonRepository {
     return speciesCount;
   }
 
+  /// Ratio de captura que devolverá getCaptureRate.
+  int captureRate = 45;
+
+  @override
+  Future<int> getCaptureRate(int id) async {
+    await _maybeFail();
+    return captureRate;
+  }
+
   @override
   Future<Pokemon> getPokemon(int id) async {
     requestedIds.add(id);

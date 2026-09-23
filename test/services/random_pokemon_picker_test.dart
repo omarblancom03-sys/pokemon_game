@@ -28,6 +28,9 @@ class _FakeRepository implements PokemonRepository {
   }
 
   @override
+  Future<int> getCaptureRate(int id) => throw UnimplementedError();
+
+  @override
   Future<Pokemon> getPokemon(int id) async {
     requestedIds.add(id);
     return Pokemon(

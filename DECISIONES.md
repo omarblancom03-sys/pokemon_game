@@ -53,3 +53,12 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
   cuaternión. El motor usa la matriz; en tests hay que comprobar con la matriz.
 - **2026-09-22 — Medición de rendimiento:** swiftshader da ~0,3 FPS (no sirve para medir). Chrome headless
   con `--use-angle=d3d11 --enable-gpu --ignore-gpu-blocklist` usa la GPU real: 32–40 FPS con todo el mundo.
+- **2026-09-22 — CAMBIO DE ALCANCE (pedido del usuario).** El combate lo hace otro equipo. Nos quedamos
+  solo con capturar (Poké Balls en el campo + lanzarlas) y andar por el campo. Se descarta la Fase 8.6 de
+  combate (no se llegó a escribir código). El contrato EncounterHandler sigue siendo el punto de enganche
+  del combate: en 3D solo se dispara si un Pokémon AGRESIVO y alerta alcanza al jugador.
+- **2026-09-22 — Captura estilo Leyendas Arceus:** se lanza la Poké Ball directamente en el mundo. Sin
+  combate no hay PS, así que la probabilidad sale del ratio de captura real de la especie (PokeAPI
+  pokemon-species), del tipo de bola y del sigilo (sin ser visto ×1,5; por la espalda ×2).
+- **2026-09-22 — Sin encuentros aleatorios en la hierba en 3D:** con Pokémon visibles y captura en el
+  mundo, interrumpían el juego. El código queda (flag), desactivado por defecto.

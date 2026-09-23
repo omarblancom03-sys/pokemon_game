@@ -7,6 +7,7 @@ class World3DConfig {
     this.playerRadius = 0.35,
     this.walkSpeed = 4.5,
     this.runSpeed = 7.5,
+    this.crouchSpeed = 2.1,
     this.acceleration = 30,
     this.turnSpeed = 12,
   });
@@ -19,6 +20,9 @@ class World3DConfig {
   /// Velocidades en metros por segundo (andar y correr con Mayús).
   final double walkSpeed;
   final double runSpeed;
+
+  /// Velocidad agachado (sigilo): lenta pero silenciosa.
+  final double crouchSpeed;
 
   /// Cuánto tarda en alcanzar la velocidad deseada (m/s²).
   final double acceleration;

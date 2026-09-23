@@ -6,6 +6,7 @@ import 'package:provider/single_child_widget.dart';
 import '../controllers/encounter/encounter_handler.dart';
 import '../controllers/generations_controller.dart';
 import '../controllers/pokedex_controller.dart';
+import '../controllers/trainer_controller.dart';
 import '../game3d/render/scene_renderer.dart';
 import '../services/image_bytes_service.dart';
 import '../services/poke_api_service.dart';
@@ -66,6 +67,8 @@ class AppDependencies {
         ChangeNotifierProvider(
           create: (_) => GenerationsController(repository: repo),
         ),
+        // Bolsa de Poké Balls y capturados: se conservan entre partidas.
+        ChangeNotifierProvider(create: (_) => TrainerController()),
       ],
     );
   }

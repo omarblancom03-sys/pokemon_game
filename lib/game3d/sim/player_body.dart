@@ -48,8 +48,21 @@ class PlayerBody {
 
   /// Avanza [dt] segundos. [wish] es la dirección deseada en el suelo
   /// (x, z) de longitud 0..1, ya en coordenadas del mundo.
-  void update(double dt, Vector3 wish, {bool running = false}) {
-    final maxSpeed = running ? config.runSpeed : config.walkSpeed;
+  ///
+  /// Agachado va más lento. Con [face] el cuerpo mira hacia esa dirección
+  /// aunque camine hacia otro lado (al apuntar se camina de lado).
+  void update(
+    double dt,
+    Vector3 wish, {
+    bool running = false,
+    bool crouching = false,
+    Vector3? face,
+  }) {
+    final maxSpeed = crouching
+        ? config.crouchSpeed
+        : running
+        ? config.runSpeed
+        : config.walkSpeed;
     final target = Vector3(wish.x, 0, wish.z)..scale(maxSpeed);
 
     // Acercar la velocidad a la deseada sin pasarse (aceleración limitada).
@@ -62,8 +75,9 @@ class PlayerBody {
     _moveAxis(0, _velocity.z * dt);
 
     // Girar el cuerpo poco a poco hacia donde camina.
-    if (wish.length2 > 0.01) {
-      final desired = math.atan2(wish.x, wish.z);
+    final look = face ?? (wish.length2 > 0.01 ? wish : null);
+    if (look != null && look.length2 > 1e-6) {
+      final desired = math.atan2(look.x, look.z);
       facing = _turnTowards(facing, desired, config.turnSpeed * dt);
     }
   }

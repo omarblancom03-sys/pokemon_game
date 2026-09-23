@@ -163,7 +163,6 @@ class _Scene3DViewState extends State<Scene3DView> {
     _wild.update(_sim.wild, _sim.camera.yaw, _sim.time);
   }
 
-
   Camera _camera(Duration _) {
     final feet = _sim.player.position;
     return PerspectiveCamera(

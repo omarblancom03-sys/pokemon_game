@@ -33,17 +33,29 @@
 - [x] WildSpawner (Pokémon visibles que deambulan, sprite PokeAPI como billboard)
 - [x] Encuentros por contacto y por pasos en hierba → GameController
 
-## 8.6 Combate
-- [ ] Stats en Pokemon
-- [ ] Modelos de combate (movimientos, tabla de tipos)
-- [ ] BattleController (turnos, daño, captura, huida)
-- [ ] PartyController + elección de inicial
-- [ ] BattleScreen (EncounterHandler del 3D)
+## Cambio de alcance (2026-09-22, pedido del usuario)
+El combate lo hace OTRO equipo (se engancha por el contrato EncounterHandler). Nuestro trabajo: SOLO
+**capturar** (encontrar Poké Balls en el campo y lanzarlas) y **andar por el campo**, con máxima calidad.
 
-## 8.7 Transiciones y feedback
-- [ ] Transición al combate
-- [ ] Animación Poké Ball
-- [ ] HUD (equipo, minimapa)
+## 8.6 Captura: lógica
+- [x] Tipos de Poké Ball (Poké/Super/Ultra) + bolsa y capturados (TrainerController, app-wide)
+- [x] Ratio de captura real de PokeAPI (pokemon-species capture_rate) en servicio/repositorio
+- [x] CaptureCalculator (probabilidad + sacudidas, bonus por sigilo/espalda) con tests
 
-## 8.8+ Mejoras continuas
+## 8.7 Captura: en el mundo
+- [ ] Poké Balls en el suelo para recoger (brillo), reaparecen; las falladas se pueden recoger
+- [ ] Lanzar: apuntar (cámara al hombro, mira), fijar objetivo, física parabólica, choques
+- [ ] Secuencia: absorber, caer, sacudidas, ¡capturado! (estrellas) o se escapa
+- [ ] HUD: bolsa y bola elegida, mira, avisos, capturados
+
+## 8.8 Comportamiento y sigilo
+- [ ] Agacharse (sigilo), ruido al correr, la hierba alta oculta
+- [ ] Pokémon con carácter: se alertan (?/!), huyen, curiosean o atacan (→ EncounterHandler)
+
+## 8.9 Andar por el campo
+- [ ] La cámara no atraviesa árboles ni casas
+- [ ] Minimapa
+- [ ] Más vida en el mundo (suelo con variación, polvo al correr, detalles)
+
+## Mejoras continuas
 - [ ] (se irán añadiendo)

@@ -3,20 +3,48 @@ import 'dart:math' as math;
 import 'package:vector_math/vector_math.dart';
 
 import '../../models/pokemon.dart';
+import 'cell_noise.dart';
+
+/// Carácter de un Pokémon salvaje: qué hace cuando te descubre.
+enum Temperament {
+  /// Huye (la mayoría): hay que acercarse con sigilo.
+  skittish,
+
+  /// Se acerca a mirar y se queda cerca.
+  curious,
+
+  /// Carga contra ti; si te alcanza empieza un encuentro (combate).
+  aggressive;
+
+  /// El carácter depende de la especie (siempre el mismo para cada una).
+  static Temperament forSpecies(int id) {
+    final n = cellNoise(id, 17, 3);
+    if (n < 0.5) return skittish;
+    if (n < 0.85) return curious;
+    return aggressive;
+  }
+}
 
 /// Un Pokémon salvaje VISIBLE en el mundo 3D (estilo Leyendas/Escarlata):
-/// deambula por la hierba alta dando saltitos; si el jugador lo toca,
-/// empieza el encuentro.
+/// deambula por la hierba alta, puede descubrirte (?/!) y reaccionar según
+/// su carácter, y se le puede lanzar una Poké Ball.
 class WildPokemon {
   WildPokemon({
     required this.id,
     required this.pokemon,
     required Vector3 position,
+    this.captureRate = 45,
     this.facing = 0,
-  }) : _position = position.clone();
+    Temperament? temperament,
+  }) : _position = position.clone(),
+       temperament = temperament ?? Temperament.forSpecies(pokemon.id);
 
   final String id;
   final Pokemon pokemon;
+
+  /// Ratio de captura real de la especie (PokeAPI, 3..255).
+  final int captureRate;
+  final Temperament temperament;
 
   Vector3 _position;
   Vector3 get position => _position.clone();
@@ -37,11 +65,34 @@ class WildPokemon {
   /// Segundos desde que apareció (para la animación de entrada).
   double age = 0;
 
-  /// Ya disparó su encuentro: no vuelve a dispararlo.
+  /// Ya disparó su encuentro (combate): no vuelve a dispararlo.
   bool engaged = false;
 
-  /// Metros por segundo al deambular.
+  /// Sospecha 0..1: sube si te ve u oye; al llegar a 1 te descubre.
+  double awareness = 0;
+
+  /// Segundos que le quedan de alerta (0 = tranquilo).
+  double alertTime = 0;
+
+  /// Id de la Poké Ball que lo tiene dentro (null = libre).
+  String? capturedBy;
+
+  /// Segundos desde que salió de una bola (animación de "pop").
+  double? releasedFor;
+
+  /// Metros por segundo al deambular, huir y cargar.
   static const wanderSpeed = 1.3;
+  static const fleeSpeed = 4.4;
+  static const chargeSpeed = 3.6;
+
+  bool get isAlert => alertTime > 0;
+  bool get isFree => capturedBy == null;
+
+  /// "?" en la cabeza: sospecha pero aún no te ha descubierto.
+  bool get isSuspicious => !isAlert && awareness > 0.35;
+
+  /// Dirección a la que mira, en el suelo.
+  Vector3 get facingDirection => Vector3(math.sin(facing), 0, math.cos(facing));
 
   /// Altura del dibujo en metros, a partir de la altura real del Pokémon
   /// (PokeAPI la da en decímetros). Se exagera un poco y se limita: un
@@ -49,10 +100,14 @@ class WildPokemon {
   double get displayHeight =>
       (pokemon.height / 10 * 1.3 + 0.5).clamp(1.1, 3.2).toDouble();
 
+  /// Radio del "cilindro" que recibe los golpes de las Poké Balls.
+  double get hitRadius => 0.3 + displayHeight * 0.22;
+
   /// Distancia (m) a la que el jugador "lo toca".
   double get contactRadius => 0.55 + displayHeight * 0.2;
 
   /// Altura del saltito ahora mismo (0 cuando está parado).
-  double get hopHeight =>
-      target == null ? 0 : (math.sin(distanceMoved * 5).abs() * 0.18);
+  double get hopHeight => target == null
+      ? 0
+      : (math.sin(distanceMoved * (isAlert ? 7 : 5)).abs() * 0.18);
 }

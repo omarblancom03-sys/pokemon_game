@@ -52,13 +52,27 @@ class TrainerRig {
       ..position = _engine(feet)
       ..rotation = vm.Quaternion.axisAngle(_y, -facing);
     _hips
-      ..position = vm.Vector3(0, pose.bob, 0)
+      ..position = vm.Vector3(0, pose.bob - 0.14 * pose.crouch, 0)
       ..rotation = vm.Quaternion.axisAngle(_x, -pose.lean);
     // Ángulo positivo en X lleva el pie hacia atrás: por eso el signo menos
     // para "hacia delante".
-    _setLimb(_rightLeg, TrainerJoints.rightHip, -pose.legSwing);
-    _setLimb(_leftLeg, TrainerJoints.leftHip, pose.legSwing);
-    _setLimb(_rightArm, TrainerJoints.rightShoulder, -pose.armSwing);
+    // Agachado: una pierna adelantada y la otra atrás (medio arrodillado).
+    _setLimb(
+      _rightLeg,
+      TrainerJoints.rightHip,
+      -pose.legSwing - 0.6 * pose.crouch,
+    );
+    _setLimb(
+      _leftLeg,
+      TrainerJoints.leftHip,
+      pose.legSwing + 0.3 * pose.crouch,
+    );
+    _setLimb(
+      _rightArm,
+      TrainerJoints.rightShoulder,
+      // rightArm/armSwing son "positivo = hacia delante"; aquí es al revés.
+      -(pose.rightArm ?? pose.armSwing),
+    );
     _setLimb(_leftArm, TrainerJoints.leftShoulder, pose.armSwing);
   }
 

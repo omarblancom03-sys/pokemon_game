@@ -60,6 +60,13 @@ class PokeApiService {
     return _parse(() => json.readInt('count'));
   }
 
+  /// `GET /pokemon-species/{id}` → el ratio de captura de la especie
+  /// (3 = legendario, casi imposible … 255 = facilísimo).
+  Future<int> fetchCaptureRate(int id) async {
+    final json = await _getJson('pokemon-species/$id');
+    return _parse(() => json.readInt('capture_rate'));
+  }
+
   /// `GET /generation` → la lista de generaciones.
   Future<PagedResult<NamedResource>> fetchGenerations() async {
     final json = await _getJson('generation', query: {'limit': '50'});
