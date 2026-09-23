@@ -1,8 +1,12 @@
 import 'package:flutter/foundation.dart';
 
 import '../game3d/sim/world3d_events.dart';
+import '../game3d/sim/world3d_sim.dart' show WildSpawn;
 import '../models/poke_ball.dart';
 import '../models/pokemon.dart';
+import '../services/poke_api_exception.dart';
+import '../services/pokemon_repository.dart';
+import '../services/random_pokemon_picker.dart';
 import 'trainer_controller.dart';
 
 /// Qué pasó, para el aviso que aparece en pantalla.
@@ -33,14 +37,25 @@ class FieldNotice {
 /// CONTROLADOR de una partida en el campo 3D: recibe lo que pasa en el
 /// mundo (recogidas, capturas, fallos), lo apunta en la bolsa del
 /// entrenador ([TrainerController], que vive en toda la app) y guarda los
-/// avisos que la pantalla enseña unos segundos.
+/// avisos que la pantalla enseña unos segundos. También busca en PokeAPI
+/// los Pokémon que aparecen en la hierba, con su ratio de captura real.
 ///
 /// Se crea por partida (como el GameController): al salir, los avisos se
 /// pierden pero la bolsa y los capturados se conservan.
 class FieldController extends ChangeNotifier {
-  FieldController({required this._trainer});
+  FieldController({
+    required this._trainer,
+    required this._picker,
+    required this._repository,
+  });
 
   final TrainerController _trainer;
+  final RandomPokemonPicker _picker;
+  final PokemonRepository _repository;
+
+  /// Ratio si PokeAPI no lo da (el de muchos Pokémon "normales").
+  static const fallbackCaptureRate = 45;
+
   final List<FieldNotice> _notices = [];
   int _nextId = 0;
 
@@ -69,6 +84,25 @@ class FieldController extends ChangeNotifier {
           shakes: result.shakes,
         );
     }
+  }
+
+  /// Un Pokémon al azar para la hierba, con su ratio de captura. Sin red
+  /// devuelve null (el mundo lo reintentará); si solo falla el ratio, se
+  /// usa [fallbackCaptureRate].
+  Future<WildSpawn?> pickWildSpawn() async {
+    final Pokemon pokemon;
+    try {
+      pokemon = await _picker.pick();
+    } on PokeApiException {
+      return null;
+    }
+    var rate = fallbackCaptureRate;
+    try {
+      rate = await _repository.getCaptureRate(pokemon.id);
+    } on PokeApiException {
+      // Se queda el de por defecto: mejor un ratio aproximado que nada.
+    }
+    return (pokemon: pokemon, captureRate: rate);
   }
 
   /// Saca una bola de la bolsa para lanzarla; si no queda ninguna, avisa

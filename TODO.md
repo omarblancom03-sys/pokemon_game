@@ -45,9 +45,11 @@ El combate lo hace OTRO equipo (se engancha por el contrato EncounterHandler). N
 ## 8.7 Captura: en el mundo
 - [x] Poké Balls en el suelo para recoger (brillo), reaparecen; las falladas se pueden recoger
       (FieldItems + ItemRenderer + FieldController con bolsa y avisos)
-- [ ] Lanzar: apuntar (cámara al hombro, mira), fijar objetivo, física parabólica, choques
-- [ ] Secuencia: absorber, caer, sacudidas, ¡capturado! (estrellas) o se escapa
-- [ ] HUD: bolsa y bola elegida, mira, avisos, capturados
+- [x] Lanzar: apuntar (cámara al hombro, mira), fijar objetivo, física parabólica, choques
+      (aiming.dart + BallSystem en throwing.dart; arco previsto con puntos y anillo de caída)
+- [x] Secuencia: absorber, caer, sacudidas, ¡capturado! (estrellas) o se escapa (BallRenderer)
+- [x] HUD: bolsa y bola elegida, mira, avisos, capturados (+ anillo con % de captura)
+- [x] Ratio de captura real al aparecer (FieldController.pickWildSpawn)
 
 ## 8.8 Comportamiento y sigilo
 - [ ] Agacharse (sigilo), ruido al correr, la hierba alta oculta

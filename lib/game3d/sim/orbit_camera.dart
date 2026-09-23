@@ -84,6 +84,31 @@ class OrbitCamera {
   Vector3 lookDirection(Vector3 playerFeet) =>
       (targetFor(playerFeet) - eyeFor(playerFeet))..normalize();
 
+  /// Ángulo de visión vertical (rad). Lo usa el motor y también [project].
+  static const fovY = 55 * math.pi / 180;
+
+  /// Dónde se ve el punto [world] en pantalla, en coordenadas normalizadas
+  /// (-1..1; x a la derecha, y hacia arriba) para una pantalla de
+  /// proporción [aspect] (ancho / alto). null si queda detrás de la cámara.
+  /// Sirve para dibujar la mira sobre el objetivo fijado.
+  ({double x, double y})? project(
+    Vector3 world,
+    Vector3 playerFeet, {
+    required double aspect,
+  }) {
+    final view = makeViewMatrix(
+      eyeFor(playerFeet),
+      targetFor(playerFeet),
+      Vector3(0, 1, 0),
+    );
+    final projection = makePerspectiveMatrix(fovY, aspect, 0.1, 400);
+    final clip = projection
+        .multiplied(view)
+        .transform(Vector4(world.x, world.y, world.z, 1));
+    if (clip.w <= 1e-6) return null;
+    return (x: clip.x / clip.w, y: clip.y / clip.w);
+  }
+
   /// "Adelante" en el suelo (de la cámara hacia el jugador), unitario.
   Vector3 get forward => Vector3(-math.sin(yaw), 0, -math.cos(yaw));
 

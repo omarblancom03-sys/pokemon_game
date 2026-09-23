@@ -12,7 +12,7 @@ import 'package:pokemon_game/game/poke_game.dart';
 import 'package:pokemon_game/services/poke_api_exception.dart';
 import 'package:pokemon_game/views/game3d/game3d_screen.dart';
 
-import 'package:pokemon_game/game3d/sim/world3d_events.dart';
+import 'package:pokemon_game/game3d/sim/world3d_sim.dart';
 import 'package:pokemon_game/models/poke_ball.dart';
 
 import 'fakes/fake_pokemon_repository.dart';
@@ -102,6 +102,53 @@ void main() {
     await tester.pump(const Duration(seconds: 3));
     await tester.pump();
     expect(find.text('+1 Ultra Ball'), findsNothing);
+  });
+
+  testWidgets('3D: the throw button spends a ball; an empty bag warns', (
+    tester,
+  ) async {
+    final renderer = FakeSceneRenderer();
+    await tester.pumpWidget(
+      PokemonGameApp(
+        dependencies: AppDependencies.create(
+          repository: repository,
+          sceneRenderer: renderer,
+        ),
+      ),
+    );
+    await tester.tap(find.byKey(const Key('menu_play_3d')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+
+    final sim = renderer.lastSim!;
+    await tester.tap(find.byKey(const Key('game3d_throw')));
+    await tester.pump();
+    expect(sim.throwProgress, isNotNull);
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('bag_poke')),
+        matching: find.text('×4'),
+      ),
+      findsOneWidget,
+    );
+
+    // Gastar el resto (la simulación no avanza sola: se hace a mano).
+    for (var i = 0; i < 4; i++) {
+      sim.update(World3DSim.throwDuration + 0.01);
+      await tester.tap(find.byKey(const Key('game3d_throw')));
+      await tester.pump();
+    }
+    sim.update(World3DSim.throwDuration + 0.01);
+    await tester.tap(find.byKey(const Key('game3d_throw')));
+    await tester.pump();
+    expect(find.textContaining('No te quedan'), findsOneWidget);
+    expect(sim.readyBall, isNull);
+
+    // Botón de apuntar: se queda activo.
+    await tester.tap(find.byKey(const Key('game3d_aim')));
+    await tester.pump();
+    expect(sim.aiming, isTrue);
+    await tester.pump(const Duration(seconds: 3));
   });
 
   testWidgets('Pokédex shows a gallery of cards', (tester) async {

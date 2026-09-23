@@ -68,7 +68,11 @@ class PokemonGameApp extends StatelessWidget {
                 ),
               ),
               ChangeNotifierProvider(
-                create: (context) => FieldController(trainer: context.read()),
+                create: (context) => FieldController(
+                  trainer: context.read(),
+                  picker: context.read(),
+                  repository: context.read(),
+                ),
               ),
             ],
             child: const Game3DScreen(),

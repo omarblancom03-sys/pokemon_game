@@ -62,3 +62,26 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
   pokemon-species), del tipo de bola y del sigilo (sin ser visto ×1,5; por la espalda ×2).
 - **2026-09-22 — Sin encuentros aleatorios en la hierba en 3D:** con Pokémon visibles y captura en el
   mundo, interrumpían el juego. El código queda (flag), desactivado por defecto.
+- **2026-09-23 — Controles de captura:** clic derecho mantenido o F = apuntar (cámara al hombro, mira,
+  arco previsto); clic izquierdo o Espacio = lanzar; R / 1-3 = cambiar de bola. En táctil, botones
+  "Apuntar" (se queda activo) y "Lanzar". En web se desactiva el menú contextual del navegador
+  mientras se juega. El ratón es UN puntero: pulsar un segundo botón no genera un "down" nuevo, por
+  eso la pantalla sigue las transiciones de la máscara de botones.
+- **2026-09-23 — Ayuda al apuntar:** la mira fija al Pokémon libre más centrado en un cono de ±20° y
+  a ≤ 17 m (alcance real del tiro), incluso sin apuntar (se ve una flechita). Con objetivo fijado el
+  tiro es una parábola exacta que se adelanta a su movimiento; sin objetivo, "a ojo" hacia donde mira
+  la cámara (su inclinación decide la altura del arco).
+- **2026-09-23 — Se muestra la probabilidad de captura (%)** en el anillo de la mira, con color
+  (rojo → verde). Leyendas Arceus no la enseña, pero aquí explica la mecánica (ratio de la especie,
+  bola, sigilo) y ayuda a defender el proyecto.
+- **2026-09-23 — Reglas de las bolas:** solo cuenta el golpe DIRECTO (tras rebotar ya es fallo); una
+  bola fallada queda en el suelo y se puede recoger; si el Pokémon se escapa, la bola se pierde (como
+  en los juegos). El resultado se decide en el momento del golpe; lo demás es animación con tiempos
+  fijos (absorber 0,55 s, sacudidas 1,2 s cada una).
+- **2026-09-23 — La simulación usa CaptureCalculator** (lib/controllers/capture) directamente: es
+  lógica pura, sin estado de interfaz; se inyecta en World3DSim para poder forzar resultados en tests.
+- **2026-09-23 — Avisos del campo = datos, no texto.** FieldController guarda qué pasó (tipo, bola,
+  Pokémon, sacudidas) y la vista compone la frase en español (noticeText). MVC estricto.
+- **2026-09-23 — Verificación visual con un parche TEMP-PREVIEW** (jugador junto al prado con un
+  Pokémon delante, ratio por `?rate=`) y puppeteer con GPU (`scratchpad/drive2.mjs` entra por el menú;
+  `sheet.mjs` junta capturas en una hoja). Parche retirado tras comprobarlo.

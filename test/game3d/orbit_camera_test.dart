@@ -58,4 +58,44 @@ void main() {
     expect(camera.forward.dot(camera.right), closeTo(0, 1e-6));
     expect(camera.right.length, closeTo(1, 1e-6));
   });
+
+  test('project: the look-at point is the screen center; right is right', () {
+    final camera = OrbitCamera(yaw: 0.4, pitch: 0.5);
+    final feet = Vector3(3, 0, -2);
+    final center = camera.project(camera.targetFor(feet), feet, aspect: 1.6)!;
+    expect(center.x, closeTo(0, 1e-5));
+    expect(center.y, closeTo(0, 1e-5));
+
+    final right = camera.project(
+      camera.targetFor(feet) + camera.right,
+      feet,
+      aspect: 1.6,
+    )!;
+    expect(right.x, greaterThan(0.05));
+    final up = camera.project(
+      camera.targetFor(feet) + Vector3(0, 1, 0),
+      feet,
+      aspect: 1.6,
+    )!;
+    expect(up.y, greaterThan(0.05));
+
+    // Detrás de la cámara no se ve.
+    final behind = camera.eyeFor(feet) - camera.lookDirection(feet) * 2;
+    expect(camera.project(behind, feet, aspect: 1.6), isNull);
+  });
+
+  test('aim moves the camera closer and over the right shoulder', () {
+    final camera = OrbitCamera();
+    final feet = Vector3.zero();
+    final before = camera.targetFor(feet);
+    for (var i = 0; i < 60; i++) {
+      camera.updateAim(1 / 60, aiming: true);
+    }
+    expect(camera.aim, greaterThan(0.99));
+    expect(camera.effectiveDistance, closeTo(camera.distance / 2, 0.05));
+    expect(
+      (camera.targetFor(feet) - before).dot(camera.right),
+      greaterThan(0.6),
+    );
+  });
 }

@@ -53,6 +53,9 @@ class WildPokemon {
   /// Hacia dónde mira (0 = +Z), como el jugador.
   double facing;
 
+  /// Velocidad actual en el suelo (m/s): la mira la usa para adelantarse.
+  Vector3 velocity = Vector3.zero();
+
   /// Punto al que se dirige, o null si está parado.
   Vector3? target;
 

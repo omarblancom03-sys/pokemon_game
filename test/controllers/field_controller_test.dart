@@ -2,6 +2,8 @@
 // captura se apunta en el entrenador, cada suceso deja su aviso (como mucho
 // tres a la vez) y sin bolas no se lanza nada.
 
+import 'dart:math';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pokemon_game/controllers/field_controller.dart';
 import 'package:pokemon_game/controllers/trainer_controller.dart';
@@ -9,11 +11,22 @@ import 'package:pokemon_game/game3d/sim/wild_pokemon.dart';
 import 'package:pokemon_game/game3d/sim/world3d_events.dart';
 import 'package:pokemon_game/models/capture_result.dart';
 import 'package:pokemon_game/models/poke_ball.dart';
+import 'package:pokemon_game/services/poke_api_exception.dart';
+import 'package:pokemon_game/services/random_pokemon_picker.dart';
 import 'package:vector_math/vector_math.dart';
 
 import '../fakes/fake_pokemon_repository.dart';
 
 void main() {
+  late FakePokemonRepository repository;
+  setUp(() => repository = FakePokemonRepository(speciesCount: 30));
+
+  FieldController newField(TrainerController trainer) => FieldController(
+    trainer: trainer,
+    picker: RandomPokemonPicker(repository: repository, random: Random(4)),
+    repository: repository,
+  );
+
   WildPokemon wild(int id) => WildPokemon(
     id: 'w$id',
     pokemon: fakePokemon(id),
@@ -25,7 +38,7 @@ void main() {
 
   test('picking up balls fills the bag and posts a notice', () {
     final trainer = TrainerController(startingBag: const {});
-    final field = FieldController(trainer: trainer)
+    final field = newField(trainer)
       ..onWorldEvent(const BallsPickedUp(PokeBallType.great, 2));
 
     expect(trainer.count(PokeBallType.great), 2);
@@ -38,7 +51,7 @@ void main() {
 
   test('a capture is registered in the trainer; an escape is not', () {
     final trainer = TrainerController();
-    final field = FieldController(trainer: trainer)
+    final field = newField(trainer)
       ..onWorldEvent(PokemonBrokeFree(wild(4), PokeBallType.poke, escaped))
       ..onWorldEvent(PokemonCaught(wild(7), PokeBallType.ultra, caught));
 
@@ -52,7 +65,7 @@ void main() {
   });
 
   test('only the newest notices are kept; dismiss removes one', () {
-    final field = FieldController(trainer: TrainerController());
+    final field = newField(TrainerController());
     for (var i = 0; i < 5; i++) {
       field.onWorldEvent(const BallMissed(PokeBallType.poke));
     }
@@ -72,11 +85,27 @@ void main() {
     final trainer = TrainerController(
       startingBag: const {PokeBallType.poke: 1},
     );
-    final field = FieldController(trainer: trainer);
+    final field = newField(trainer);
 
     expect(field.takeBallToThrow(), PokeBallType.poke);
     expect(field.notices, isEmpty);
     expect(field.takeBallToThrow(), isNull);
     expect(field.notices.single.kind, FieldNoticeKind.noBalls);
+  });
+
+  test('wild spawns come with their real capture rate', () async {
+    repository.captureRate = 120;
+    final spawn = (await newField(TrainerController()).pickWildSpawn())!;
+    expect(spawn.captureRate, 120);
+  });
+
+  test('no network: no spawn; only the rate failing: default rate', () async {
+    final f = newField(TrainerController());
+    repository.failNext = const PokeApiNetworkException('offline');
+    expect(await f.pickWildSpawn(), isNull);
+
+    repository.failCaptureRate = true;
+    final spawn = (await f.pickWildSpawn())!;
+    expect(spawn.captureRate, FieldController.fallbackCaptureRate);
   });
 }

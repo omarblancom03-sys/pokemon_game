@@ -7,8 +7,10 @@ import 'package:vector_math/vector_math.dart' as vm;
 import '../mesh/mesh_builder.dart';
 import '../mesh/props.dart';
 import '../mesh/terrain_mesh.dart';
+import '../sim/orbit_camera.dart';
 import '../sim/trainer_pose.dart';
 import '../sim/world3d_sim.dart';
+import 'ball_renderer.dart';
 import 'grass_renderer.dart';
 import 'item_renderer.dart';
 import 'trainer_rig.dart';
@@ -38,6 +40,7 @@ class _Scene3DViewState extends State<Scene3DView> {
   late GrassRenderer _grass;
   late WildRenderer _wild;
   late ItemRenderer _items;
+  late BallRenderer _balls;
   Object? _error;
 
   World3DSim get _sim => widget.sim;
@@ -121,6 +124,10 @@ class _Scene3DViewState extends State<Scene3DView> {
     scene.add(itemsRoot);
     _items = ItemRenderer(root: itemsRoot, toMesh: _mesh);
 
+    final ballsRoot = Node(name: 'balls');
+    scene.add(ballsRoot);
+    _balls = BallRenderer(root: ballsRoot, toMesh: _mesh);
+
     _trainer = TrainerRig(_mesh);
     scene.add(_trainer.root);
     _syncPlayer();
@@ -157,7 +164,10 @@ class _Scene3DViewState extends State<Scene3DView> {
         speed: p.speed,
         walkSpeed: _sim.config.walkSpeed,
         runSpeed: _sim.config.runSpeed,
+        aiming: _sim.camera.aim > 0.5,
+        throwProgress: _sim.throwProgress,
       ),
+      heldBall: _sim.heldBall,
     );
   }
 
@@ -166,8 +176,14 @@ class _Scene3DViewState extends State<Scene3DView> {
     _sim.update(math.min(dt, 0.1));
     _syncPlayer();
     _grass.update(_sim.time, _sim.grassPushers);
-    _wild.update(_sim.wild, _sim.camera.yaw, _sim.time);
+    _wild.update(_sim.wild, _sim.balls, _sim.camera.yaw, _sim.time);
     _items.update(_sim.fieldItems.items, _sim.time);
+    _balls.update(
+      _sim.balls,
+      preview: _sim.aimPreview,
+      locked: _sim.lockedTarget != null,
+      cameraYaw: _sim.camera.yaw,
+    );
   }
 
   Camera _camera(Duration _) {
@@ -175,7 +191,7 @@ class _Scene3DViewState extends State<Scene3DView> {
     return PerspectiveCamera(
       position: _toEngine(_sim.camera.eyeFor(feet)),
       target: _toEngine(_sim.camera.targetFor(feet)),
-      fovRadiansY: 55 * math.pi / 180,
+      fovRadiansY: OrbitCamera.fovY,
       fovFar: 400,
     );
   }

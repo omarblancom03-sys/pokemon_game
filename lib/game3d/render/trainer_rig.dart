@@ -1,8 +1,13 @@
+import 'dart:math' as math;
+
 import 'package:flutter_scene/scene.dart';
 import 'package:vector_math/vector_math.dart' as vm;
 
+import '../../models/poke_ball.dart';
+import '../mesh/ball_mesh.dart';
 import '../mesh/mesh_builder.dart';
 import '../mesh/trainer_mesh.dart';
+import '../sim/throwing.dart';
 import '../sim/trainer_pose.dart';
 
 /// El entrenador como jerarquía de nodos del motor ("esqueleto" simple):
@@ -26,6 +31,16 @@ class TrainerRig {
       limb.add(Node(mesh: armMesh.clone()));
       _hips.add(limb);
     }
+    // Una bola de cada tipo en el guante derecho (solo se ve la que toca).
+    for (final type in PokeBallType.values) {
+      final ball = Node(mesh: toMesh(buildPokeBall(type, radius: ballRadius)))
+        ..position = vm.Vector3(0, -0.62, 0)
+        // Con el brazo en alto, la mitad de color queda hacia arriba.
+        ..rotation = vm.Quaternion.axisAngle(_x, math.pi)
+        ..visible = false;
+      _handBalls[type] = ball;
+      _rightArm.add(ball);
+    }
     root.add(_hips);
   }
 
@@ -36,18 +51,23 @@ class TrainerRig {
   final Node _rightLeg = Node(name: 'rightLeg');
   final Node _leftArm = Node(name: 'leftArm');
   final Node _rightArm = Node(name: 'rightArm');
+  final Map<PokeBallType, Node> _handBalls = {};
 
   static final _x = vm.Vector3(1, 0, 0);
   static final _y = vm.Vector3(0, 1, 0);
 
   /// Coloca al entrenador. [feet] y [facing] vienen de la simulación (mano
   /// derecha); aquí se pasan al espacio del motor (Z invertida, giros con
-  /// el signo cambiado).
+  /// el signo cambiado). [heldBall] es la bola que lleva en la mano.
   void apply({
     required vm.Vector3 feet,
     required double facing,
     required TrainerPose pose,
+    PokeBallType? heldBall,
   }) {
+    for (final MapEntry(:key, :value) in _handBalls.entries) {
+      value.visible = key == heldBall;
+    }
     root
       ..position = _engine(feet)
       ..rotation = vm.Quaternion.axisAngle(_y, -facing);

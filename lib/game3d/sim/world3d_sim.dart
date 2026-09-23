@@ -3,26 +3,34 @@ import 'dart:math' as math;
 
 import 'package:vector_math/vector_math.dart';
 
+import '../../controllers/capture/capture_calculator.dart';
 import '../../game/input/movement_input.dart';
 import '../../game/map/map_layout.dart';
+import '../../models/poke_ball.dart';
 import '../../models/pokemon.dart';
+import 'aiming.dart';
 import 'camera_input.dart';
 import 'field_items.dart';
 import 'grass_field.dart';
 import 'orbit_camera.dart';
 import 'player_body.dart';
+import 'throwing.dart';
 import 'wild_pokemon.dart';
 import 'world3d_config.dart';
 import 'world3d_events.dart';
 
 export 'field_items.dart' show GroundItem;
+export 'throwing.dart' show BallPhase, ThrownBall;
 export 'world3d_events.dart';
 
-/// Pide un Pokémon para hacer aparecer en la hierba (null = ahora no).
-typedef WildSpawnSource = Future<Pokemon?> Function();
+/// Un Pokémon para hacer aparecer, con su ratio de captura real.
+typedef WildSpawn = ({Pokemon pokemon, int captureRate});
 
-/// LA SIMULACIÓN del mundo 3D: jugador, cámara, hierba alta y Pokémon
-/// salvajes sobre el mapa ASCII.
+/// Pide un Pokémon para hacer aparecer en la hierba (null = ahora no).
+typedef WildSpawnSource = Future<WildSpawn?> Function();
+
+/// LA SIMULACIÓN del mundo 3D: jugador, cámara, hierba alta, Pokémon
+/// salvajes, Poké Balls en el suelo y lanzadas, sobre el mapa ASCII.
 ///
 /// No dibuja nada ni conoce el motor: el renderer llama a [update] en cada
 /// fotograma y luego lee el estado para colocar la escena. Avisa hacia
@@ -42,10 +50,16 @@ class World3DSim {
     this.onGrassEncounter,
     this.onEvent,
     int maxFieldItems = 6,
+    CaptureCalculator? calculator,
   }) : input = input ?? MovementInput(),
        cameraInput = cameraInput ?? CameraInput(),
        camera = camera ?? OrbitCamera(),
        _random = random ?? math.Random() {
+    ballSystem = BallSystem(
+      layout: layout,
+      tileSize: config.tileSize,
+      calculator: calculator ?? CaptureCalculator(random: _random),
+    );
     player = PlayerBody(
       config: config,
       canOccupy: (footprint) =>
@@ -79,6 +93,19 @@ class World3DSim {
   /// Poké Balls en el suelo para recoger.
   late final FieldItems fieldItems;
 
+  /// Poké Balls lanzadas (vuelo, choques y secuencia de captura).
+  late final BallSystem ballSystem;
+
+  /// El jugador está apuntando (botón derecho / tecla): la cámara se pone
+  /// al hombro, el cuerpo mira adonde apunta la cámara y no se corre.
+  bool aiming = false;
+
+  /// Pokémon al que se lanzaría ahora mismo (null = tiro a ojo).
+  WildPokemon? lockedTarget;
+
+  /// Bola elegida en la bolsa (la pone la pantalla); null = bolsa vacía.
+  PokeBallType? readyBall = PokeBallType.poke;
+
   final WildSpawnSource? spawnWild;
   final void Function(WildPokemon wild)? onWildContact;
   final void Function()? onGrassEncounter;
@@ -103,6 +130,16 @@ class World3DSim {
   double _grace = 0;
   double _grassMeters = 0;
   double _lastDistance = 0;
+
+  // Lanzamiento en curso: tiempo desde que empezó, bola y objetivo.
+  double? _throwTime;
+  PokeBallType? _throwBall;
+  WildPokemon? _throwTarget;
+  bool _released = false;
+
+  /// Duración de la animación de lanzar y momento en que suelta la bola.
+  static const throwDuration = 0.5;
+  static const releaseTime = 0.18;
 
   /// Radianes por segundo al girar con Q/E.
   static const keyTurnSpeed = 2.2;
@@ -161,6 +198,133 @@ class World3DSim {
 
   void _emit(World3DEvent event) => onEvent?.call(event);
 
+  /// 0..1 mientras dura la animación de lanzar; null si no lanza.
+  double? get throwProgress =>
+      _throwTime == null ? null : _throwTime! / throwDuration;
+
+  /// ¿Se puede lanzar ahora? (una bola cada vez que termina el gesto).
+  bool get canThrow => !_paused && _throwTime == null;
+
+  /// Bola que se ve en la mano: al apuntar, la elegida; al lanzar, la
+  /// lanzada hasta que sale de la mano.
+  PokeBallType? get heldBall {
+    if (_throwTime != null) return _released ? null : _throwBall;
+    return aiming ? readyBall : null;
+  }
+
+  /// Probabilidad de capturar al objetivo fijado con la bola elegida
+  /// (null si no hay objetivo o no quedan bolas).
+  double? get lockedChance {
+    final target = lockedTarget;
+    final ball = readyBall;
+    if (target == null || ball == null) return null;
+    final toTarget = target.position - player.position
+      ..y = 0;
+    if (toTarget.length2 > 0) toTarget.normalize();
+    return CaptureCalculator.chance(
+      captureRate: target.captureRate,
+      ball: ball,
+      unaware: !target.isAlert,
+      fromBehind: toTarget.dot(target.facingDirection) > 0.5,
+    );
+  }
+
+  /// Bolas en el aire o en el suelo con un Pokémon dentro.
+  List<ThrownBall> get balls => ballSystem.balls;
+
+  /// Empieza a lanzar [ball] al objetivo fijado (o hacia donde mira la
+  /// cámara). La bola sale de la mano un instante después, cuando el brazo
+  /// pasa por delante. Devuelve false si ahora no se puede.
+  bool throwBall(PokeBallType ball) {
+    if (!canThrow) return false;
+    _throwTime = 0;
+    _throwBall = ball;
+    _throwTarget = lockedTarget;
+    _released = false;
+    return true;
+  }
+
+  /// Hacia dónde mira el cuerpo al apuntar o lanzar (en el suelo).
+  Vector3 get _aimDirection {
+    final target = _throwTarget ?? lockedTarget;
+    if (target != null) {
+      final to = target.position - player.position
+        ..y = 0;
+      if (to.length2 > 1e-6) return to..normalize();
+    }
+    return camera.forward;
+  }
+
+  /// De dónde sale la bola: la mano derecha (o el pecho si la mano queda
+  /// dentro de un árbol, pegado a él).
+  Vector3 get _hand {
+    final hand = handPosition(player.position, player.facing);
+    if (hand.y > ballSystem.heightAt(hand.x, hand.z)) return hand;
+    return player.position + Vector3(0, 1.55, 0);
+  }
+
+  Vector3 _releaseVelocity(Vector3 hand, WildPokemon? target) {
+    if (target != null && target.isFree) {
+      final v = lockedThrowVelocity(hand, target);
+      if (v != null) return v;
+    }
+    return freeThrowVelocity(camera);
+  }
+
+  /// Trayectoria que seguiría la bola si se lanzara ahora (se dibuja al
+  /// apuntar). Vacía si no se está apuntando.
+  List<Vector3> get aimPreview {
+    if (!aiming || !canThrow || readyBall == null) return const [];
+    final hand = _hand;
+    return ballSystem.predict(
+      hand,
+      _releaseVelocity(hand, lockedTarget),
+      wild: wild,
+    );
+  }
+
+  void _updateThrow(double dt) {
+    final t = _throwTime;
+    if (t == null) return;
+    final now = t + dt;
+    _throwTime = now;
+    if (!_released && now >= releaseTime) {
+      _released = true;
+      final hand = _hand;
+      ballSystem.launch(
+        _throwBall!,
+        hand,
+        _releaseVelocity(hand, _throwTarget),
+      );
+    }
+    if (now >= throwDuration) {
+      _throwTime = null;
+      _throwTarget = null;
+    }
+  }
+
+  /// Deja en el suelo una bola fallada. Si cayó sobre algo que no se
+  /// pisa (una valla), se lleva a la casilla libre más cercana.
+  void _dropBall(PokeBallType ball, Vector3 at) {
+    final cell = cellAt(at);
+    var spot = at;
+    if (!layout.isWalkable(cell.col, cell.row)) {
+      var best = double.infinity;
+      for (var dr = -2; dr <= 2; dr++) {
+        for (var dc = -2; dc <= 2; dc++) {
+          if (!layout.isWalkable(cell.col + dc, cell.row + dr)) continue;
+          final c = cellCenter(cell.col + dc, cell.row + dr);
+          final d = c.distanceTo(Vector3(at.x, 0, at.z));
+          if (d < best) {
+            best = d;
+            spot = c;
+          }
+        }
+      }
+    }
+    fieldItems.drop(ball, spot);
+  }
+
   /// Quita un Pokémon salvaje (tras su encuentro).
   void removeWild(String id) => wild.removeWhere((w) => w.id == id);
 
@@ -170,22 +334,45 @@ class World3DSim {
   /// Avanza la simulación [dt] segundos.
   void update(double dt) {
     time += dt;
+    if (_paused) aiming = false;
     _updateCamera(dt);
+    camera.updateAim(dt, aiming: aiming);
+    lockedTarget = _paused
+        ? null
+        : findLockTarget(
+            player: player.position,
+            forward: camera.forward,
+            wild: wild,
+          );
+    _updateThrow(dt);
 
     // Jugador: la dirección pulsada es RELATIVA A LA CÁMARA
-    // (arriba = alejarse de la cámara), como en GTA.
+    // (arriba = alejarse de la cámara), como en GTA. Al apuntar o lanzar,
+    // el cuerpo mira al objetivo aunque camine de lado.
     final dir = input.direction; // x: derecha, y: abajo (convención 2D)
     final wish = camera.right * dir.x + camera.forward * -dir.y;
-    player.update(dt, wish, running: cameraInput.running && input.enabled);
+    player.update(
+      dt,
+      wish,
+      running: cameraInput.running && input.enabled && !aiming,
+      face: aiming || _throwTime != null ? _aimDirection : null,
+    );
 
     final moved = player.distanceWalked - _lastDistance;
     _lastDistance = player.distanceWalked;
     if (_paused) return;
 
     fieldItems.update(dt, player.position, _emit);
-    for (final w in wild) {
-      _wander(w, dt);
+    for (final w in wild.toList()) {
+      _updateWild(w, dt);
     }
+    ballSystem.update(
+      dt,
+      wild: wild,
+      drop: _dropBall,
+      remove: (w) => removeWild(w.id),
+      emit: _emit,
+    );
     _maybeSpawn(dt);
 
     if (_grace > 0) {
@@ -206,11 +393,12 @@ class World3DSim {
       ..zoom(cameraInput.takeZoom());
   }
 
-  /// Todos los que apartan la hierba al pasar: jugador y Pokémon.
+  /// Todos los que apartan la hierba al pasar: jugador y Pokémon (los que
+  /// están dentro de una bola, no).
   Iterable<Vector3> get grassPushers sync* {
     yield player.position;
     for (final w in wild) {
-      yield w.position;
+      if (w.isFree) yield w.position;
     }
   }
 
@@ -228,7 +416,9 @@ class World3DSim {
       source()
           .then((pokemon) {
             _pendingSpawns--;
-            if (pokemon != null && !_disposed) spawn(pokemon);
+            if (pokemon != null && !_disposed) {
+              spawn(pokemon.pokemon, captureRate: pokemon.captureRate);
+            }
           })
           .catchError((Object _) {
             _pendingSpawns--; // sin red: se reintentará en el siguiente turno
@@ -238,7 +428,7 @@ class World3DSim {
 
   /// Hace aparecer [pokemon] en una casilla de hierba alta lejos del
   /// jugador y de los demás. Devuelve null si no hay sitio.
-  WildPokemon? spawn(Pokemon pokemon) {
+  WildPokemon? spawn(Pokemon pokemon, {int captureRate = 45}) {
     final playerPos = player.position;
     final spots =
         [for (final cell in _tallGrassCells) cellCenter(cell.col, cell.row)]
@@ -252,6 +442,7 @@ class World3DSim {
     final w = WildPokemon(
       id: 'wild-${_spawnCount++}',
       pokemon: pokemon,
+      captureRate: captureRate,
       position: spot,
       facing: _random.nextDouble() * 2 * math.pi,
     )..idleTime = _random.nextDouble() * 2;
@@ -259,9 +450,25 @@ class World3DSim {
     return w;
   }
 
+  /// Relojes del Pokémon y su movimiento (si no está dentro de una bola).
+  void _updateWild(WildPokemon w, double dt) {
+    w.age += dt;
+    if (w.alertTime > 0) w.alertTime = math.max(0, w.alertTime - dt);
+    final released = w.releasedFor;
+    if (released != null) {
+      w.releasedFor = released + dt > 0.6 ? null : released + dt;
+    }
+    if (!w.isFree) {
+      w.velocity = Vector3.zero();
+      return;
+    }
+    final before = w.position;
+    _wander(w, dt);
+    w.velocity = dt > 0 ? (w.position - before) / dt : Vector3.zero();
+  }
+
   /// Paseo aleatorio sin salir de la hierba alta.
   void _wander(WildPokemon w, double dt) {
-    w.age += dt;
     final target = w.target;
     if (target == null) {
       w.idleTime -= dt;
@@ -315,7 +522,7 @@ class World3DSim {
   bool _checkContacts() {
     final p = player.position;
     for (final w in wild) {
-      if (w.engaged) continue;
+      if (w.engaged || !w.isFree) continue;
       if (w.position.distanceTo(p) < w.contactRadius) {
         w.engaged = true;
         onWildContact?.call(w);

@@ -10,6 +10,7 @@ import 'package:pokemon_game/models/named_resource.dart';
 import 'package:pokemon_game/models/paged_result.dart';
 import 'package:pokemon_game/models/pokemon.dart';
 import 'package:pokemon_game/models/pokemon_type.dart';
+import 'package:pokemon_game/services/poke_api_exception.dart';
 import 'package:pokemon_game/services/pokemon_repository.dart';
 
 Pokemon fakePokemon(int id) => Pokemon(
@@ -72,9 +73,13 @@ class FakePokemonRepository implements PokemonRepository {
   /// Ratio de captura que devolverá getCaptureRate.
   int captureRate = 45;
 
+  /// Si es true, getCaptureRate falla siempre (el resto funciona).
+  bool failCaptureRate = false;
+
   @override
   Future<int> getCaptureRate(int id) async {
     await _maybeFail();
+    if (failCaptureRate) throw PokeApiServerException(500, Uri());
     return captureRate;
   }
 

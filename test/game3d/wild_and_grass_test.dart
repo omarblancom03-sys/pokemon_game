@@ -115,7 +115,7 @@ void main() {
         random: Random(1),
         spawnWild: () async {
           asked++;
-          return fakePokemon(asked);
+          return (pokemon: fakePokemon(asked), captureRate: 45);
         },
       );
       for (var i = 0; i < 40; i++) {
@@ -144,7 +144,7 @@ void main() {
         layout: layout,
         spawnWild: () async {
           await gate.future;
-          return fakePokemon(1);
+          return (pokemon: fakePokemon(1), captureRate: 45);
         },
       );
       step(s, 1);
