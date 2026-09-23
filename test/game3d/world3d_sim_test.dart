@@ -100,6 +100,19 @@ void main() {
     expect(s.player.position, start);
   });
 
+  test('the camera never ends up inside the trees behind the player', () {
+    final s = sim();
+    // Camina hacia +Z (hacia la cámara) hasta pegarse a los árboles de la
+    // última fila: la cámara, que está detrás, quedaría dentro de ellos.
+    s.input.setKeyboardDirection(Vector2(0, 1));
+    step(s, 3);
+
+    final eye = s.camera.eyeFor(s.player.position);
+    expect(eye.y, greaterThan(s.ballSystem.heightAt(eye.x, eye.z)));
+    // No cabe detrás: sube para mirar desde arriba.
+    expect(s.camera.pitchLift, greaterThan(0.5));
+  });
+
   test('cellAt maps world meters back to map cells', () {
     final s = sim();
     expect(s.cellAt(s.cellCenter(5, 2)), (col: 5, row: 2));

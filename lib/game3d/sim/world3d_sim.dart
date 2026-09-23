@@ -388,6 +388,7 @@ class World3DSim {
       face: aiming || _throwTime != null ? _aimDirection : null,
     );
     crouchAmount += ((crouching ? 1 : 0) - crouchAmount) * math.min(1, dt * 10);
+    camera.avoidObstacles(player.position, ballSystem.heightAt, dt);
 
     final moved = player.distanceWalked - _lastDistance;
     _lastDistance = player.distanceWalked;

@@ -14,7 +14,8 @@
     rodea el mapa. Luz de sol con sombras, cielo en degradado, niebla ligera y aspecto "stylized".
   - Entrenador low-poly (gorra, chaqueta, mochila) con ciclo de caminar y carrera.
   - Cámara en tercera persona: arrastrar con el ratón para girar, rueda para zoom, Q/E para girar con
-    teclado. WASD/flechas mueven relativo a la cámara; Mayús corre. D-pad en pantalla.
+    teclado. WASD/flechas mueven relativo a la cámara; Mayús corre. D-pad en pantalla. La cámara no
+    atraviesa árboles ni casas: se acerca si algo estorba y, de espaldas a un árbol, mira desde arriba.
   - Hierba alta 3D que se mece con el viento y se aparta al pasar.
   - Pokémon salvajes VISIBLES (arte oficial de PokeAPI) que deambulan por la hierba alta.
   - **Sigilo:** los Pokémon ven en un cono delante de ellos y oyen tus pasos (correr se oye de lejos).

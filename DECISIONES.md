@@ -98,3 +98,10 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
   (conmutador, como en Leyendas Arceus).
 - **2026-09-23 — Los encuentros al azar en la hierba quedan tras el flag `grassEncounters`** (false por
   defecto en 3D, como ya decía la decisión de 2026-09-22 pero no estaba implementado).
+- **2026-09-23 — Cámara contra obstáculos:** se usan las mismas alturas por casilla que los choques de
+  las bolas (`obstacleHeight`: árbol 4,5 m, casa 5 m, bosque exterior 8 m; vallas y arbustos no
+  estorban a una cámara que mira desde arriba). Si algo se interpone, la cámara se acerca AL INSTANTE
+  (nunca se ve a través de una pared) y se aleja a 5 m/s cuando deja de estorbar (sin tirones). Si
+  de espaldas a un árbol o casa no cabe (< 2,8 m libres), en vez de meterse dentro SUBE hasta 86°
+  (vista cenital, como en los juegos de plataformas) y baja despacio al salir. La inclinación elegida
+  por el jugador no cambia: el tiro "a ojo" sigue usando esa.

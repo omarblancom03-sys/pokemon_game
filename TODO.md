@@ -58,7 +58,8 @@ El combate lo hace OTRO equipo (se engancha por el contrato EncounterHandler). N
 - [x] Encuentros al azar en la hierba apagados por defecto en 3D (flag grassEncounters)
 
 ## 8.9 Andar por el campo
-- [ ] La cámara no atraviesa árboles ni casas
+- [x] La cámara no atraviesa árboles ni casas (se acerca al instante y se aleja poco a poco;
+      de espaldas a un árbol o casa sube para mirar desde arriba — OrbitCamera.avoidObstacles)
 - [ ] Minimapa
 - [ ] Más vida en el mundo (suelo con variación, polvo al correr, detalles)
 

@@ -1,5 +1,6 @@
 // PRUEBAS de la cámara en tercera persona: posición del ojo según
-// yaw/pitch/distancia, límites de inclinación y zoom, y ejes adelante/derecha.
+// yaw/pitch/distancia, límites de inclinación y zoom, ejes adelante/derecha
+// y que no se meta dentro de árboles ni casas.
 
 import 'dart:math' as math;
 
@@ -97,5 +98,90 @@ void main() {
       (camera.targetFor(feet) - before).dot(camera.right),
       greaterThan(0.6),
     );
+  });
+
+  group('avoidObstacles', () {
+    // Una "pared" de 5 m de alto a partir de z = 3 (detrás del jugador,
+    // que está en el origen y tiene la cámara en +Z con yaw 0).
+    double wall(double x, double z) => z >= 3 ? 5 : 0;
+    double nothing(double x, double z) => 0;
+
+    test('with nothing behind, the camera keeps its distance', () {
+      final camera = OrbitCamera(pitch: 0.3, distance: 8)
+        ..avoidObstacles(Vector3.zero(), nothing, 1 / 60);
+      expect(camera.obstructedDistance, isNull);
+      expect(camera.effectiveDistance, 8);
+    });
+
+    test('a wall behind pulls the eye in at once, out of the wall', () {
+      final camera = OrbitCamera(pitch: 0.3, distance: 8)
+        ..avoidObstacles(Vector3.zero(), wall, 1 / 60);
+      expect(camera.eyeFor(Vector3.zero()).z, lessThan(3));
+      expect(camera.effectiveDistance, lessThan(8));
+    });
+
+    test('low obstacles (a fence) do not bother a camera above them', () {
+      final camera = OrbitCamera(pitch: 0.3, distance: 8)
+        ..avoidObstacles(Vector3.zero(), (x, z) => z >= 3 ? 1 : 0, 1 / 60);
+      expect(camera.obstructedDistance, isNull);
+    });
+
+    test('never closer than minClearDistance, even inside a wall', () {
+      final camera = OrbitCamera(pitch: 0.3, distance: 8)
+        ..avoidObstacles(Vector3.zero(), (x, z) => 5, 1 / 60);
+      expect(camera.effectiveDistance, OrbitCamera.minClearDistance);
+    });
+
+    test('when the wall is gone it backs off smoothly, not in one jump', () {
+      final camera = OrbitCamera(pitch: 0.3, distance: 8)
+        ..avoidObstacles(Vector3.zero(), wall, 1 / 60);
+      final blocked = camera.effectiveDistance;
+
+      camera.avoidObstacles(Vector3.zero(), nothing, 0.1);
+      expect(
+        camera.effectiveDistance,
+        closeTo(blocked + OrbitCamera.clearRecoverSpeed * 0.1, 1e-9),
+      );
+
+      for (var i = 0; i < 120; i++) {
+        camera.avoidObstacles(Vector3.zero(), nothing, 1 / 60);
+      }
+      expect(camera.obstructedDistance, isNull);
+      expect(camera.effectiveDistance, 8);
+    });
+
+    test('with its back to a tall wall it rises to look from above', () {
+      // Pared de 4 m pegada al jugador (a 0,4 m): detrás no cabe la cámara.
+      double close(double x, double z) => z >= 0.4 ? 4 : 0;
+      final camera = OrbitCamera(pitch: 0.4, distance: 7);
+      for (var i = 0; i < 120; i++) {
+        camera.avoidObstacles(Vector3.zero(), close, 1 / 60);
+      }
+      expect(camera.pitchLift, greaterThan(0.5));
+      expect(
+        camera.effectivePitch,
+        lessThanOrEqualTo(OrbitCamera.maxLiftedPitch),
+      );
+      // La inclinación elegida por el jugador no cambia (la usa el tiro).
+      expect(camera.pitch, 0.4);
+      final eye = camera.eyeFor(Vector3.zero());
+      expect(eye.y, greaterThan(close(eye.x, eye.z)));
+
+      // Lejos de la pared vuelve a bajar poco a poco.
+      camera.avoidObstacles(Vector3.zero(), nothing, 1 / 60);
+      expect(camera.pitchLift, greaterThan(0.4));
+      for (var i = 0; i < 240; i++) {
+        camera.avoidObstacles(Vector3.zero(), nothing, 1 / 60);
+      }
+      expect(camera.pitchLift, lessThan(0.01));
+    });
+
+    test('aiming uses the shorter aim distance for the check', () {
+      // Apuntando la cámara está a 4 m (la mitad): una pared a 6 m no estorba.
+      final camera = OrbitCamera(pitch: 0.3, distance: 8)..aim = 1;
+      camera.avoidObstacles(Vector3.zero(), (x, z) => z >= 6 ? 5 : 0, 1 / 60);
+      expect(camera.obstructedDistance, isNull);
+      expect(camera.effectiveDistance, 4);
+    });
   });
 }
