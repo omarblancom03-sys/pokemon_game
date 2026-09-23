@@ -90,6 +90,9 @@ void main() {
       expect(game.input.direction, Vector2.zero());
       game.setPaused(false);
       expect(game.input.direction, Vector2(1, 0));
+      // Soltar la tecla: si Ash siguiera andando durante update(1.1), podría
+      // acercarse al humo recién aparecido y el test fallaría al azar.
+      game.input.clear();
 
       game.removeSmoke('s1');
       await game.ready();

@@ -33,3 +33,9 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
   captura. En swiftshader va a pocos FPS y el `dt` se limita a 0.1 s, así que en capturas el
   jugador avanza lento; la dirección es correcta. La primera tecla tras navegar a veces se pierde en
   web headless (foco); no afecta al uso real.
+- **2026-09-22 — Test flaky de 2D corregido.** `smoke_collision_test` dejaba la dirección (1,0) pulsada:
+  durante `update(1.1)` Ash andaba ~198 px DESPUÉS de elegirse el punto del humo nuevo y a veces quedaba
+  a < 200 px. Se suelta la entrada (`input.clear()`) antes de avanzar el tiempo. No era un fallo del juego.
+- **2026-09-22 — Mundo en una sola malla.** Todos los objetos fijos (árboles, casas, vallas, bosque exterior)
+  se generan con `MeshBuilder` en una única malla con colores por vértice: una llamada de dibujo, ideal para
+  web. Aspecto "stylized" (ACES, saturación 1.2, bloom suave, niebla ligera, IBL al 55 %).

@@ -5,6 +5,7 @@ import 'package:flutter_scene/scene.dart';
 import 'package:vector_math/vector_math.dart' as vm;
 
 import '../mesh/mesh_builder.dart';
+import '../mesh/props.dart';
 import '../mesh/terrain_mesh.dart';
 import '../sim/world3d_sim.dart';
 
@@ -47,7 +48,30 @@ class _Scene3DViewState extends State<Scene3DView> {
     final scene = Scene()
       ..directionalLight = DirectionalLight(
         direction: _toEngine(vm.Vector3(-0.45, -1, 0.35)),
+        color: vm.Vector3(1, 0.96, 0.88),
+        intensity: 3.2,
         castsShadow: true,
+        shadowMaxDistance: 60,
+      )
+      // Aspecto "stylized": colores vivos, algo cálidos, brillo suave y
+      // una neblina azulada que da profundidad.
+      ..environmentSettings = EnvironmentSettings(
+        toneMapping: ToneMappingMode.aces,
+        exposure: 0.85,
+        environmentIntensity: 0.55,
+        colorGradingEnabled: true,
+        saturation: 1.2,
+        contrast: 1.15,
+        temperature: 0.08,
+        bloomEnabled: true,
+        bloomThreshold: 1.2,
+        bloomIntensity: 0.15,
+        vignetteEnabled: true,
+        vignetteIntensity: 0.2,
+        fogEnabled: true,
+        fogMode: FogMode.exponential,
+        fogColor: vm.Vector3(0.72, 0.84, 0.97),
+        fogDensity: 0.004,
       )
       ..skybox = Skybox(
         GradientSkySource(
@@ -60,19 +84,20 @@ class _Scene3DViewState extends State<Scene3DView> {
     final tile = _sim.config.tileSize;
     scene.add(Node(mesh: _mesh(buildTerrain(_sim.layout, tile))));
 
-    // Provisional (8.2): obstáculos como cajas; en 8.3 llegan los modelos.
-    final blocks = MeshBuilder();
-    for (var row = 0; row < _sim.layout.rows; row++) {
-      for (var col = 0; col < _sim.layout.columns; col++) {
-        if (_sim.layout.isWalkable(col, row)) continue;
-        blocks.box(
-          vm.Vector3(col * tile + 0.1, 0, row * tile + 0.1),
-          vm.Vector3((col + 1) * tile - 0.1, 1.6, (row + 1) * tile - 0.1),
-          srgb(0x2F6B34),
-        );
-      }
-    }
-    scene.add(Node(mesh: _mesh(blocks.build())));
+    // Todo lo fijo (árboles, casas, vallas...) va en UNA malla.
+    scene.add(Node(mesh: _mesh(buildProps(_sim.layout, tile))));
+
+    // Césped exterior bajo el bosque del borde (un poco por debajo del
+    // suelo para que no parpadee con él).
+    final outer = MeshBuilder()
+      ..quad(
+        vm.Vector3(-40, -0.02, -40),
+        vm.Vector3(-40, -0.02, _sim.depth + 40),
+        vm.Vector3(_sim.width + 40, -0.02, _sim.depth + 40),
+        vm.Vector3(_sim.width + 40, -0.02, -40),
+        srgb(0x4E9A3E),
+      );
+    scene.add(Node(mesh: _mesh(outer.build())));
 
     _player = Node(
       mesh: Mesh(

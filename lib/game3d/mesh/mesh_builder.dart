@@ -112,8 +112,13 @@ class MeshBuilder {
     final x1 = max.x, y1 = max.y, z1 = max.z;
     Vector3 v(double x, double y, double z) => Vector3(x, y, z);
     // Arriba (+Y) y abajo (-Y).
-    quad(v(x0, y1, z0), v(x0, y1, z1), v(x1, y1, z1), v(x1, y1, z0),
-        topColor ?? color);
+    quad(
+      v(x0, y1, z0),
+      v(x0, y1, z1),
+      v(x1, y1, z1),
+      v(x1, y1, z0),
+      topColor ?? color,
+    );
     quad(v(x0, y0, z0), v(x1, y0, z0), v(x1, y0, z1), v(x0, y0, z1), color);
     // Delante (+Z) y detrás (-Z).
     quad(v(x0, y0, z1), v(x1, y0, z1), v(x1, y1, z1), v(x0, y1, z1), color);
@@ -161,31 +166,56 @@ class MeshBuilder {
   void gem(Vector3 center, Vector3 radii, Vector4 color, {int detail = 1}) {
     const t = 1.618033988749895;
     final verts = [
-      Vector3(-1, t, 0), Vector3(1, t, 0), Vector3(-1, -t, 0),
-      Vector3(1, -t, 0), Vector3(0, -1, t), Vector3(0, 1, t),
-      Vector3(0, -1, -t), Vector3(0, 1, -t), Vector3(t, 0, -1),
-      Vector3(t, 0, 1), Vector3(-t, 0, -1), Vector3(-t, 0, 1),
+      Vector3(-1, t, 0),
+      Vector3(1, t, 0),
+      Vector3(-1, -t, 0),
+      Vector3(1, -t, 0),
+      Vector3(0, -1, t),
+      Vector3(0, 1, t),
+      Vector3(0, -1, -t),
+      Vector3(0, 1, -t),
+      Vector3(t, 0, -1),
+      Vector3(t, 0, 1),
+      Vector3(-t, 0, -1),
+      Vector3(-t, 0, 1),
     ].map((v) => v.normalized()).toList();
     var faces = const [
-      [0, 11, 5], [0, 5, 1], [0, 1, 7], [0, 7, 10], [0, 10, 11],
-      [1, 5, 9], [5, 11, 4], [11, 10, 2], [10, 7, 6], [7, 1, 8],
-      [3, 9, 4], [3, 4, 2], [3, 2, 6], [3, 6, 8], [3, 8, 9],
-      [4, 9, 5], [2, 4, 11], [6, 2, 10], [8, 6, 7], [9, 8, 1],
+      [0, 11, 5],
+      [0, 5, 1],
+      [0, 1, 7],
+      [0, 7, 10],
+      [0, 10, 11],
+      [1, 5, 9],
+      [5, 11, 4],
+      [11, 10, 2],
+      [10, 7, 6],
+      [7, 1, 8],
+      [3, 9, 4],
+      [3, 4, 2],
+      [3, 2, 6],
+      [3, 6, 8],
+      [3, 8, 9],
+      [4, 9, 5],
+      [2, 4, 11],
+      [6, 2, 10],
+      [8, 6, 7],
+      [9, 8, 1],
     ].map((f) => [verts[f[0]], verts[f[1]], verts[f[2]]]).toList();
 
     for (var d = 0; d < detail; d++) {
       faces = [
-        for (final f in faces) ...() {
-          final ab = (f[0] + f[1]).normalized();
-          final bc = (f[1] + f[2]).normalized();
-          final ca = (f[2] + f[0]).normalized();
-          return [
-            [f[0], ab, ca],
-            [f[1], bc, ab],
-            [f[2], ca, bc],
-            [ab, bc, ca],
-          ];
-        }(),
+        for (final f in faces)
+          ...() {
+            final ab = (f[0] + f[1]).normalized();
+            final bc = (f[1] + f[2]).normalized();
+            final ca = (f[2] + f[0]).normalized();
+            return [
+              [f[0], ab, ca],
+              [f[1], bc, ab],
+              [f[2], ca, bc],
+              [ab, bc, ca],
+            ];
+          }(),
       ];
     }
     Vector3 place(Vector3 unit) =>

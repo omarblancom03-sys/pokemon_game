@@ -21,9 +21,9 @@
 - [x] Render: suelo + jugador provisional siguiendo la cámara
 
 ## 8.3 Mundo low-poly
-- [ ] Terreno desde MapLayout (césped, camino, flores, hierba alta)
-- [ ] Árbol, pino, árbol otoñal, arbusto, valla, cartel, casa, roca, seta
-- [ ] Luz direccional + cielo
+- [x] Terreno desde MapLayout (césped, camino, flores, hierba alta)
+- [x] Árbol, pino, árbol otoñal, arbusto, valla, cartel, casa, roca, seta
+- [x] Luz direccional + cielo
 
 ## 8.4 Entrenador
 - [ ] Modelo low-poly + ciclo de caminar + orientación suave + sombra

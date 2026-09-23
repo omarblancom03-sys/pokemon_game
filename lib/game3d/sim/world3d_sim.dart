@@ -50,11 +50,8 @@ class World3DSim {
   double get depth => layout.rows * config.tileSize;
 
   /// Centro de una casilla, en metros (y = 0: el suelo).
-  Vector3 cellCenter(int col, int row) => Vector3(
-    (col + 0.5) * config.tileSize,
-    0,
-    (row + 0.5) * config.tileSize,
-  );
+  Vector3 cellCenter(int col, int row) =>
+      Vector3((col + 0.5) * config.tileSize, 0, (row + 0.5) * config.tileSize);
 
   /// Casilla bajo un punto del mundo.
   ({int col, int row}) cellAt(Vector3 p) => (
