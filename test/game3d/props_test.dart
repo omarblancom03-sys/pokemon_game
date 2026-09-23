@@ -10,11 +10,7 @@ import 'package:vector_math/vector_math.dart';
 
 void main() {
   test('findHouseBlocks groups contiguous H cells into rectangles', () {
-    final layout = MapLayout.parse(const [
-      'HH..H',
-      'HH..H',
-      '..@..',
-    ]);
+    final layout = MapLayout.parse(const ['HH..H', 'HH..H', '..@..']);
 
     expect(findHouseBlocks(layout), [
       (col: 0, row: 0, width: 2, height: 2),

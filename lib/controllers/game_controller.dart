@@ -18,6 +18,11 @@ export 'encounter/encounter_state.dart';
 ///
 /// No sabe nada de Flame ni de widgets: el juego le avisa con
 /// [onSmokeReached] y reacciona a [isPaused] y al stream [smokeConsumed].
+///
+/// El mundo 3D usa el MISMO flujo con otras fuentes de encuentro: un
+/// Pokémon visible ([onWildEncounter]) o un paso por la hierba alta
+/// ([onGrassEncounter]). En todos los casos el "smokeId" es simplemente el
+/// id de la fuente que disparó el encuentro.
 class GameController extends ChangeNotifier {
   GameController({required this._picker, required this._encounterHandler});
 
@@ -31,6 +36,7 @@ class GameController extends ChangeNotifier {
   EncounterState _state = const EncounterNone();
   EncounterOutcome? _lastOutcome;
   bool _disposed = false;
+  int _grassCount = 0;
 
   EncounterState get state => _state;
 
@@ -53,6 +59,27 @@ class GameController extends ChangeNotifier {
     // GUARDA CONTRA DOBLE DISPARO: si ya hay un encuentro, se ignora.
     if (isPaused) return;
     await _resolve(smokeId);
+  }
+
+  /// Lo llama el mundo 3D al tocar un Pokémon VISIBLE: ya se sabe cuál es,
+  /// así que no hay nada que descargar y se pasa directo al encuentro.
+  Future<void> onWildEncounter(String sourceId, Pokemon pokemon) async {
+    if (isPaused) return; // misma guarda contra doble disparo
+    await _run(sourceId, pokemon);
+  }
+
+  /// Encuentro al azar en la hierba alta: igual que un humo, pero con un
+  /// id nuevo cada vez (no hay nada que borrar del mapa después).
+  Future<void> onGrassEncounter() => onSmokeReached('grass-${_grassCount++}');
+
+  /// Un Pokémon al azar para que aparezca en el mapa. Si falla la red
+  /// devuelve null (el mundo lo reintentará) y NO cambia el estado.
+  Future<Pokemon?> pickWildPokemon() async {
+    try {
+      return await _picker.pick();
+    } on PokeApiException {
+      return null;
+    }
   }
 
   /// Vuelve a intentar la descarga tras un EncounterFailed (mismo humo).
@@ -81,7 +108,11 @@ class GameController extends ChangeNotifier {
       return;
     }
     if (_disposed) return; // el usuario salió mientras se descargaba
+    await _run(smokeId, pokemon);
+  }
 
+  /// Del Pokémon ya conocido en adelante: encuentro, captura y reanudar.
+  Future<void> _run(String smokeId, Pokemon pokemon) async {
     // 3) Ya sabemos quién aparece.
     _setState(EncounterActive(smokeId, pokemon));
     _encounters.add(pokemon);

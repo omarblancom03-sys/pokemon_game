@@ -7,6 +7,7 @@ import '../controllers/encounter/encounter_handler.dart';
 import '../controllers/generations_controller.dart';
 import '../controllers/pokedex_controller.dart';
 import '../game3d/render/scene_renderer.dart';
+import '../services/image_bytes_service.dart';
 import '../services/poke_api_service.dart';
 import '../services/pokemon_repository.dart';
 import '../services/random_pokemon_picker.dart';
@@ -31,9 +32,10 @@ class AppDependencies {
     final navigatorKey = GlobalKey<NavigatorState>();
     // Cadena de capas: cliente HTTP -> servicio -> caché (patrón decorador).
     // Si no se pasa nada, se usa la implementación real.
+    final client = http.Client();
     final repo =
         repository ??
-        CachedPokemonRepository(service: PokeApiService(client: http.Client()));
+        CachedPokemonRepository(service: PokeApiService(client: client));
 
     // ↓↓↓ CONTRATO DE ENCUENTRO: reemplazar StubEncounterHandler por la
     // implementación real de la captura (Pokébola). Ver encounter_handler.dart.
@@ -51,7 +53,11 @@ class AppDependencies {
         Provider<EncounterHandler>.value(value: handler),
         // Motor 3D. En los tests se pasa uno falso (allí no hay GPU).
         Provider<SceneRenderer>.value(
-          value: sceneRenderer ?? const FlutterSceneRenderer(),
+          value:
+              sceneRenderer ??
+              FlutterSceneRenderer(
+                loadImage: ImageBytesService(client: client).fetch,
+              ),
         ),
         // A nivel de app: lo ya descargado sobrevive al salir y volver a entrar.
         ChangeNotifierProvider(

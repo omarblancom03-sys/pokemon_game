@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
+import '../../controllers/game_controller.dart';
 import '../../game/input/movement_input.dart';
 import '../../game/map/map_layout.dart';
 import '../../game/map/world_map.dart';
@@ -10,12 +13,17 @@ import '../../game3d/render/scene_renderer.dart';
 import '../../game3d/sim/camera_input.dart';
 import '../../game3d/sim/world3d_sim.dart';
 import '../game/widgets/d_pad.dart';
+import '../game/widgets/encounter_overlay.dart';
 
 /// VISTA: exploración en 3D (tercera persona).
 ///
-/// Crea la simulación una sola vez y traduce la entrada del usuario
-/// (teclado, ratón, D-pad) a las "intenciones" que lee la simulación.
-/// El dibujo lo hace el [SceneRenderer] que llega por provider.
+/// Crea la simulación una sola vez y hace de PUENTE con [GameController],
+/// igual que la pantalla 2D:
+///  - mundo → controlador: tocó un Pokémon visible / encuentro en la hierba.
+///  - controlador → mundo: pausa mientras dura el encuentro, y quitar el
+///    Pokémon del mapa cuando termina (stream smokeConsumed).
+/// Además traduce teclado, ratón y D-pad a las "intenciones" de la
+/// simulación. El dibujo lo hace el [SceneRenderer] que llega por provider.
 class Game3DScreen extends StatefulWidget {
   const Game3DScreen({super.key});
 
@@ -24,10 +32,36 @@ class Game3DScreen extends StatefulWidget {
 }
 
 class _Game3DScreenState extends State<Game3DScreen> {
-  // Igual que en 2D: si se creara en build(), cada repintado reiniciaría.
-  late final World3DSim _sim = World3DSim(
-    layout: MapLayout.parse(worldMapRows),
-  );
+  late final GameController _controller;
+  late final World3DSim _sim;
+  late final StreamSubscription<String> _consumedSub;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = context.read<GameController>();
+    // Igual que en 2D: si se creara en build(), cada repintado reiniciaría.
+    _sim = World3DSim(
+      layout: MapLayout.parse(worldMapRows),
+      spawnWild: _controller.pickWildPokemon,
+      // unawaited: el mundo no espera; sigue dibujándose durante el encuentro.
+      onWildContact: (wild) =>
+          unawaited(_controller.onWildEncounter(wild.id, wild.pokemon)),
+      onGrassEncounter: () => unawaited(_controller.onGrassEncounter()),
+    );
+    _controller.addListener(_syncPause);
+    _consumedSub = _controller.smokeConsumed.listen(_sim.removeWild);
+  }
+
+  void _syncPause() => _sim.setPaused(_controller.isPaused);
+
+  @override
+  void dispose() {
+    _controller.removeListener(_syncPause);
+    unawaited(_consumedSub.cancel());
+    _sim.dispose();
+    super.dispose();
+  }
 
   /// Teclas → movimiento y cámara. Se recalcula con TODAS las teclas
   /// pulsadas, así soltar una no deja otra "pegada".
@@ -45,6 +79,7 @@ class _Game3DScreenState extends State<Game3DScreen> {
   @override
   Widget build(BuildContext context) {
     final renderer = context.read<SceneRenderer>();
+    final controller = context.watch<GameController>();
     return Scaffold(
       appBar: AppBar(title: const Text('Jugar 3D')),
       body: Focus(
@@ -76,6 +111,12 @@ class _Game3DScreenState extends State<Game3DScreen> {
               ),
             ),
             const Positioned(right: 16, top: 16, child: _Hint()),
+            Positioned.fill(
+              child: EncounterOverlay(
+                controller: controller,
+                loadingMessage: '¡Algo se mueve entre la hierba…!',
+              ),
+            ),
           ],
         ),
       ),
@@ -97,7 +138,8 @@ class _Hint extends StatelessWidget {
       child: const Padding(
         padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         child: Text(
-          'WASD mover · Mayús correr · Arrastrar / Q-E cámara · Rueda zoom',
+          'WASD mover · Mayús correr · Arrastrar / Q-E cámara · Rueda zoom\n'
+          'Busca Pokémon en la hierba alta',
           style: TextStyle(color: Colors.white),
         ),
       ),

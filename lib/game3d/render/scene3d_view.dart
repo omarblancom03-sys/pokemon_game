@@ -9,7 +9,9 @@ import '../mesh/props.dart';
 import '../mesh/terrain_mesh.dart';
 import '../sim/trainer_pose.dart';
 import '../sim/world3d_sim.dart';
+import 'grass_renderer.dart';
 import 'trainer_rig.dart';
+import 'wild_renderer.dart';
 
 /// VISTA 3D: dibuja la [World3DSim] con flutter_scene.
 ///
@@ -18,9 +20,12 @@ import 'trainer_rig.dart';
 /// El motor necesita preparar sus shaders antes de dibujar
 /// ([Scene.initializeStaticResources]); hasta entonces, indicador de carga.
 class Scene3DView extends StatefulWidget {
-  const Scene3DView({super.key, required this.sim});
+  const Scene3DView({super.key, required this.sim, required this.loadImage});
 
   final World3DSim sim;
+
+  /// Descarga de los dibujos de los Pokémon (capa de servicios).
+  final ImageBytesLoader loadImage;
 
   @override
   State<Scene3DView> createState() => _Scene3DViewState();
@@ -29,6 +34,8 @@ class Scene3DView extends StatefulWidget {
 class _Scene3DViewState extends State<Scene3DView> {
   Scene? _scene;
   late TrainerRig _trainer;
+  late GrassRenderer _grass;
+  late WildRenderer _wild;
   Object? _error;
 
   World3DSim get _sim => widget.sim;
@@ -101,6 +108,13 @@ class _Scene3DViewState extends State<Scene3DView> {
       );
     scene.add(Node(mesh: _mesh(outer.build())));
 
+    _grass = GrassRenderer(_sim.grass, _mesh);
+    scene.add(_grass.node);
+
+    final wildRoot = Node(name: 'wild');
+    scene.add(wildRoot);
+    _wild = WildRenderer(root: wildRoot, loadImage: widget.loadImage);
+
     _trainer = TrainerRig(_mesh);
     scene.add(_trainer.root);
     _syncPlayer();
@@ -145,7 +159,10 @@ class _Scene3DViewState extends State<Scene3DView> {
     // Un salto grande (pestaña en segundo plano) no debe teletransportar.
     _sim.update(math.min(dt, 0.1));
     _syncPlayer();
+    _grass.update(_sim.time, _sim.grassPushers);
+    _wild.update(_sim.wild, _sim.camera.yaw, _sim.time);
   }
+
 
   Camera _camera(Duration _) {
     final feet = _sim.player.position;

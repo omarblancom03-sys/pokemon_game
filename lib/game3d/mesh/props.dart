@@ -3,7 +3,10 @@ import 'dart:math' as math;
 import 'package:vector_math/vector_math.dart';
 
 import '../../game/map/map_layout.dart';
+import '../sim/cell_noise.dart';
 import 'mesh_builder.dart';
+
+export '../sim/cell_noise.dart' show cellNoise;
 
 /// Paleta del mundo (sRGB → lineal). Colores vivos, estilo Pokémon.
 abstract final class Palette {
@@ -37,15 +40,6 @@ abstract final class Palette {
     srgb(0xFF7FB0),
     srgb(0xB88CFF),
   ];
-}
-
-/// Número pseudoaleatorio estable por casilla (0..1): el mismo mapa
-/// siempre genera los mismos árboles, sin guardar nada.
-double cellNoise(int col, int row, [int salt = 0]) {
-  var h = col * 374761393 + row * 668265263 + salt * 2246822519;
-  h = (h ^ (h >> 13)) * 1274126177;
-  h = h ^ (h >> 16);
-  return (h & 0xFFFF) / 0xFFFF;
 }
 
 /// Casa del mapa: rectángulo de casillas `H` contiguas.

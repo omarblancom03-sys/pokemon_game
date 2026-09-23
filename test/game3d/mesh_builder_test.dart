@@ -21,9 +21,10 @@ Vector3 _faceNormal(MeshBuffers m, int t) {
 
 void main() {
   test('a box has 12 triangles, all facing outwards', () {
-    final m = (MeshBuilder()
-          ..box(Vector3(-1, -1, -1), Vector3(1, 1, 1), srgb(0xFF0000)))
-        .build();
+    final m =
+        (MeshBuilder()
+              ..box(Vector3(-1, -1, -1), Vector3(1, 1, 1), srgb(0xFF0000)))
+            .build();
 
     expect(m.triangleCount, 12);
     expect(m.vertexCount, 36);
@@ -40,17 +41,18 @@ void main() {
   });
 
   test('prisms and gems face outwards too', () {
-    final m = (MeshBuilder()
-          ..prism(
-            base: Vector3(0, -1, 0),
-            bottomRadius: 1,
-            topRadius: 0.5,
-            height: 2,
-            sides: 6,
-            color: srgb(0x00FF00),
-          )
-          ..gem(Vector3.zero(), Vector3.all(1), srgb(0x0000FF)))
-        .build();
+    final m =
+        (MeshBuilder()
+              ..prism(
+                base: Vector3(0, -1, 0),
+                bottomRadius: 1,
+                topRadius: 0.5,
+                height: 2,
+                sides: 6,
+                color: srgb(0x00FF00),
+              )
+              ..gem(Vector3.zero(), Vector3.all(1), srgb(0x0000FF)))
+            .build();
 
     for (var t = 0; t < m.triangleCount; t++) {
       final a = _vec(m.positions, m.indices[t * 3]);
@@ -60,7 +62,6 @@ void main() {
       expect(_faceNormal(m, t).dot(centroid), greaterThan(0), reason: '$t');
     }
   });
-
 
   test('withTransform moves the geometry and pop restores it', () {
     final builder = MeshBuilder();
@@ -91,10 +92,11 @@ void main() {
   });
 
   test('toEngineSpace mirrors Z and keeps faces pointing outwards', () {
-    final m = (MeshBuilder()
-          ..box(Vector3(-1, -1, 2), Vector3(1, 1, 4), srgb(0xFF0000)))
-        .build()
-        .toEngineSpace();
+    final m =
+        (MeshBuilder()
+              ..box(Vector3(-1, -1, 2), Vector3(1, 1, 4), srgb(0xFF0000)))
+            .build()
+            .toEngineSpace();
 
     for (var t = 0; t < m.triangleCount; t++) {
       final a = _vec(m.positions, m.indices[t * 3]);

@@ -142,4 +142,62 @@ void main() {
     expect(controller.lastOutcome, EncounterOutcome.fled);
     expect(consumed, ['smoke-a']);
   });
+
+  group('3D encounter sources', () {
+    test('onWildEncounter skips resolving and consumes the source', () async {
+      final states = <EncounterState>[];
+      controller.addListener(() => states.add(controller.state));
+      final pokemon = fakePokemon(25);
+
+      final flow = controller.onWildEncounter('wild-0', pokemon);
+      await pumpEventQueue();
+
+      expect(states.whereType<EncounterResolving>(), isEmpty);
+      expect(controller.state, isA<EncounterActive>());
+      expect(handler.received, [pokemon]);
+
+      handler.completer.complete(EncounterOutcome.caught);
+      await flow;
+      await pumpEventQueue(); // los streams entregan en otra vuelta
+
+      expect(consumed, ['wild-0']);
+      expect(controller.lastOutcome, EncounterOutcome.caught);
+      expect(controller.isPaused, isFalse);
+    });
+
+    test('onWildEncounter is ignored while another encounter runs', () async {
+      unawaited(controller.onWildEncounter('wild-0', fakePokemon(1)));
+      await pumpEventQueue();
+      await controller.onWildEncounter('wild-1', fakePokemon(2));
+
+      expect(handler.received, hasLength(1));
+      handler.completer.complete(EncounterOutcome.fled);
+      await pumpEventQueue();
+      expect(consumed, ['wild-0']);
+    });
+
+    test('grass encounters use a fresh id each time', () async {
+      unawaited(controller.onGrassEncounter());
+      await pumpEventQueue();
+      handler.completer.complete(EncounterOutcome.fled);
+      await pumpEventQueue();
+
+      handler.completer = Completer();
+      unawaited(controller.onGrassEncounter());
+      await pumpEventQueue();
+      handler.completer.complete(EncounterOutcome.fled);
+      await pumpEventQueue();
+
+      expect(consumed, ['grass-0', 'grass-1']);
+    });
+
+    test('pickWildPokemon returns null on network errors', () async {
+      expect(await controller.pickWildPokemon(), isA<Pokemon>());
+
+      repository.failNext = const PokeApiNetworkException('offline');
+      expect(await controller.pickWildPokemon(), isNull);
+      // Sin cambiar el estado del encuentro.
+      expect(controller.state, isA<EncounterNone>());
+    });
+  });
 }

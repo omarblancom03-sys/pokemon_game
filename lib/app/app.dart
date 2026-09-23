@@ -56,7 +56,14 @@ class PokemonGameApp extends StatelessWidget {
             ),
             child: const GameScreen(),
           ),
-          AppRoutes.game3d: (_) => const Game3DScreen(),
+          // El 3D usa el mismo controlador de encuentros, también por partida.
+          AppRoutes.game3d: (_) => ChangeNotifierProvider(
+            create: (context) => GameController(
+              picker: context.read<RandomPokemonPicker>(),
+              encounterHandler: context.read(),
+            ),
+            child: const Game3DScreen(),
+          ),
           AppRoutes.pokedex: (_) => const PokedexScreen(),
           AppRoutes.generations: (_) => const GenerationsScreen(),
         },

@@ -29,9 +29,9 @@
 - [x] Modelo low-poly + ciclo de caminar + orientación suave + sombra
 
 ## 8.5 Hierba alta + Pokémon salvajes
-- [ ] Hierba alta animada
-- [ ] WildSpawner (Pokémon visibles que deambulan, sprite PokeAPI como billboard)
-- [ ] Encuentros por contacto y por pasos en hierba → GameController
+- [x] Hierba alta animada
+- [x] WildSpawner (Pokémon visibles que deambulan, sprite PokeAPI como billboard)
+- [x] Encuentros por contacto y por pasos en hierba → GameController
 
 ## 8.6 Combate
 - [ ] Stats en Pokemon
