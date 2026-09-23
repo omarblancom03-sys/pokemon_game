@@ -10,16 +10,19 @@ import '../../models/poke_ball.dart';
 import '../../models/pokemon.dart';
 import 'aiming.dart';
 import 'camera_input.dart';
+import 'dust.dart';
 import 'field_items.dart';
 import 'grass_field.dart';
 import 'orbit_camera.dart';
 import 'player_body.dart';
 import 'throwing.dart';
+import 'trainer_pose.dart';
 import 'wild_behavior.dart';
 import 'wild_pokemon.dart';
 import 'world3d_config.dart';
 import 'world3d_events.dart';
 
+export 'dust.dart' show DustPuff;
 export 'field_items.dart' show GroundItem;
 export 'throwing.dart' show BallPhase, ThrownBall;
 export 'wild_behavior.dart' show PlayerStealth;
@@ -112,6 +115,10 @@ class World3DSim {
   /// Vista, oído y reacciones de los Pokémon salvajes.
   late final WildBehavior behavior;
 
+  /// Polvo que levantan los pies al correr y las bolas al botar. Es solo
+  /// decorado: usa su propio azar para no alterar el del juego.
+  final DustSystem dust = DustSystem(random: math.Random(7));
+
   /// Encuentros al azar andando por la hierba alta (como en los juegos
   /// clásicos). En 3D van apagados: los Pokémon ya se ven y se capturan
   /// en el mundo (ver DECISIONES.md).
@@ -157,6 +164,8 @@ class World3DSim {
   double _grace = 0;
   double _grassMeters = 0;
   double _lastDistance = 0;
+  int _lastFootstep = 0;
+  double _runTime = 0;
 
   // Lanzamiento en curso: tiempo desde que empezó, bola y objetivo.
   double? _throwTime;
@@ -188,6 +197,9 @@ class World3DSim {
 
   /// Segundos sin encuentros tras reanudar (para no encadenarlos).
   static const graceSeconds = 2.0;
+
+  /// Metros entre dos pisadas (medio ciclo de pasos del entrenador).
+  static const footstepSpacing = TrainerPose.strideLength / 2;
 
   /// Tamaño del mundo en metros (ancho en X, fondo en Z).
   double get width => layout.columns * config.tileSize;
@@ -394,6 +406,7 @@ class World3DSim {
     _lastDistance = player.distanceWalked;
     if (_paused) return;
 
+    _kickUpDust(dt, wish);
     fieldItems.update(dt, player.position, _emit);
     for (final w in wild.toList()) {
       _updateWild(w, dt);
@@ -405,6 +418,9 @@ class World3DSim {
       remove: (w) => removeWild(w.id),
       emit: _emit,
       impact: _startleAround,
+      bounce: (at, speed) {
+        if (speed > 2) dust.burst(at, strength: speed / 10);
+      },
     );
     _maybeSpawn(dt);
 
@@ -424,6 +440,34 @@ class World3DSim {
         dragY * dragSensitivity,
       )
       ..zoom(cameraInput.takeZoom());
+  }
+
+  /// Polvo al correr (una nubecilla por pisada, en el pie que toca el
+  /// suelo) y al frenar en seco tras una carrera. En la hierba alta no.
+  void _kickUpDust(double dt, Vector3 wish) {
+    dust.update(dt);
+    final feet = player.position;
+    final onDirt = !isTallGrass(feet);
+    final running = player.speed > config.walkSpeed * 1.15;
+    final step = (player.distanceWalked / footstepSpacing).floor();
+    if (step != _lastFootstep) {
+      _lastFootstep = step;
+      if (running && onDirt) {
+        final f = player.facing;
+        final right = Vector3(-math.cos(f), 0, math.sin(f));
+        final side = step.isEven ? 0.12 : -0.12;
+        dust.footstep(feet + right * side, player.velocity);
+      }
+    }
+    final stopping = wish.length2 < 0.01;
+    if (stopping && _runTime > 0.3 && onDirt) {
+      final f = player.facing;
+      dust.burst(
+        feet + Vector3(math.sin(f), 0, math.cos(f)) * 0.35,
+        strength: 0.35,
+      );
+    }
+    _runTime = running && !stopping ? _runTime + dt : 0;
   }
 
   /// Todos los que apartan la hierba al pasar: jugador y Pokémon (los que

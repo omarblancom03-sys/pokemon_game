@@ -117,3 +117,9 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
   posición → casillas vecinas del mismo tipo se funden sin costuras y los bordes entre tipos (camino
   / césped) siguen nítidos. Matas bajas (≤ 35 cm) en el césped y piedrecitas en el camino, dentro de
   la malla única de objetos (sin coste de llamadas de dibujo).
+- **2026-09-23 — Polvo:** una nubecilla por pisada al correr (cada 0,75 m, medio ciclo de pasos, en
+  el pie que toca el suelo), un corro al frenar en seco tras correr > 0,3 s y otro cuando una bola bota
+  fuerte (> 2 m/s; tamaño según la fuerza). En la hierba alta no hay polvo. Lógica en
+  `sim/dust.dart` (máx. 40 a la vez, la más vieja se va); se dibuja con UNA malla instanciada con 40
+  huecos, material sin luz semitransparente (la opacidad va en el color de cada instancia). Usa su
+  propio azar (semilla fija): es decorado y no debe cambiar el azar del juego ni de los tests.

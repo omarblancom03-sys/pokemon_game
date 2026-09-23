@@ -14,7 +14,8 @@
   - Mundo low-poly generado por código a partir del mismo mapa ASCII del 2D: césped, caminos, casas con
     tejado, árboles, pinos, árboles otoñales, arbustos con bayas, vallas, setas, flores y un bosque que
     rodea el mapa. Luz de sol con sombras, cielo en degradado, niebla ligera y aspecto "stylized".
-  - Entrenador low-poly (gorra, chaqueta, mochila) con ciclo de caminar y carrera.
+  - Entrenador low-poly (gorra, chaqueta, mochila) con ciclo de caminar y carrera. Al correr levanta
+    polvo (y al frenar en seco); las Poké Balls también al botar.
   - Cámara en tercera persona: arrastrar con el ratón para girar, rueda para zoom, Q/E para girar con
     teclado. WASD/flechas mueven relativo a la cámara; Mayús corre. D-pad en pantalla. La cámara no
     atraviesa árboles ni casas: se acerca si algo estorba y, de espaldas a un árbol, mira desde arriba.

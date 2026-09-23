@@ -63,7 +63,7 @@ El combate lo hace OTRO equipo (se engancha por el contrato EncounterHandler). N
 - [x] Minimapa (redondo, arriba a la derecha, girado con la cámara; bolas y Pokémon por estado)
 - [ ] Más vida en el mundo:
   - [x] Suelo con variación (manchas, zonas frondosas y secas, granulado) + matas bajas y piedrecitas
-  - [ ] Polvo al correr (y al rebotar una bola)
+  - [x] Polvo al correr (una nubecilla por pisada), al frenar en seco y al botar una bola
   - [ ] Mariposas en las flores (se espantan al pasar)
 
 ## Mejoras continuas

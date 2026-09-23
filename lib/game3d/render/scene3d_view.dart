@@ -11,6 +11,7 @@ import '../sim/orbit_camera.dart';
 import '../sim/trainer_pose.dart';
 import '../sim/world3d_sim.dart';
 import 'ball_renderer.dart';
+import 'dust_renderer.dart';
 import 'grass_renderer.dart';
 import 'item_renderer.dart';
 import 'trainer_rig.dart';
@@ -41,6 +42,7 @@ class _Scene3DViewState extends State<Scene3DView> {
   late WildRenderer _wild;
   late ItemRenderer _items;
   late BallRenderer _balls;
+  late DustRenderer _dust;
   Object? _error;
 
   World3DSim get _sim => widget.sim;
@@ -128,6 +130,9 @@ class _Scene3DViewState extends State<Scene3DView> {
     scene.add(ballsRoot);
     _balls = BallRenderer(root: ballsRoot, toMesh: _mesh);
 
+    _dust = DustRenderer();
+    scene.add(_dust.node);
+
     _trainer = TrainerRig(_mesh);
     scene.add(_trainer.root);
     _syncPlayer();
@@ -179,6 +184,7 @@ class _Scene3DViewState extends State<Scene3DView> {
     _grass.update(_sim.time, _sim.grassPushers);
     _wild.update(_sim.wild, _sim.balls, _sim.camera.yaw, _sim.time);
     _items.update(_sim.fieldItems.items, _sim.time);
+    _dust.update(_sim.dust.puffs);
     _balls.update(
       _sim.balls,
       preview: _sim.aimPreview,
