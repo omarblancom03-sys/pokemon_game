@@ -138,9 +138,8 @@ class _GenerationDetailScreenState extends State<GenerationDetailScreen> {
                     return GestureDetector(
                       // Se le pasa el Pokémon YA cargado: el detalle no
                       // tiene que pedir nada a internet.
-                      onTap: () => Navigator.of(
-                        context,
-                      ).push(PokemonDetailScreen.route(pokemon: pokemon)),
+                      onTap: () => Navigator.of(context)
+                          .push(PokemonDetailScreen.route(pokemon: pokemon)),
                       child: PokemonCard(pokemon: pokemon),
                     );
                   },

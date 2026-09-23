@@ -1,87 +1,53 @@
-import 'dart:math';
 import 'dart:ui';
 
 import 'package:flame/components.dart';
 
-import '../config/world_config.dart';
+import '../map/map_layout.dart';
 
-/// El suelo provisional: césped a cuadros, dos caminos de tierra, árboles,
-/// flores y un borde. Es solo decoración (no tiene lógica ni colisiones);
-/// más adelante se puede sustituir por un mapa de baldosas real.
+/// Mapa PROVISIONAL: pinta el mismo [MapLayout] que la versión con arte,
+/// pero con un cuadrado de color por casilla. Se usa cuando el juego no
+/// recibe imágenes (en los tests), así la lógica se prueba sin cargar nada.
 class MapComponent extends PositionComponent {
-  MapComponent({required this.config})
+  MapComponent({required this.layout, required this.tileSize})
     // priority -1: se dibuja por debajo de todo lo demás.
-    : super(size: config.worldSize, priority: -1);
+    : super(
+        size: Vector2(layout.columns * tileSize, layout.rows * tileSize),
+        priority: -1,
+      );
 
-  final WorldConfig config;
+  final MapLayout layout;
+  final double tileSize;
 
-  // Paint = "brocha": el color con el que se pinta cada cosa.
-  static final _grassA = Paint()..color = const Color(0xFF7EC850);
-  static final _grassB = Paint()..color = const Color(0xFF74BE48);
-  static final _path = Paint()..color = const Color(0xFFD9B77A);
-  static final _trunk = Paint()..color = const Color(0xFF7A5230);
-  static final _leaves = Paint()..color = const Color(0xFF2E7D32);
-  static final _flower = Paint()..color = const Color(0xFFFFEB3B);
-  static final _border = Paint()
-    ..color = const Color(0xFF3E2723)
-    ..style = PaintingStyle.stroke
-    ..strokeWidth = 8;
-
-  final List<Offset> _trees = [];
-  final List<Offset> _flowers = [];
-
-  @override
-  Future<void> onLoad() async {
-    // Semilla fija (7): la decoración sale IGUAL en cada partida.
-    final random = Random(7);
-    Offset randomPoint() => Offset(
-      random.nextDouble() * (config.width - 80) + 40,
-      random.nextDouble() * (config.height - 80) + 40,
-    );
-    for (var i = 0; i < 30; i++) {
-      _trees.add(randomPoint());
-    }
-    for (var i = 0; i < 60; i++) {
-      _flowers.add(randomPoint());
-    }
-  }
+  // Paint = "brocha": el color con el que se pinta cada tipo de casilla.
+  static final _paints = <TileKind, Paint>{
+    for (final (kind, color) in const [
+      (TileKind.grass, Color(0xFF7EC850)),
+      (TileKind.flowers, Color(0xFF9ED86A)),
+      (TileKind.tallGrass, Color(0xFF4E9A2E)),
+      (TileKind.path, Color(0xFFD9B77A)),
+      (TileKind.stone, Color(0xFFB0B7C0)),
+      (TileKind.mushroom, Color(0xFF7EC850)),
+      (TileKind.tree, Color(0xFF2E7D32)),
+      (TileKind.pine, Color(0xFF1B5E20)),
+      (TileKind.autumnTree, Color(0xFFE0A030)),
+      (TileKind.bush, Color(0xFF388E3C)),
+      (TileKind.fence, Color(0xFF8D5A2B)),
+      (TileKind.sign, Color(0xFF8D5A2B)),
+      (TileKind.house, Color(0xFFC0503A)),
+    ])
+      kind: Paint()..color = color,
+  };
 
   /// render: dibuja el fotograma. Se ejecuta ~60 veces por segundo.
   @override
   void render(Canvas canvas) {
-    // Césped: dos verdes alternados como un tablero de ajedrez.
-    final t = config.tileSize;
-    for (var y = 0; y * t < config.height; y++) {
-      for (var x = 0; x * t < config.width; x++) {
+    for (var row = 0; row < layout.rows; row++) {
+      for (var col = 0; col < layout.columns; col++) {
         canvas.drawRect(
-          Rect.fromLTWH(x * t, y * t, t, t),
-          (x + y).isEven ? _grassA : _grassB,
+          Rect.fromLTWH(col * tileSize, row * tileSize, tileSize, tileSize),
+          _paints[layout.tileAt(col, row)]!,
         );
       }
     }
-
-    // Dos caminos de tierra en cruz.
-    canvas.drawRect(
-      Rect.fromLTWH(0, config.height / 2 - t / 2, config.width, t),
-      _path,
-    );
-    canvas.drawRect(
-      Rect.fromLTWH(config.width / 2 - t / 2, 0, t, config.height),
-      _path,
-    );
-
-    for (final f in _flowers) {
-      canvas.drawCircle(f, 3, _flower);
-    }
-    // Cada árbol: tronco (rectángulo) + copa (círculo).
-    for (final tree in _trees) {
-      canvas.drawRect(
-        Rect.fromCenter(center: tree.translate(0, 14), width: 8, height: 16),
-        _trunk,
-      );
-      canvas.drawCircle(tree, 18, _leaves);
-    }
-
-    canvas.drawRect(Rect.fromLTWH(0, 0, config.width, config.height), _border);
   }
 }

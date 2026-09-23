@@ -16,10 +16,13 @@ class Generation {
   });
 
   factory Generation.fromJson(Map<String, dynamic> json) {
-    final species = [
-      for (final item in json.readObjectList('pokemon_species'))
-        NamedResource.fromJson(item),
-    ]..sort(_byDexNumber); // ..sort = operador cascada: ordena y devuelve la lista
+    final species =
+        [
+          for (final item in json.readObjectList('pokemon_species'))
+            NamedResource.fromJson(item),
+        ]..sort(
+          _byDexNumber,
+        ); // ..sort = operador cascada: ordena y devuelve la lista
 
     return Generation(
       id: json.readInt('id'),

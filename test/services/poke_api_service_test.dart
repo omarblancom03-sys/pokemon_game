@@ -162,10 +162,7 @@ void main() {
       expect(requests.single.url.path, '/api/v2/generation');
       expect(requests.single.url.queryParameters['limit'], '50');
       expect(page.count, 9);
-      expect(page.items.map((g) => g.name), [
-        'generation-i',
-        'generation-ii',
-      ]);
+      expect(page.items.map((g) => g.name), ['generation-i', 'generation-ii']);
       expect(page.items.first.id, 1);
     });
 
@@ -206,10 +203,7 @@ void main() {
     test('throws Parse on a payload missing fields', () {
       final service = serviceReturning(200, '{"id": 1}');
 
-      expect(
-        service.fetchGeneration(1),
-        throwsA(isA<PokeApiParseException>()),
-      );
+      expect(service.fetchGeneration(1), throwsA(isA<PokeApiParseException>()));
     });
   });
 }

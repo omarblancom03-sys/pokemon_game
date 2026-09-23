@@ -22,10 +22,11 @@ void main() {
       final generation = Generation.fromJson(fixtureJson('generation.json'));
 
       // The fixture lists charmander (4) first, on purpose.
-      expect(
-        generation.species.map((s) => s.name),
-        ['bulbasaur', 'ivysaur', 'charmander'],
-      );
+      expect(generation.species.map((s) => s.name), [
+        'bulbasaur',
+        'ivysaur',
+        'charmander',
+      ]);
       expect(generation.speciesIds, [1, 2, 4]);
     });
 
@@ -35,7 +36,10 @@ void main() {
         'name': 'generation-i',
         'main_region': {'name': 'kanto'},
         'pokemon_species': [
-          {'name': 'broken', 'url': 'https://pokeapi.co/api/v2/pokemon-species/'},
+          {
+            'name': 'broken',
+            'url': 'https://pokeapi.co/api/v2/pokemon-species/',
+          },
           {
             'name': 'bulbasaur',
             'url': 'https://pokeapi.co/api/v2/pokemon-species/1/',

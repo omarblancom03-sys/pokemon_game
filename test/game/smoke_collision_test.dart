@@ -98,6 +98,21 @@ void main() {
       game.update(1.1);
       await game.ready();
       expect(game.smokes, hasLength(2), reason: 'respawned elsewhere');
+
+      // El humo nuevo cae en una casilla pisable y lejos de Ash.
+      final respawned = game.smokes.firstWhere((s) => s.id != 's2');
+      final tile = game.config.tileSize;
+      expect(
+        game.layout.isWalkable(
+          (respawned.position.x / tile).floor(),
+          (respawned.position.y / tile).floor(),
+        ),
+        isTrue,
+      );
+      expect(
+        respawned.position.distanceTo(game.ash.position),
+        greaterThanOrEqualTo(200),
+      );
     },
   );
 }

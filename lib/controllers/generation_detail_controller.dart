@@ -84,8 +84,9 @@ class GenerationDetailController extends ChangeNotifier {
 
     try {
       // ??= la generación se descarga UNA sola vez, aunque haya 5 páginas.
-      final generation =
-          _generation ??= await _repository.getGeneration(generationId);
+      final generation = _generation ??= await _repository.getGeneration(
+        generationId,
+      );
       final ids = generation.speciesIds; // ya ordenados por nº de Pokédex
       final first = _items.length;
       final last = min(first + pageSize, ids.length);

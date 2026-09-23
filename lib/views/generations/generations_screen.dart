@@ -35,9 +35,8 @@ class _GenerationsScreenState extends State<GenerationsScreen> {
       appBar: AppBar(title: const Text('Generaciones')),
       // switch sobre el LoadState: un caso por estado posible.
       body: switch (controller.state) {
-        LoadIdle() || LoadInProgress() => const Center(
-          child: CircularProgressIndicator(),
-        ),
+        LoadIdle() ||
+        LoadInProgress() => const Center(child: CircularProgressIndicator()),
         // ":final error" saca el error de dentro del estado.
         LoadFailure(:final error) => ErrorView(
           message: errorMessage(error),
@@ -62,7 +61,8 @@ class _GenerationList extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       itemCount: generations.length,
       separatorBuilder: (_, _) => const SizedBox(height: 12),
-      itemBuilder: (_, index) => _GenerationTile(generation: generations[index]),
+      itemBuilder: (_, index) =>
+          _GenerationTile(generation: generations[index]),
     );
   }
 }

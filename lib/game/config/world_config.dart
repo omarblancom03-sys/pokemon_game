@@ -1,6 +1,6 @@
 import 'package:flame/extensions.dart';
 
-/// Punto donde aparece un humo al empezar la partida.
+/// Punto donde aparece un humo al empezar la partida (en píxeles).
 class SmokeSpawn {
   const SmokeSpawn(this.id, this.x, this.y);
 
@@ -10,32 +10,29 @@ class SmokeSpawn {
 }
 
 /// Todos los números ajustables del mundo, en un solo sitio y sin lógica.
-/// Cambiar la velocidad o el tamaño del mapa no obliga a tocar el juego.
+/// El TAMAÑO del mundo y el inicio de Ash ya no están aquí: salen del mapa
+/// ASCII (MapLayout), que es quien sabe cuántas baldosas hay.
 class WorldConfig {
   const WorldConfig({
-    this.width = 1600,
-    this.height = 1200,
     this.tileSize = 48,
-    this.ashWidth = 32,
-    this.ashHeight = 40,
+    this.ashWidth = 42,
+    this.ashHeight = 66,
     this.ashSpeed = 180,
     this.smokeRadius = 28,
     this.smokeRespawnSeconds = 4,
     this.smokeSpawns = const [
-      SmokeSpawn('smoke-a', 560, 420),
-      SmokeSpawn('smoke-b', 1180, 330),
-      SmokeSpawn('smoke-c', 300, 950),
-      SmokeSpawn('smoke-d', 1300, 900),
+      // Centros de casillas de pasto alto o césped (col * 48 + 24).
+      SmokeSpawn('smoke-a', 1224, 216),
+      SmokeSpawn('smoke-b', 360, 840),
+      SmokeSpawn('smoke-c', 1176, 408),
+      SmokeSpawn('smoke-d', 1368, 936),
     ],
   });
 
-  /// Tamaño del mundo en píxeles (más grande que la pantalla: hay cámara).
-  final double width;
-  final double height;
-
-  /// Lado de cada baldosa del césped.
+  /// Lado de cada baldosa en pantalla: el arte mide 16 px y se dibuja x3.
   final double tileSize;
 
+  /// Ash mide 14x22 px en el sprite; x3 = 42x66.
   final double ashWidth;
   final double ashHeight;
 
@@ -50,10 +47,5 @@ class WorldConfig {
   final List<SmokeSpawn> smokeSpawns;
 
   // Vector2 = par de números (x, y): tamaño, posición o dirección.
-  Vector2 get worldSize => Vector2(width, height);
-
   Vector2 get ashSize => Vector2(ashWidth, ashHeight);
-
-  /// Ash empieza en el centro del mapa.
-  Vector2 get ashStart => Vector2(width / 2, height / 2);
 }

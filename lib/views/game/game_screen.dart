@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../controllers/game_controller.dart';
+import '../../game/art/game_art.dart';
 import '../../game/poke_game.dart';
 import 'widgets/d_pad.dart';
 import 'widgets/encounter_overlay.dart';
@@ -37,6 +38,8 @@ class _GameScreenState extends State<GameScreen> {
       // unawaited: el juego no puede quedarse esperando, debe seguir
       // dibujando mientras el controlador resuelve el encuentro.
       onSmokeReached: (id) => unawaited(_controller.onSmokeReached(id)),
+      // Con sprites de verdad; los tests crean PokeGame sin esto.
+      loadArt: GameArt.load,
     );
     _controller.addListener(_syncPause);
     _smokeConsumedSub = _controller.smokeConsumed.listen(_game.removeSmoke);

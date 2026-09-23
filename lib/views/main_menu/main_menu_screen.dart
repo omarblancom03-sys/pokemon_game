@@ -50,9 +50,8 @@ class MainMenuScreen extends StatelessWidget {
                 const SizedBox(height: 16),
                 OutlinedButton.icon(
                   key: const Key('menu_generations'),
-                  onPressed: () => Navigator.of(
-                    context,
-                  ).pushNamed(AppRoutes.generations),
+                  onPressed: () =>
+                      Navigator.of(context).pushNamed(AppRoutes.generations),
                   icon: const Icon(Icons.format_list_numbered),
                   label: const Text('Generaciones'),
                 ),
