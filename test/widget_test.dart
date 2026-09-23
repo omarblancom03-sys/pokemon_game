@@ -1,5 +1,5 @@
-// PRUEBAS DE PANTALLA (widget tests): que el menú muestra sus tres
-// botones, que "Jugar" navega al juego, que la Pokédex pinta cartas y
+// PRUEBAS DE PANTALLA (widget tests): que el menú muestra sus
+// botones, que "Jugar 2D/3D" navegan al juego, que la Pokédex pinta cartas y
 // muestra "Reintentar" si falla, y que desde Generaciones se abre una
 // galería y luego el detalle de un Pokémon. Usan un repositorio falso.
 
@@ -10,6 +10,7 @@ import 'package:pokemon_game/app/app.dart';
 import 'package:pokemon_game/app/dependencies.dart';
 import 'package:pokemon_game/game/poke_game.dart';
 import 'package:pokemon_game/services/poke_api_exception.dart';
+import 'package:pokemon_game/views/game3d/game3d_screen.dart';
 
 import 'fakes/fake_pokemon_repository.dart';
 
@@ -26,6 +27,7 @@ void main() {
     await tester.pumpWidget(buildApp());
 
     expect(find.byKey(const Key('menu_play')), findsOneWidget);
+    expect(find.byKey(const Key('menu_play_3d')), findsOneWidget);
     expect(find.byKey(const Key('menu_pokedex')), findsOneWidget);
     expect(find.byKey(const Key('menu_generations')), findsOneWidget);
   });
@@ -40,6 +42,16 @@ void main() {
 
     expect(find.byType(GameWidget<PokeGame>), findsOneWidget);
     expect(find.byKey(const Key('game_dpad')), findsOneWidget);
+  });
+
+  testWidgets('Jugar 3D navigates to the 3D screen', (tester) async {
+    await tester.pumpWidget(buildApp());
+
+    await tester.tap(find.byKey(const Key('menu_play_3d')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+
+    expect(find.byType(Game3DScreen), findsOneWidget);
   });
 
   testWidgets('Pokédex shows a gallery of cards', (tester) async {

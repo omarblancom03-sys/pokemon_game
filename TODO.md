@@ -1,0 +1,49 @@
+# TODO — Fase 8: Pokémon 3D en tercera persona
+
+> Al retomar una sesión: leer este archivo y continuar por la primera casilla sin marcar.
+> Tras cada subtarea: `flutter analyze` (0 issues) + `flutter test` (verde) + commit.
+
+## 8.0 Base
+- [x] Commit del trabajo 7a–7d pendiente (120 tests)
+- [x] TODO.md, DECISIONES.md, PROGRESO.md
+- [x] Menú con "Jugar 2D" / "Jugar 3D" y ruta `/game3d` (pantalla temporal)
+
+## 8.1 Spike del motor 3D
+- [ ] Añadir flutter_scene e inicializar
+- [ ] Cubo iluminado girando en `/game3d` detrás de la interfaz `SceneRenderer`
+- [ ] Verificar `flutter build web` + captura headless
+- [ ] Verificar `flutter build windows`
+
+## 8.2 Simulación (Dart puro)
+- [ ] OrbitCamera (yaw/pitch/distancia, límites)
+- [ ] PlayerMotion (WASD relativo a cámara, colisión deslizante con MapLayout)
+- [ ] Input: arrastrar ratón, rueda, Q/E, WASD, D-pad
+- [ ] Render: suelo + jugador provisional siguiendo la cámara
+
+## 8.3 Mundo low-poly
+- [ ] Terreno desde MapLayout (césped, camino, flores, hierba alta)
+- [ ] Árbol, pino, árbol otoñal, arbusto, valla, cartel, casa, roca, seta
+- [ ] Luz direccional + cielo
+
+## 8.4 Entrenador
+- [ ] Modelo low-poly + ciclo de caminar + orientación suave + sombra
+
+## 8.5 Hierba alta + Pokémon salvajes
+- [ ] Hierba alta animada
+- [ ] WildSpawner (Pokémon visibles que deambulan, sprite PokeAPI como billboard)
+- [ ] Encuentros por contacto y por pasos en hierba → GameController
+
+## 8.6 Combate
+- [ ] Stats en Pokemon
+- [ ] Modelos de combate (movimientos, tabla de tipos)
+- [ ] BattleController (turnos, daño, captura, huida)
+- [ ] PartyController + elección de inicial
+- [ ] BattleScreen (EncounterHandler del 3D)
+
+## 8.7 Transiciones y feedback
+- [ ] Transición al combate
+- [ ] Animación Poké Ball
+- [ ] HUD (equipo, minimapa)
+
+## 8.8+ Mejoras continuas
+- [ ] (se irán añadiendo)

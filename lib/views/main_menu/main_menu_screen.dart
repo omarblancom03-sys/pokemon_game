@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../app/app.dart';
 
-/// VISTA: menú principal. Tres botones que navegan a las otras pantallas.
+/// VISTA: menú principal. Cuatro botones que navegan a las otras pantallas.
 ///
 /// StatelessWidget = no guarda nada que cambie; solo se dibuja.
 class MainMenuScreen extends StatelessWidget {
@@ -37,7 +37,15 @@ class MainMenuScreen extends StatelessWidget {
                   onPressed: () =>
                       Navigator.of(context).pushNamed(AppRoutes.game),
                   icon: const Icon(Icons.play_arrow),
-                  label: const Text('Jugar'),
+                  label: const Text('Jugar 2D'),
+                ),
+                const SizedBox(height: 16),
+                FilledButton.icon(
+                  key: const Key('menu_play_3d'),
+                  onPressed: () =>
+                      Navigator.of(context).pushNamed(AppRoutes.game3d),
+                  icon: const Icon(Icons.view_in_ar),
+                  label: const Text('Jugar 3D'),
                 ),
                 const SizedBox(height: 16),
                 OutlinedButton.icon(

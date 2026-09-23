@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../controllers/game_controller.dart';
 import '../services/random_pokemon_picker.dart';
 import '../views/game/game_screen.dart';
+import '../views/game3d/game3d_screen.dart';
 import '../views/generations/generations_screen.dart';
 import '../views/main_menu/main_menu_screen.dart';
 import '../views/pokedex/pokedex_screen.dart';
@@ -14,6 +15,7 @@ import 'dependencies.dart';
 abstract final class AppRoutes {
   static const mainMenu = '/';
   static const game = '/game';
+  static const game3d = '/game3d';
   static const pokedex = '/pokedex';
   static const generations = '/generations';
 }
@@ -54,6 +56,7 @@ class PokemonGameApp extends StatelessWidget {
             ),
             child: const GameScreen(),
           ),
+          AppRoutes.game3d: (_) => const Game3DScreen(),
           AppRoutes.pokedex: (_) => const PokedexScreen(),
           AppRoutes.generations: (_) => const GenerationsScreen(),
         },
