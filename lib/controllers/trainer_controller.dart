@@ -36,6 +36,9 @@ class TrainerController extends ChangeNotifier {
   /// De la más reciente a la más antigua.
   List<CapturedPokemon> get captured => List.unmodifiable(_captured.reversed);
 
+  /// Cuántas especies DISTINTAS se han capturado.
+  int get speciesCaught => _captured.map((c) => c.pokemon.id).toSet().length;
+
   /// ¿Ya se capturó alguna vez esta especie?
   bool hasCaught(int pokemonId) =>
       _captured.any((c) => c.pokemon.id == pokemonId);

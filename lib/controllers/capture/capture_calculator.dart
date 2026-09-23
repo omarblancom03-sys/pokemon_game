@@ -40,12 +40,23 @@ class CaptureCalculator {
     return (rate * ball.multiplier * stealth).clamp(0.0, 1.0);
   }
 
-  /// Tira los dados de un lanzamiento.
+  /// Probabilidad de CAPTURA CRÍTICA según cuántas especies distintas ha
+  /// capturado ya el entrenador (como en los juegos, depende de la
+  /// experiencia): 2 % por especie, hasta un 25 %. Con 0 especies, nunca.
+  static double criticalChanceFor(int speciesCaught) =>
+      math.min(maxCriticalChance, 0.02 * speciesCaught);
+
+  static const maxCriticalChance = 0.25;
+
+  /// Tira los dados de un lanzamiento. Con [criticalChance] > 0 puede salir
+  /// una captura crítica: una sola comprobación (una sacudida) en vez de
+  /// cuatro, mucho más fácil de superar.
   CaptureResult roll({
     required int captureRate,
     required PokeBallType ball,
     required bool unaware,
     required bool fromBehind,
+    double criticalChance = 0,
   }) {
     final p = chance(
       captureRate: captureRate,
@@ -54,6 +65,16 @@ class CaptureCalculator {
       fromBehind: fromBehind,
     );
     final perCheck = math.pow(p, 0.25).toDouble();
+    // Sin posibilidad de crítico no se tira ese dado (no gasta azar).
+    if (criticalChance > 0 && _random.nextDouble() < criticalChance) {
+      final ok = _random.nextDouble() < perCheck;
+      return CaptureResult(
+        chance: p,
+        shakes: ok ? 1 : 0,
+        caught: ok,
+        critical: true,
+      );
+    }
     var passed = 0;
     while (passed < 4 && _random.nextDouble() < perCheck) {
       passed++;

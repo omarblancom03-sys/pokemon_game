@@ -157,3 +157,11 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
   sin commit y un `git checkout` los quitó (se recuperaron del parche). Ahora `preview_on.sh` inserta
   líneas marcadas `// TEMP-PREVIEW` y `preview_off.sh` las borra con `sed`; nunca `git checkout` ni
   `dart format` con la vista previa puesta. URL: `?sure` (ratio 255) y `?card` (captura a los 9 s).
+- **2026-09-23 — Captura crítica (como en los juegos desde la 5.ª generación):** antes de las
+  comprobaciones se tira un dado de crítico; si sale, hay UNA sola comprobación (probabilidad
+  p^(1/4) en vez de p) y la bola se sacude una vez, más fuerte. La probabilidad depende de la
+  experiencia: 2 % por especie distinta capturada, máx. 25 % (con 0 especies nunca). Con
+  probabilidad 0 no se tira el dado, así el azar de siempre no cambia. La pone la pantalla en la
+  simulación desde el TrainerController (`_syncTrainer`, junto a la bola elegida). Efectos: destello
+  y botón dorados, "¡Captura crítica!" sobre el Pokémon al golpear y en la tarjeta. El % del anillo
+  de la mira sigue siendo la probabilidad normal (el crítico es una sorpresa, como en los juegos).

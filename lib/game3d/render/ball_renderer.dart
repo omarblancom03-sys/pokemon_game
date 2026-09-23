@@ -232,6 +232,8 @@ class BallRenderer {
   }
 
   void _place(_BallVisual v, ThrownBall ball, double cameraYaw) {
+    // La captura crítica brilla en dorado en vez de rojo.
+    final critical = ball.result?.critical ?? false;
     v.node.position = _engine(ball.position);
     var scale = 1.0;
     var lidOpen = 0.0;
@@ -259,7 +261,10 @@ class BallRenderer {
         final p = (t / ThrownBall.absorbTime).clamp(0.0, 1.0);
         lidOpen = math.sin(p * math.pi) * 1.5;
         rotation = _heading(v.heading);
-        flashColor = vm.Vector4(3, 0.35, 0.3, 0.55 * math.sin(p * math.pi));
+        final absorb = 0.55 * math.sin(p * math.pi);
+        flashColor = critical
+            ? vm.Vector4(3, 2.4, 0.6, absorb)
+            : vm.Vector4(3, 0.35, 0.3, absorb);
         flashSize = 0.25 + 0.35 * p;
       case BallPhase.falling:
         rotation = _heading(v.heading);
@@ -270,7 +275,9 @@ class BallRenderer {
         // Halo rojo suave mientras el botón está encendido.
         final glow = ball.buttonGlow;
         if (glow > 0) {
-          flashColor = vm.Vector4(3, 0.3, 0.25, 0.28 * glow);
+          flashColor = critical
+              ? vm.Vector4(3, 2.4, 0.5, 0.35 * glow)
+              : vm.Vector4(3, 0.3, 0.25, 0.28 * glow);
           flashSize = 0.2 + 0.04 * glow;
         }
       case BallPhase.caught:
@@ -305,6 +312,8 @@ class BallRenderer {
     final click = ball.clickFlash;
     v.buttonMaterial.baseColorFactor = click > 0
         ? vm.Vector4(3, 3, 2.6, click)
+        : critical
+        ? vm.Vector4(4, 3.2, 0.6, glow)
         : vm.Vector4(4, 0.3, 0.25, glow);
     v.button.visible = glow > 0.01 || click > 0.01;
     _placeStars(v, ball);

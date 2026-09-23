@@ -175,7 +175,9 @@ class ThrownBall {
     if (inCycle > shakeTime) return 0;
     // Un vaivén que se amortigua: izquierda fuerte, derecha, y se para.
     final s = inCycle / shakeTime;
-    return math.sin(s * 3 * math.pi) * 0.55 * (1 - s);
+    // La crítica se sacude con más fuerza: todo se decide en esa sacudida.
+    final strength = (result?.critical ?? false) ? 0.8 : 0.55;
+    return math.sin(s * 3 * math.pi) * strength * (1 - s);
   }
 
   /// Luz roja del botón (0..1): se enciende con cada sacudida y se apaga
@@ -229,6 +231,10 @@ class BallSystem {
   final MapLayout layout;
   final double tileSize;
   final CaptureCalculator calculator;
+
+  /// Probabilidad de captura crítica de cada golpe (la experiencia del
+  /// entrenador; ver CaptureCalculator.criticalChanceFor).
+  double criticalChance = 0;
 
   final List<ThrownBall> _balls = [];
   int _count = 0;
@@ -436,6 +442,7 @@ class BallSystem {
         ball: ball.ball,
         unaware: unaware,
         fromBehind: fromBehind,
+        criticalChance: criticalChance,
       )
       ..velocity = flat * -1.2 + Vector3(0, 4.2, 0)
       ..setPhase(BallPhase.absorbing);

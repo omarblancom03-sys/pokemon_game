@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
+import '../../controllers/capture/capture_calculator.dart';
 import '../../controllers/field_controller.dart';
 import '../../controllers/game_controller.dart';
 import '../../controllers/trainer_controller.dart';
@@ -79,17 +80,26 @@ class _Game3DScreenState extends State<Game3DScreen> {
     );
     _controller.addListener(_syncPause);
     _consumedSub = _controller.smokeConsumed.listen(_sim.removeWild);
-    _trainer.addListener(_syncReadyBall);
-    _syncReadyBall();
+    _trainer.addListener(_syncTrainer);
+    _syncTrainer();
     // En web, el clic derecho es para apuntar, no para el menú del navegador.
     if (kIsWeb) unawaited(BrowserContextMenu.disableContextMenu());
   }
 
   void _syncPause() => _sim.setPaused(_controller.isPaused || _capturesOpen);
 
-  /// La bola que se ve en la mano / con la que se calcula la probabilidad.
-  void _syncReadyBall() => _sim.readyBall =
-      _trainer.count(_trainer.selected) > 0 ? _trainer.selected : null;
+  /// Lo que la simulación necesita del entrenador: la bola que se ve en la
+  /// mano (y con la que se calcula la probabilidad) y la probabilidad de
+  /// captura crítica, que crece con las especies capturadas.
+  void _syncTrainer() {
+    _sim
+      ..readyBall = _trainer.count(_trainer.selected) > 0
+          ? _trainer.selected
+          : null
+      ..criticalChance = CaptureCalculator.criticalChanceFor(
+        _trainer.speciesCaught,
+      );
+  }
 
   void _syncAim() => _sim.aiming = _aimMouse || _aimKey || _aimButton;
 
@@ -125,7 +135,7 @@ class _Game3DScreenState extends State<Game3DScreen> {
   @override
   void dispose() {
     _controller.removeListener(_syncPause);
-    _trainer.removeListener(_syncReadyBall);
+    _trainer.removeListener(_syncTrainer);
     unawaited(_consumedSub.cancel());
     _sim.dispose();
     if (kIsWeb) unawaited(BrowserContextMenu.enableContextMenu());

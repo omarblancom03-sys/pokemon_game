@@ -136,13 +136,21 @@ void main() {
     expect(find.byKey(const Key('capture_card')), findsOneWidget);
     expect(find.text('Poke 25'), findsOneWidget);
     expect(find.text('#025'), findsOneWidget);
+    expect(find.text('¡Capturado!'), findsOneWidget);
     expect(find.byKey(const Key('capture_card_new')), findsOneWidget);
 
-    // La misma especie otra vez: ya no es nueva.
-    sim.onEvent!(PokemonCaught(wild, PokeBallType.poke, result));
+    // La misma especie otra vez (y crítica): ya no es nueva.
+    const critical = CaptureResult(
+      chance: 0.5,
+      shakes: 1,
+      caught: true,
+      critical: true,
+    );
+    sim.onEvent!(PokemonCaught(wild, PokeBallType.poke, critical));
     await tester.pump();
     expect(find.byKey(const Key('capture_card')), findsNWidgets(2));
     expect(find.byKey(const Key('capture_card_new')), findsOneWidget);
+    expect(find.text('¡Captura crítica!'), findsOneWidget);
     await tester.pump(const Duration(seconds: 4));
     await tester.pump();
     expect(find.byKey(const Key('capture_card')), findsNothing);

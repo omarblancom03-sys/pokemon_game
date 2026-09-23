@@ -23,6 +23,7 @@ class FieldNotice {
     this.pokemon,
     this.shakes = 0,
     this.isNew = false,
+    this.critical = false,
   });
 
   final int id;
@@ -36,6 +37,9 @@ class FieldNotice {
 
   /// Captura de una especie que el entrenador aún no tenía.
   final bool isNew;
+
+  /// Fue una captura crítica (una sola sacudida).
+  final bool critical;
 }
 
 /// CONTROLADOR de una partida en el campo 3D: recibe lo que pasa en el
@@ -77,7 +81,7 @@ class FieldController extends ChangeNotifier {
         _post(FieldNoticeKind.pickedUp, ball: ball, count: count);
       case BallMissed(:final ball):
         _post(FieldNoticeKind.missed, ball: ball);
-      case PokemonCaught(:final wild, :final ball):
+      case PokemonCaught(:final wild, :final ball, :final result):
         final isNew = !_trainer.hasCaught(wild.pokemon.id);
         _trainer.registerCapture(wild.pokemon, ball);
         _post(
@@ -85,6 +89,7 @@ class FieldController extends ChangeNotifier {
           ball: ball,
           pokemon: wild.pokemon,
           isNew: isNew,
+          critical: result.critical,
         );
       case PokemonBrokeFree(:final wild, :final ball, :final result):
         _post(
@@ -137,6 +142,7 @@ class FieldController extends ChangeNotifier {
     Pokemon? pokemon,
     int shakes = 0,
     bool isNew = false,
+    bool critical = false,
   }) {
     _notices.add(
       FieldNotice(
@@ -147,6 +153,7 @@ class FieldController extends ChangeNotifier {
         pokemon: pokemon,
         shakes: shakes,
         isNew: isNew,
+        critical: critical,
       ),
     );
     if (_notices.length > maxNotices) _notices.removeAt(0);

@@ -75,6 +75,19 @@ void main() {
     expect(trainer.captured, hasLength(3));
   });
 
+  test('a critical capture is flagged in its notice', () {
+    const critical = CaptureResult(
+      chance: 0.3,
+      shakes: 1,
+      caught: true,
+      critical: true,
+    );
+    final field = newField(TrainerController())
+      ..onWorldEvent(PokemonCaught(wild(3), PokeBallType.poke, critical))
+      ..onWorldEvent(PokemonCaught(wild(4), PokeBallType.poke, caught));
+    expect(field.notices.map((n) => n.critical), [true, false]);
+  });
+
   test('only the newest notices are kept; dismiss removes one', () {
     final field = newField(TrainerController());
     for (var i = 0; i < 5; i++) {

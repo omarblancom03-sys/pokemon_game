@@ -71,7 +71,7 @@ El combate lo hace OTRO equipo (se engancha por el contrato EncounterHandler). N
 - [x] Botón de la bola que se enciende en rojo (con halo) en cada sacudida y destello blanco en el "clic"
 - [x] Estela de la bola en vuelo (del color de la bola)
 - [x] Tarjeta "¡Capturado!" con el arte, número, tipos, bola y "¡Nuevo!" + panel "Mis capturas" (P)
-- [ ] Captura crítica (a veces una sola sacudida, con efecto especial)
+- [x] Captura crítica (una sola sacudida más fuerte, brillo dorado, "¡Captura crítica!"; más probable con más especies)
 
 ## 8.11 Exploración: más vida (añadido 2026-09-23)
 - [ ] Hierba que se agita: Pokémon escondidos en la hierba alta que salen al acercarte

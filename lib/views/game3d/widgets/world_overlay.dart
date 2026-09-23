@@ -17,7 +17,8 @@ import '../../../game3d/sim/world3d_sim.dart';
 ///    han descubierto (rojo si van a por ti), y abajo cómo te notan
 ///    (escondido, agachado, haciendo ruido).
 ///  - AL GOLPEAR: sobre el Pokémon, qué bonus de sigilo ha tenido el tiro
-///    ("¡No te vio!", "¡Por la espalda!"), que sube y se desvanece.
+///    ("¡No te vio!", "¡Por la espalda!"), que sube y se desvanece. Si es
+///    una captura crítica, también lo dice.
 ///
 /// Se repinta en cada fotograma leyendo el estado de la simulación; no
 /// cambia nada de ella.
@@ -163,6 +164,8 @@ class _WorldPainter extends CustomPainter {
     if (hit == null || since == null || target == null) return;
     if (since > _bonusSeconds) return;
     final lines = [
+      if (ball.result?.critical ?? false)
+        ('¡Captura crítica!', const Color(0xFFFFD54F)),
       if (hit.unaware)
         (
           '¡No te vio! ×${_factor(CaptureCalculator.unawareBonus)}',

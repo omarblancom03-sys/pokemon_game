@@ -112,10 +112,12 @@ class _Details extends StatelessWidget {
       children: [
         Row(
           children: [
-            const Text(
-              '¡Capturado!',
+            Text(
+              notice.critical ? '¡Captura crítica!' : '¡Capturado!',
               style: TextStyle(
-                color: Colors.lightGreenAccent,
+                color: notice.critical
+                    ? Colors.amberAccent
+                    : Colors.lightGreenAccent,
                 fontWeight: FontWeight.w800,
                 fontSize: 13,
               ),

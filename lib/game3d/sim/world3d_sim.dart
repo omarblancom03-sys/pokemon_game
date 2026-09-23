@@ -148,6 +148,11 @@ class World3DSim {
   /// Bola elegida en la bolsa (la pone la pantalla); null = bolsa vacía.
   PokeBallType? readyBall = PokeBallType.poke;
 
+  /// Probabilidad de captura crítica (la pone la pantalla según cuántas
+  /// especies ha capturado el entrenador).
+  double get criticalChance => ballSystem.criticalChance;
+  set criticalChance(double value) => ballSystem.criticalChance = value;
+
   final WildSpawnSource? spawnWild;
   final void Function(WildPokemon wild)? onWildContact;
   final void Function()? onGrassEncounter;

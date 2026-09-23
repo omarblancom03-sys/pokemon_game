@@ -260,6 +260,36 @@ void main() {
       expect(s.balls, isEmpty);
     });
 
+    test('a critical capture shakes once, harder, and is caught', () {
+      final events = <World3DEvent>[];
+      final s = world(events: events)..criticalChance = 1;
+      addWild(s, s.player.position + Vector3(9, 0, 0));
+      step(s, 0.1);
+      s.throwBall(PokeBallType.poke);
+      while (s.balls.isEmpty || s.balls.single.phase == BallPhase.flying) {
+        s.update(1 / 60);
+      }
+      final ball = s.balls.single;
+      expect(ball.result!.critical, isTrue);
+      expect(
+        ball.shakingDuration,
+        ThrownBall.shakeSettle + ThrownBall.shakeCycle,
+      );
+
+      var maxWobble = 0.0;
+      while (ball.phase != BallPhase.caught) {
+        s.update(1 / 60);
+        maxWobble = max(maxWobble, ball.wobble.abs());
+      }
+      expect(ball.shakesDone, 1);
+      expect(
+        maxWobble,
+        greaterThan(0.45),
+        reason: 'stronger than a normal one',
+      );
+      expect(events.whereType<PokemonCaught>().single.result.critical, isTrue);
+    });
+
     test('all checks fail → no shakes, it breaks free and is alert', () {
       final events = <World3DEvent>[];
       final s = world(roll: 0.999, events: events);

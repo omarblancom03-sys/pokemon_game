@@ -110,6 +110,70 @@ void main() {
       }
       expect(caught / 4000, closeTo(90 / 255, 0.03));
     });
+
+    test('critical capture: one check, one shake', () {
+      // Dado del crítico 0 (< 25 %) y la única comprobación sale bien.
+      final ok = CaptureCalculator(random: _SeqRandom([0, 0])).roll(
+        captureRate: 45,
+        ball: PokeBallType.poke,
+        unaware: false,
+        fromBehind: false,
+        criticalChance: 0.25,
+      );
+      expect(ok.critical, isTrue);
+      expect(ok.caught, isTrue);
+      expect(ok.shakes, 1);
+
+      // Crítico, pero la comprobación falla: se escapa sin sacudirse.
+      final fail = CaptureCalculator(random: _SeqRandom([0, 0.9999])).roll(
+        captureRate: 45,
+        ball: PokeBallType.poke,
+        unaware: false,
+        fromBehind: false,
+        criticalChance: 0.25,
+      );
+      expect(fail.critical, isTrue);
+      expect(fail.caught, isFalse);
+      expect(fail.shakes, 0);
+    });
+
+    test('no critical chance: the critical die is not even rolled', () {
+      // Con la misma secuencia que "4 comprobaciones superadas".
+      final r = CaptureCalculator(random: _SeqRandom([0])).roll(
+        captureRate: 45,
+        ball: PokeBallType.poke,
+        unaware: false,
+        fromBehind: false,
+      );
+      expect(r.critical, isFalse);
+      expect(r.shakes, 3);
+    });
+
+    test('critical captures make hard Pokémon much easier', () {
+      // Ratio 25 (≈ 10 %): con crítico siempre, la tasa es p^(1/4) ≈ 56 %.
+      final calc = CaptureCalculator(random: Random(7));
+      var caught = 0;
+      for (var i = 0; i < 3000; i++) {
+        final r = calc.roll(
+          captureRate: 25,
+          ball: PokeBallType.poke,
+          unaware: false,
+          fromBehind: false,
+          criticalChance: 1,
+        );
+        if (r.caught) caught++;
+      }
+      expect(caught / 3000, closeTo(pow(25 / 255, 0.25), 0.03));
+    });
+
+    test('critical chance grows with the species caught, up to 25 %', () {
+      expect(CaptureCalculator.criticalChanceFor(0), 0);
+      expect(CaptureCalculator.criticalChanceFor(5), closeTo(0.1, 1e-12));
+      expect(
+        CaptureCalculator.criticalChanceFor(40),
+        CaptureCalculator.maxCriticalChance,
+      );
+    });
   });
 
   group('TrainerController', () {
@@ -157,6 +221,9 @@ void main() {
       expect(t.captured.map((c) => c.pokemon.id), [2, 1]);
       expect(t.hasCaught(1), isTrue);
       expect(t.hasCaught(3), isFalse);
+      expect(t.speciesCaught, 2);
+      t.registerCapture(fakePokemon(1), PokeBallType.great);
+      expect(t.speciesCaught, 2, reason: 'same species again');
     });
   });
 }
