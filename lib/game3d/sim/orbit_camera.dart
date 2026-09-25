@@ -41,10 +41,40 @@ class OrbitCamera {
   final double targetHeight;
 
   /// Gira la cámara. [dYaw] horizontal, [dPitch] vertical (se limita para
-  /// no meterse bajo el suelo ni quedar totalmente cenital).
+  /// no meterse bajo el suelo ni quedar totalmente cenital). Girarla a
+  /// mano cancela un recentrado en curso: manda el jugador.
   void rotate(double dYaw, double dPitch) {
+    if (dYaw != 0) recenterGoal = null;
     yaw = _wrapAngle(yaw + dYaw);
     pitch = (pitch + dPitch).clamp(minPitch, maxPitch);
+  }
+
+  /// Ángulo horizontal al que se está volviendo (null = a ninguno): la
+  /// cámara gira sola hasta él con suavidad (ver [recenterBehind]).
+  double? recenterGoal;
+
+  /// Rapidez del recentrado (1/s): en ~0,3 s está casi detrás.
+  static const recenterRate = 10.0;
+
+  /// Pide colocarse DETRÁS de algo que mira hacia [facing] (rad, con la
+  /// convención del jugador: 0 = hacia +Z). La cámara mira hacia -Z con
+  /// yaw = 0, así que detrás es [facing] + π. Solo cambia el giro
+  /// horizontal; la inclinación sigue siendo la que eligió el jugador.
+  void recenterBehind(double facing) =>
+      recenterGoal = _wrapAngle(facing + math.pi);
+
+  /// Avanza el recentrado: gira por el camino más corto y, al llegar
+  /// (a menos de medio grado), se queda justo ahí y termina.
+  void updateRecenter(double dt) {
+    final goal = recenterGoal;
+    if (goal == null) return;
+    final diff = _wrapAngle(goal - yaw);
+    if (diff.abs() < 0.5 * math.pi / 180) {
+      yaw = goal;
+      recenterGoal = null;
+      return;
+    }
+    yaw = _wrapAngle(yaw + diff * math.min(1, dt * recenterRate));
   }
 
   /// Acerca (negativo) o aleja (positivo) la cámara, con límites.

@@ -243,6 +243,12 @@ void main() {
     await tester.tap(find.byKey(const Key('game3d_crouch')));
     await tester.pump();
     expect(sim.crouching, isTrue);
+
+    // Botón de cámara: vuelve detrás del jugador.
+    sim.camera.yaw = 1;
+    await tester.tap(find.byKey(const Key('game3d_recenter')));
+    await tester.pump();
+    expect(sim.camera.recenterGoal, isNotNull);
     await tester.pump(const Duration(seconds: 3));
   });
 

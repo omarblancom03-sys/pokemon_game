@@ -1,6 +1,7 @@
 // PRUEBAS de la simulación 3D: el jugador empieza en `@`, se mueve relativo a
 // la cámara, choca con los árboles del mapa ASCII, y la cámara responde al
-// arrastre del ratón, a Q/E y a la rueda. En pausa no se mueve.
+// arrastre del ratón, a Q/E y a la rueda (y se recentra detrás del jugador
+// con V hasta que se la gire a mano). En pausa no se mueve.
 
 import 'dart:math' as math;
 
@@ -9,6 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pokemon_game/game/map/map_layout.dart';
 import 'package:pokemon_game/game3d/sim/world3d_sim.dart';
+import 'package:vector_math/vector_math.dart' show Vector3;
 
 void main() {
   final layout = MapLayout.parse(const [
@@ -116,5 +118,25 @@ void main() {
   test('cellAt maps world meters back to map cells', () {
     final s = sim();
     expect(s.cellAt(s.cellCenter(5, 2)), (col: 5, row: 2));
+  });
+
+  test('recentering puts the camera behind the player until you turn it', () {
+    final s = sim();
+    s.player.facing = 2;
+    s.camera.yaw = -1;
+    s.recenterCamera();
+    for (var i = 0; i < 60; i++) {
+      s.update(1 / 60);
+    }
+    final ahead = Vector3(math.sin(2), 0, math.cos(2));
+    expect(s.camera.forward.dot(ahead), closeTo(1, 1e-6));
+
+    // Otra vez, pero arrastrando a mitad: manda el jugador.
+    s.player.facing = -1;
+    s.recenterCamera();
+    s.update(1 / 60);
+    s.cameraInput.addDrag(30, 0);
+    s.update(1 / 60);
+    expect(s.camera.recenterGoal, isNull);
   });
 }

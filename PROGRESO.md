@@ -17,7 +17,8 @@
   - Entrenador low-poly (gorra, chaqueta, mochila) con ciclo de caminar y carrera. Al correr levanta
     polvo (y al frenar en seco); las Poké Balls también al botar.
   - Cámara en tercera persona: arrastrar con el ratón para girar, rueda para zoom, Q/E para girar con
-    teclado. WASD/flechas mueven relativo a la cámara; Mayús corre. D-pad en pantalla. La cámara no
+    teclado. V (o el botón de la cámara) la vuelve a poner detrás del jugador con un giro suave.
+    WASD/flechas mueven relativo a la cámara; Mayús corre. D-pad en pantalla. La cámara no
     atraviesa árboles ni casas: se acerca si algo estorba y, de espaldas a un árbol, mira desde arriba.
   - Hierba alta 3D que se mece con el viento y se aparta al pasar. Al pisarla saltan briznas que dan
     vueltas y caen planeando: tres por pisada corriendo, una andando y ninguna agachado (se ve el

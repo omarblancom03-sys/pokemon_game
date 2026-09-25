@@ -291,6 +291,9 @@ class World3DSim {
   /// Cartel que se está leyendo (null = ninguno).
   MapCell? get openSign => signReader.open;
 
+  /// Vuelve a poner la cámara detrás del jugador (girando con suavidad).
+  void recenterCamera() => camera.recenterBehind(player.facing);
+
   /// Leer el cartel de delante o cerrar el abierto. Devuelve si cambió.
   bool toggleSign() =>
       !_paused && signReader.toggle(player.position, player.facing);
@@ -504,7 +507,8 @@ class World3DSim {
         -dragX * dragSensitivity + cameraInput.turnAxis * keyTurnSpeed * dt,
         dragY * dragSensitivity,
       )
-      ..zoom(cameraInput.takeZoom());
+      ..zoom(cameraInput.takeZoom())
+      ..updateRecenter(dt);
   }
 
   /// Lo que levantan los pies. Fuera de la hierba alta, polvo al correr

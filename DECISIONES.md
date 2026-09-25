@@ -211,4 +211,11 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
   (14,15) junto a la hierba del sur y (20,17) junto a la casa del sur. Sirven de TUTORIAL dentro del
   juego (sigilo, hierba que se agita, bolas). Están en casillas libres junto a los caminos: no tapan
   ningún paso ni los humos del 2D.
+- **2026-09-25 — Recentrar la cámara:** tecla **V** ("vista") y un botón táctil junto a agacharse y
+  apuntar. La cámara gira SOLA hasta quedar detrás de hacia donde mira el jugador en ese momento
+  (`OrbitCamera.recenterBehind`: yaw = facing + π), por el camino más corto y con suavidad
+  (~0,3 s, sin tirón). Solo cambia el giro horizontal: la inclinación la eligió el jugador y la usa
+  el tiro "a ojo". Girar a mano (arrastrar, Q/E) lo cancela al instante; el zoom no. No se añade
+  cámara automática que se recoloque sola al andar: la cámara la manda el jugador (decisión del
+  22-09).
 

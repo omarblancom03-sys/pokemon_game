@@ -166,6 +166,10 @@ class _Game3DScreenState extends State<Game3DScreen> {
       if (down) _toggleCrouch();
       return KeyEventResult.handled;
     }
+    if (key == LogicalKeyboardKey.keyV) {
+      if (down) _sim.recenterCamera();
+      return KeyEventResult.handled;
+    }
     if (key == LogicalKeyboardKey.keyL || key == LogicalKeyboardKey.enter) {
       if (down) _toggleSign();
       return KeyEventResult.handled;
@@ -288,6 +292,7 @@ class _Game3DScreenState extends State<Game3DScreen> {
                   ball: _trainer.selected,
                   aiming: _aimButton,
                   crouching: _sim.crouching,
+                  onRecenter: _sim.recenterCamera,
                   onCrouch: _toggleCrouch,
                   onAim: () {
                     setState(() => _aimButton = !_aimButton);
@@ -344,13 +349,14 @@ class _Game3DScreenState extends State<Game3DScreen> {
   }
 }
 
-/// Botones táctiles: agacharse y apuntar (se quedan activos) y lanzar la
-/// bola elegida.
+/// Botones táctiles: cámara detrás del jugador, agacharse y apuntar (se
+/// quedan activos) y lanzar la bola elegida.
 class _ThrowButtons extends StatelessWidget {
   const _ThrowButtons({
     required this.ball,
     required this.aiming,
     required this.crouching,
+    required this.onRecenter,
     required this.onCrouch,
     required this.onAim,
     required this.onThrow,
@@ -359,6 +365,7 @@ class _ThrowButtons extends StatelessWidget {
   final PokeBallType ball;
   final bool aiming;
   final bool crouching;
+  final VoidCallback onRecenter;
   final VoidCallback onCrouch;
   final VoidCallback onAim;
   final VoidCallback onThrow;
@@ -368,6 +375,16 @@ class _ThrowButtons extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
+        FloatingActionButton.small(
+          key: const Key('game3d_recenter'),
+          heroTag: null,
+          tooltip: 'Cámara detrás (V)',
+          backgroundColor: Colors.black54,
+          foregroundColor: Colors.white,
+          onPressed: onRecenter,
+          child: const Icon(Icons.cameraswitch),
+        ),
+        const SizedBox(width: 8),
         FloatingActionButton.small(
           key: const Key('game3d_crouch'),
           heroTag: null,
@@ -415,7 +432,8 @@ class _Hint extends StatelessWidget {
       child: const Padding(
         padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         child: Text(
-          'WASD mover · Mayús correr · Arrastrar / Q-E cámara · Rueda zoom\n'
+          'WASD mover · Mayús correr · Arrastrar / Q-E cámara · V detrás · '
+          'Rueda zoom\n'
           'Clic der. / F apuntar · Clic / Espacio lanzar · R / 1-3 cambiar bola\n'
           'C agacharse: en la hierba alta no te ven · Correr hace ruido · '
           'P tus capturas · L leer carteles',

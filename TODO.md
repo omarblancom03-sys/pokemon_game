@@ -80,7 +80,7 @@ El combate lo hace OTRO equipo (se engancha por el contrato EncounterHandler). N
 - [x] Briznas de hierba al correr por la hierba alta (y sobre los escondidos, y al salir de un salto)
       (GrassBladeSystem: 3 por pisada corriendo, 1 andando, 0 agachado; suben, giran y caen planeando)
 - [x] Carteles que se pueden leer (L / Intro o tocar el aviso; 4 carteles con consejos de sigilo y captura)
-- [ ] Recentrar la cámara detrás del jugador
+- [x] Recentrar la cámara detrás del jugador (V o botón; suave, por el camino corto; girarla a mano lo cancela)
 - [ ] Nubes que pasan (sombras) y pájaros
 
 ## Mejoras continuas

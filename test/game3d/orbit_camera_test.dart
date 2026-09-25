@@ -1,6 +1,7 @@
 // PRUEBAS de la cámara en tercera persona: posición del ojo según
 // yaw/pitch/distancia, límites de inclinación y zoom, ejes adelante/derecha
-// y que no se meta dentro de árboles ni casas.
+// que no se meta dentro de árboles ni casas y que se recentre detrás del
+// jugador (suave, por el camino corto; girarla a mano lo cancela).
 
 import 'dart:math' as math;
 
@@ -182,6 +183,62 @@ void main() {
       camera.avoidObstacles(Vector3.zero(), (x, z) => z >= 6 ? 5 : 0, 1 / 60);
       expect(camera.obstructedDistance, isNull);
       expect(camera.effectiveDistance, 4);
+    });
+  });
+
+  group('recenter behind the player', () {
+    /// Adelante del jugador que mira hacia [facing] (misma convención que
+    /// PlayerBody: 0 = hacia +Z).
+    Vector3 facingDir(double facing) =>
+        Vector3(math.sin(facing), 0, math.cos(facing));
+
+    void run(OrbitCamera c, double seconds) {
+      for (var t = 0.0; t < seconds; t += 1 / 60) {
+        c.updateRecenter(1 / 60);
+      }
+    }
+
+    test('ends up looking where the player looks, smoothly', () {
+      for (final facing in [0.0, 1.0, -2.5, math.pi]) {
+        final camera = OrbitCamera(yaw: 0.3)..recenterBehind(facing);
+        camera.updateRecenter(1 / 60);
+        // Un fotograma no basta: gira poco a poco.
+        expect(camera.forward.dot(facingDir(facing)), lessThan(0.9999));
+        run(camera, 1);
+        expect(camera.forward.dot(facingDir(facing)), closeTo(1, 1e-6));
+        expect(camera.recenterGoal, isNull, reason: 'done');
+      }
+    });
+
+    test('takes the short way round (across ±π)', () {
+      // De 3,0 a -3,0 rad: por π son 0,28 rad; por 0 serían 6.
+      final camera = OrbitCamera(yaw: 3)..recenterBehind(-3 + math.pi);
+      var maxAway = 0.0;
+      for (var t = 0.0; t < 1; t += 1 / 60) {
+        camera.updateRecenter(1 / 60);
+        maxAway = math.max(maxAway, (camera.yaw.abs() - math.pi).abs());
+      }
+      expect(maxAway, lessThan(0.3));
+      expect(camera.yaw, closeTo(-3, 1e-9));
+    });
+
+    test('turning it by hand cancels the recenter; zoom does not', () {
+      final camera = OrbitCamera()
+        ..recenterBehind(1)
+        ..zoom(1)
+        ..rotate(0, 0.1);
+      expect(camera.recenterGoal, isNotNull);
+      camera.rotate(0.05, 0);
+      expect(camera.recenterGoal, isNull);
+      final yaw = camera.yaw;
+      run(camera, 0.5);
+      expect(camera.yaw, yaw);
+    });
+
+    test('only the yaw changes: the chosen pitch stays', () {
+      final camera = OrbitCamera(pitch: 0.9)..recenterBehind(2);
+      run(camera, 1);
+      expect(camera.pitch, 0.9);
     });
   });
 }
