@@ -448,6 +448,8 @@ class BallSystem {
       ..setPhase(BallPhase.absorbing);
     w
       ..capturedBy = ball.id
+      ..hidden =
+          false // si estaba escondido, ¡sorpresa!
       ..target = null;
   }
 

@@ -22,6 +22,11 @@
   - Hierba alta 3D que se mece con el viento y se aparta al pasar.
   - Mariposas de colores sobre las flores: se espantan si te acercas (agachado puedes verlas de cerca).
   - Pokémon salvajes VISIBLES (arte oficial de PokeAPI) que deambulan por la hierba alta.
+  - **Hierba que se agita:** algunos Pokémon están ESCONDIDOS en la hierba alta: no se ven (ni en el
+    minimapa) y solo se nota la hierba sacudiéndose a ratos. Si llegas andando o corriendo salen de un
+    salto, asustados ("¡Un X salvaje salió de la hierba!"); si llegas agachado se asoman sin verte y de
+    espaldas ("X asoma entre la hierba… ¡no te ha visto!"): la ocasión perfecta. Una bola que cae cerca
+    también los hace salir, y si le das de lleno a la mata que se agita, ¡lo capturas por sorpresa!
   - **Sigilo:** los Pokémon ven en un cono delante de ellos y oyen tus pasos (correr se oye de lejos).
     Si sospechan sale "?" y se giran; si te descubren, "!" y reaccionan según su carácter: los
     asustadizos huyen, los curiosos se acercan a mirarte y los agresivos (¡rojo!) cargan: si te

@@ -27,7 +27,8 @@ WildPokemon? findLockTarget({
   var bestScore = double.infinity;
   final minCos = math.cos(lockCone);
   for (final w in wild) {
-    if (!w.isFree) continue;
+    // Escondido en la hierba: no se ve, así que la mira no lo fija.
+    if (!w.isFree || w.hidden) continue;
     final to = w.position - player
       ..y = 0;
     final d = to.length;

@@ -22,6 +22,8 @@ String noticeText(FieldNotice n) {
     },
     FieldNoticeKind.missed => 'Fallaste: la bola quedó en el suelo',
     FieldNoticeKind.noBalls => 'No te quedan Poké Balls: busca más brillos',
+    FieldNoticeKind.burstOut => '¡Un $name salvaje salió de la hierba!',
+    FieldNoticeKind.peeked => '$name asoma entre la hierba… ¡no te ha visto!',
   };
 }
 
@@ -276,6 +278,8 @@ class _NoticeChipState extends State<_NoticeChip> {
       FieldNoticeKind.brokeFree => const Color(0xFFC62828),
       FieldNoticeKind.pickedUp => const Color(0xFF1565C0),
       FieldNoticeKind.missed || FieldNoticeKind.noBalls => Colors.black87,
+      FieldNoticeKind.burstOut => const Color(0xFFE65100),
+      FieldNoticeKind.peeked => const Color(0xFF00796B),
     };
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0, end: 1),

@@ -92,7 +92,8 @@ class MinimapView {
       add(MinimapMark.ball, item.position);
     }
     for (final w in sim.wild) {
-      if (w.isFree) add(MinimapMark.forWild(w), w.position);
+      // Los escondidos no salen: hay que buscarlos por la hierba que se agita.
+      if (w.isFree && !w.hidden) add(MinimapMark.forWild(w), w.position);
     }
     return out;
   }

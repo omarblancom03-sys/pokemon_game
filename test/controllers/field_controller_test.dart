@@ -1,6 +1,7 @@
 // PRUEBAS del controlador del campo 3D: recoger bolas llena la bolsa, una
 // captura se apunta en el entrenador, cada suceso deja su aviso (como mucho
-// tres a la vez) y sin bolas no se lanza nada.
+// tres a la vez; también cuando un Pokémon sale de la hierba) y sin bolas no
+// se lanza nada.
 
 import 'dart:math';
 
@@ -86,6 +87,17 @@ void main() {
       ..onWorldEvent(PokemonCaught(wild(3), PokeBallType.poke, critical))
       ..onWorldEvent(PokemonCaught(wild(4), PokeBallType.poke, caught));
     expect(field.notices.map((n) => n.critical), [true, false]);
+  });
+
+  test('a Pokémon coming out of the grass says how it came out', () {
+    final field = newField(TrainerController())
+      ..onWorldEvent(PokemonRevealed(wild(5), startled: true))
+      ..onWorldEvent(PokemonRevealed(wild(6), startled: false));
+    expect(field.notices.map((n) => n.kind), [
+      FieldNoticeKind.burstOut,
+      FieldNoticeKind.peeked,
+    ]);
+    expect(field.notices.map((n) => n.pokemon?.id), [5, 6]);
   });
 
   test('only the newest notices are kept; dismiss removes one', () {

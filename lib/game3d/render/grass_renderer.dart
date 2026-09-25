@@ -31,13 +31,19 @@ class GrassRenderer {
 
   static final _up = vm.Vector3(0, 1, 0);
 
-  /// Recalcula la inclinación de todas las matas.
-  void update(double time, Iterable<vm.Vector3> pushers) {
+  /// Recalcula la inclinación de todas las matas (y las que se agitan sobre
+  /// Pokémon escondidos).
+  void update(
+    double time,
+    Iterable<vm.Vector3> pushers, {
+    Iterable<vm.Vector3> rustlers = const [],
+  }) {
     final list = pushers.toList(growable: false);
+    final shaking = rustlers.toList(growable: false);
     _instances.updateInstanceTransforms((transforms) {
       for (var i = 0; i < field.tufts.length; i++) {
         final t = field.tufts[i];
-        final tilt = GrassField.tiltFor(t, time, list);
+        final tilt = GrassField.tiltFor(t, time, list, rustlers: shaking);
         transforms[i].setFrom(
           _transform(t, tilt.angle, tilt.axisX, tilt.axisZ),
         );

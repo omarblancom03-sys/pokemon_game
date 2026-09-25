@@ -74,13 +74,28 @@ class GrassField {
   /// Vaivén del viento (rad).
   static const windStrength = 0.08;
 
+  /// Hierba que se agita sobre un Pokémon escondido: radio (m) y fuerza
+  /// máxima de la sacudida (rad).
+  static const rustleRadius = 1.5;
+  static const rustleStrength = 0.5;
+
+  /// Cuánto se agita ahora la hierba sobre un escondido en [at] (0..1): a
+  /// RÁFAGAS (unas 3 por cada 3 s, distintas en cada sitio), así llama la
+  /// atención sin ser constante.
+  static double rustleBurst(double time, Vector3 at) {
+    final s = math.sin(time * 2.1 + at.x * 1.7 + at.z * 0.9);
+    return s <= 0.2 ? 0 : (s - 0.2) / 0.8;
+  }
+
   /// Inclinación de [tuft] en el instante [time], apartándose de cada
-  /// punto de [pushers] (el jugador, los Pokémon...).
+  /// punto de [pushers] (el jugador, los Pokémon...) y sacudiéndose sobre
+  /// cada punto de [rustlers] (Pokémon escondidos).
   static GrassTilt tiltFor(
     GrassTuft tuft,
     double time,
-    Iterable<Vector3> pushers,
-  ) {
+    Iterable<Vector3> pushers, {
+    Iterable<Vector3> rustlers = const [],
+  }) {
     // El viento sopla hacia +X: gira alrededor del eje Z.
     var vx = 0.0;
     var vz = -windStrength * math.sin(time * 1.8 + tuft.phase);
@@ -94,6 +109,26 @@ class GrassField {
       // Eje = arriba × dirección: así la punta se aleja de quien empuja.
       vx += dz / d * strength;
       vz += -dx / d * strength;
+    }
+    for (final r in rustlers) {
+      final dx = tuft.x - r.x;
+      final dz = tuft.z - r.z;
+      final d = math.sqrt(dx * dx + dz * dz);
+      if (d >= rustleRadius) continue;
+      final burst = rustleBurst(time, r);
+      if (burst == 0) continue;
+      // Vaivén rápido de lado a lado (alrededor del eje que va hacia él).
+      final shake =
+          math.sin(time * 16 + tuft.phase * 3) *
+          rustleStrength *
+          burst *
+          (1 - d / rustleRadius);
+      if (d < 1e-6) {
+        vx += shake;
+      } else {
+        vx += dx / d * shake;
+        vz += dz / d * shake;
+      }
     }
     final angle = math.sqrt(vx * vx + vz * vz);
     if (angle < 1e-9) return (axisX: 1, axisZ: 0, angle: 0);

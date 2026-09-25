@@ -114,6 +114,9 @@ class WildRenderer {
     double time,
     ThrownBall? ball,
   ) {
+    // Escondido en la hierba: no se dibuja (solo se agita la hierba).
+    v.node.visible = !w.hidden;
+    if (w.hidden) return;
     final p = w.position;
     final h = w.displayHeight;
     // "Pop" de entrada: crece con un pequeño rebote durante 0,45 s.
@@ -138,6 +141,12 @@ class WildRenderer {
         final to = ball.position - p;
         offset = vm.Vector3(to.x, to.y - ballRadius, -to.z) * absorbed;
       }
+    }
+    // Recién salido de la hierba: da un salto y crece desde pequeño.
+    final revealed = w.revealedFor;
+    if (revealed != null) {
+      offset = offset + vm.Vector3(0, w.revealJump, 0);
+      pop *= 0.55 + 0.45 * math.min(1, revealed / 0.3);
     }
     // Recién escapado: sale de golpe (un poco más grande) y blanco.
     final released = w.releasedFor;

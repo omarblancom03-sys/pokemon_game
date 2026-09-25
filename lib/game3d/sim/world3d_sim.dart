@@ -211,6 +211,25 @@ class World3DSim {
   /// Segundos sin encuentros tras reanudar (para no encadenarlos).
   static const graceSeconds = 2.0;
 
+  /// Probabilidad de que un Pokémon aparezca ESCONDIDO en la hierba alta
+  /// (no se ve; solo se agita la hierba donde está).
+  static const hiddenChance = 0.35;
+
+  /// Si nadie encuentra a un escondido en este tiempo (s), se va.
+  static const hiddenLifetime = 60.0;
+
+  /// Distancia (m) a la que un escondido sale de la hierba, según lo que
+  /// se note el jugador. Quieto, solo si está pegado.
+  static double revealDistance(PlayerStealth stealth, {required bool moving}) {
+    if (!moving) return 1.2;
+    return switch (stealth) {
+      PlayerStealth.noisy => 6.5,
+      PlayerStealth.normal => 4.0,
+      PlayerStealth.crouching => 2.2,
+      PlayerStealth.hidden => 1.6,
+    };
+  }
+
   /// Metros entre dos pisadas (medio ciclo de pasos del entrenador).
   static const footstepSpacing = TrainerPose.strideLength / 2;
 
@@ -490,11 +509,18 @@ class World3DSim {
   }
 
   /// Todos los que apartan la hierba al pasar: jugador y Pokémon (los que
-  /// están dentro de una bola, no).
+  /// están dentro de una bola, no ni los escondidos: esos la agitan).
   Iterable<Vector3> get grassPushers sync* {
     yield player.position;
     for (final w in wild) {
-      if (w.isFree) yield w.position;
+      if (w.isFree && !w.hidden) yield w.position;
+    }
+  }
+
+  /// Dónde se agita la hierba: sobre los Pokémon escondidos.
+  Iterable<Vector3> get grassRustlers sync* {
+    for (final w in wild) {
+      if (w.hidden) yield w.position;
     }
   }
 
@@ -513,7 +539,11 @@ class World3DSim {
           .then((pokemon) {
             _pendingSpawns--;
             if (pokemon != null && !_disposed) {
-              spawn(pokemon.pokemon, captureRate: pokemon.captureRate);
+              spawn(
+                pokemon.pokemon,
+                captureRate: pokemon.captureRate,
+                hidden: _random.nextDouble() < hiddenChance,
+              );
             }
           })
           .catchError((Object _) {
@@ -523,8 +553,13 @@ class World3DSim {
   }
 
   /// Hace aparecer [pokemon] en una casilla de hierba alta lejos del
-  /// jugador y de los demás. Devuelve null si no hay sitio.
-  WildPokemon? spawn(Pokemon pokemon, {int captureRate = 45}) {
+  /// jugador y de los demás ([hidden]: escondido en la hierba). Devuelve
+  /// null si no hay sitio.
+  WildPokemon? spawn(
+    Pokemon pokemon, {
+    int captureRate = 45,
+    bool hidden = false,
+  }) {
     final playerPos = player.position;
     final spots =
         [for (final cell in _tallGrassCells) cellCenter(cell.col, cell.row)]
@@ -535,13 +570,16 @@ class World3DSim {
           );
     if (spots.isEmpty) return null;
     final spot = spots[_random.nextInt(spots.length)];
-    final w = WildPokemon(
-      id: 'wild-${_spawnCount++}',
-      pokemon: pokemon,
-      captureRate: captureRate,
-      position: spot,
-      facing: _random.nextDouble() * 2 * math.pi,
-    )..idleTime = _random.nextDouble() * 2;
+    final w =
+        WildPokemon(
+            id: 'wild-${_spawnCount++}',
+            pokemon: pokemon,
+            captureRate: captureRate,
+            position: spot,
+            facing: _random.nextDouble() * 2 * math.pi,
+          )
+          ..idleTime = _random.nextDouble() * 2
+          ..hidden = hidden;
     wild.add(w);
     return w;
   }
@@ -574,8 +612,18 @@ class World3DSim {
     if (released != null) {
       w.releasedFor = released + dt > 0.6 ? null : released + dt;
     }
+    final revealed = w.revealedFor;
+    if (revealed != null) {
+      w.revealedFor = revealed + dt > WildPokemon.revealJumpTime
+          ? null
+          : revealed + dt;
+    }
     if (!w.isFree) {
       w.velocity = Vector3.zero();
+      return;
+    }
+    if (w.hidden) {
+      _updateHidden(w, dt);
       return;
     }
     behavior.perceive(
@@ -591,11 +639,52 @@ class World3DSim {
     if (fled) removeWild(w.id);
   }
 
+  /// Un escondido no se mueve ni te busca: espera en la hierba. Sale si te
+  /// acercas (según lo que se te note) y se va si nadie lo encuentra.
+  void _updateHidden(WildPokemon w, double dt) {
+    w
+      ..velocity = Vector3.zero()
+      ..hiddenTime += dt;
+    if (w.hiddenTime > hiddenLifetime) {
+      removeWild(w.id);
+      return;
+    }
+    final to = player.position - w.position
+      ..y = 0;
+    final sneaky =
+        stealth == PlayerStealth.crouching || stealth == PlayerStealth.hidden;
+    if (to.length < revealDistance(stealth, moving: player.isMoving)) {
+      _reveal(w, startled: !sneaky);
+    }
+  }
+
+  /// Sale de la hierba de un salto. Asustado: te mira y reacciona según su
+  /// carácter. Si te acercaste con sigilo, se asoma distraído, mirando
+  /// hacia otro lado (¡la ocasión de lanzarle por la espalda!).
+  void _reveal(WildPokemon w, {required bool startled}) {
+    final to = player.position - w.position
+      ..y = 0;
+    final towards = math.atan2(to.x, to.z);
+    w
+      ..hidden = false
+      ..revealedFor = 0
+      ..target = null
+      ..facing = startled
+          ? towards
+          : towards + math.pi + (_random.nextDouble() - 0.5) * 1.6;
+    if (startled) behavior.startle(w);
+    _emit(PokemonRevealed(w, startled: startled));
+  }
+
   /// Una bola que cae cerca asusta a los Pokémon de alrededor.
   void _startleAround(Vector3 at) {
     for (final w in wild) {
       if (w.isFree && w.position.distanceTo(Vector3(at.x, 0, at.z)) < 4) {
-        behavior.startle(w);
+        if (w.hidden) {
+          _reveal(w, startled: true);
+        } else {
+          behavior.startle(w);
+        }
       }
     }
   }
@@ -630,7 +719,7 @@ class World3DSim {
   bool _checkContacts() {
     final p = player.position;
     for (final w in wild) {
-      if (w.engaged || !w.isFree) continue;
+      if (w.engaged || !w.isFree || w.hidden) continue;
       if (w.position.distanceTo(p) >= w.contactRadius) continue;
       if (w.temperament == Temperament.aggressive && w.isAlert) {
         w.engaged = true;

@@ -83,6 +83,16 @@ class WildPokemon {
   /// Segundos desde que salió de una bola (animación de "pop").
   double? releasedFor;
 
+  /// Escondido en la hierba alta: no se ve, solo se agita la hierba
+  /// donde está. Sale al acercarte (ver World3DSim).
+  bool hidden = false;
+
+  /// Segundos desde que salió de la hierba (animación del salto).
+  double? revealedFor;
+
+  /// Segundos que lleva escondido (si nadie lo encuentra, se va).
+  double hiddenTime = 0;
+
   /// Metros por segundo al deambular, huir y cargar.
   static const wanderSpeed = 1.3;
   static const fleeSpeed = 4.4;
@@ -113,4 +123,15 @@ class WildPokemon {
   double get hopHeight => target == null
       ? 0
       : (math.sin(distanceMoved * (isAlert ? 7 : 5)).abs() * 0.18);
+
+  /// Duración del salto al salir de la hierba (s).
+  static const revealJumpTime = 0.55;
+
+  /// Altura extra del salto al salir de la hierba (0 si ya aterrizó).
+  double get revealJump {
+    final t = revealedFor;
+    if (t == null || t >= revealJumpTime) return 0;
+    final s = t / revealJumpTime;
+    return 4 * s * (1 - s) * 0.9; // parábola: 0,9 m en lo más alto
+  }
 }

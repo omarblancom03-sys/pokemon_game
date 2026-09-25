@@ -165,3 +165,23 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
   simulación desde el TrainerController (`_syncTrainer`, junto a la bola elegida). Efectos: destello
   y botón dorados, "¡Captura crítica!" sobre el Pokémon al golpear y en la tarjeta. El % del anillo
   de la mira sigue siendo la probabilidad normal (el crítico es una sorpresa, como en los juegos).
+- **2026-09-25 — Pokémon escondidos en la hierba alta ("hierba que se agita").** El 35 % de los que
+  aparecen solos lo hacen escondidos (`WildPokemon.hidden`): no se dibujan, la mira no los fija, no
+  salen en el minimapa ni apartan la hierba; en su lugar la hierba de alrededor (1,5 m) se sacude a
+  ráfagas (`GrassField.rustleBurst`, ~40 % del tiempo y distinto en cada sitio, para que llame la
+  atención sin ser constante). No se mueven ni te buscan. Salen a una distancia según lo que se te
+  note (`World3DSim.revealDistance`): corriendo 6,5 m, andando 4 m, agachado 2,2 m, agachado en la
+  hierba 1,6 m, quieto 1,2 m. De pie salen ASUSTADOS (mirándote, en alerta, reaccionan según su
+  carácter); agachado se ASOMAN distraídos y mirando hacia otro lado: premio al sigilo (se les puede
+  lanzar por la espalda y sin ser visto). Una bola que cae a < 4 m los hace salir asustados; si la
+  bola da de lleno en uno escondido, lo captura por sorpresa (cuenta como "no te vio"). Si nadie
+  los encuentra en 60 s, se van (deja sitio a otro). Aviso en pantalla distinto para cada caso
+  (evento `PokemonRevealed(startled)` → `FieldNoticeKind.burstOut` / `peeked`).
+- **2026-09-25 — La sacudida sola no basta para verse de lejos**: en capturas se confunde con el viento
+  (todas las matas se mecen). Se refuerza en la tarea siguiente con briznas que saltan de la mata.
+- **2026-09-25 — Disco lleno otra vez.** Con 235 MB libres `flutter analyze` no podía ni crear hilos y
+  `flutter build web` falló con "Can't load Kernel binary: Invalid SDK hash": los `hook.dill` de
+  `.dart_tool/hooks_runner` quedaron corruptos al escribirse sin espacio. Solución: borrar `build/`,
+  cachés viejas de %TEMP% (`flutter_tools.*`, perfiles HeadlessChrome) y `.dart_tool/hooks_runner`
+  (se regenera solo).
+

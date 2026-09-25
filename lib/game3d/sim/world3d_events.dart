@@ -42,3 +42,13 @@ class PokemonBrokeFree extends World3DEvent {
   final PokeBallType ball;
   final CaptureResult result;
 }
+
+/// Un Pokémon escondido en la hierba alta salió de ella. [startled]: salió
+/// asustado (te oyó llegar o cayó una bola cerca); si no, se asomó sin
+/// verte (te acercaste con sigilo).
+class PokemonRevealed extends World3DEvent {
+  const PokemonRevealed(this.wild, {required this.startled});
+
+  final WildPokemon wild;
+  final bool startled;
+}

@@ -10,7 +10,19 @@ import '../services/random_pokemon_picker.dart';
 import 'trainer_controller.dart';
 
 /// Qué pasó, para el aviso que aparece en pantalla.
-enum FieldNoticeKind { pickedUp, caught, brokeFree, missed, noBalls }
+enum FieldNoticeKind {
+  pickedUp,
+  caught,
+  brokeFree,
+  missed,
+  noBalls,
+
+  /// Un Pokémon escondido salió de la hierba asustado.
+  burstOut,
+
+  /// Un Pokémon escondido se asomó sin verte (te acercaste con sigilo).
+  peeked,
+}
 
 /// Un aviso breve del campo ("+2 Poké Ball", "¡Capturado!"...). Guarda los
 /// DATOS; el texto lo compone la vista.
@@ -97,6 +109,11 @@ class FieldController extends ChangeNotifier {
           ball: ball,
           pokemon: wild.pokemon,
           shakes: result.shakes,
+        );
+      case PokemonRevealed(:final wild, :final startled):
+        _post(
+          startled ? FieldNoticeKind.burstOut : FieldNoticeKind.peeked,
+          pokemon: wild.pokemon,
         );
     }
   }
