@@ -82,7 +82,8 @@ El combate lo hace OTRO equipo (se engancha por el contrato EncounterHandler). N
 - [x] Carteles que se pueden leer (L / Intro o tocar el aviso; 4 carteles con consejos de sigilo y captura)
 - [x] Recentrar la cámara detrás del jugador (V o botón; suave, por el camino corto; girarla a mano lo cancela)
 - [x] Nubes que pasan: sombras que cruzan el suelo con el viento + nubes lejanas en el cielo
-- [ ] Pájaros: se posan en el suelo y salen volando al acercarte (y bandadas que cruzan el cielo)
+- [x] Pájaros: se posan en el suelo y salen volando al acercarte (y bandadas que cruzan el cielo)
+      (2 bandadas de 5; picotean y saltan; se espantan según tu sigilo o si cae una bola cerca)
 
 ## Mejoras continuas
 - [ ] (se irán añadiendo)

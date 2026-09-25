@@ -239,4 +239,14 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
   tenía la vista previa). Con la vista previa puesta, formatear solo `lib/game3d`, `lib/game` y
   `test`. Nuevas opciones de la vista previa: `?cloud` (sombra delante) y `?town` (lejos de la
   hierba, para que ningún Pokémon agresivo interrumpa las capturas).
+- **2026-09-25 — Pájaros** (`sim/birds.dart`, Dart puro, azar propio; 3 mallas instanciadas como
+  las mariposas). 2 bandadas de 5 posadas en casillas abiertas (ni hierba alta ni obstáculos, con
+  las 4 vecinas libres para que quepa el corro) a > 15 m del jugador. En el suelo picotean (55 %) o
+  dan saltitos de 0,25 m sin alejarse más de 1,4 m de su bandada; alas plegadas. Se espantan
+  (TODA la bandada, cada pájaro con 0–0,35 s de retraso) si el jugador pasa cerca — corriendo 8 m,
+  andando 5 m, agachado 2,2 m, quieto 1,2 m: el mismo lenguaje de sigilo que los Pokémon y las
+  mariposas — o si cae una Poké Ball a < 5 m. Entonces eligen otro sitio a > 16 m del jugador y,
+  de 6 al azar, el más al lado contrario; suben a un punto alto a medio camino (10 m) aleteando
+  deprisa, allí alternan aletear y planear, y bajan frenando hasta posarse. El vuelo es un
+  "steering" simple (velocidad deseada con aceleración máxima 14 m/s²). Vista previa: `?town&birds`.
 

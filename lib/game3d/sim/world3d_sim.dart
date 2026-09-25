@@ -9,6 +9,7 @@ import '../../game/map/map_layout.dart';
 import '../../models/poke_ball.dart';
 import '../../models/pokemon.dart';
 import 'aiming.dart';
+import 'birds.dart';
 import 'butterflies.dart';
 import 'clouds.dart';
 import 'camera_input.dart';
@@ -134,6 +135,15 @@ class World3DSim {
     layout,
     config.tileSize,
     random: math.Random(11),
+  );
+
+  /// Bandadas de pájaros que se posan en el campo y salen volando al
+  /// acercarte. Decorado con su propio azar.
+  late final BirdSystem birds = BirdSystem.fromLayout(
+    layout,
+    config.tileSize,
+    player: player.position,
+    random: math.Random(23),
   );
 
   /// Nubes que pasan con el viento (y sus sombras). Decorado con su
@@ -479,6 +489,12 @@ class World3DSim {
 
     _kickUp(dt, wish);
     clouds.update(dt);
+    birds.update(
+      dt,
+      player.position,
+      stealth: stealth,
+      moving: player.isMoving,
+    );
     butterflies.update(
       dt,
       player.position,
@@ -723,8 +739,10 @@ class World3DSim {
     _emit(PokemonRevealed(w, startled: startled));
   }
 
-  /// Una bola que cae cerca asusta a los Pokémon de alrededor.
+  /// Una bola que cae cerca asusta a los Pokémon (y a los pájaros) de
+  /// alrededor.
   void _startleAround(Vector3 at) {
+    birds.startle(at, player.position);
     for (final w in wild) {
       if (w.isFree && w.position.distanceTo(Vector3(at.x, 0, at.z)) < 4) {
         if (w.hidden) {

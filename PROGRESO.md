@@ -26,6 +26,9 @@
     vueltas y caen planeando: tres por pisada corriendo, una andando y ninguna agachado (se ve el
     ruido que haces).
   - Mariposas de colores sobre las flores: se espantan si te acercas (agachado puedes verlas de cerca).
+  - **Pájaros:** dos bandadas de gorriones picotean y dan saltitos en el campo abierto. Si te
+    acercas salen volando todos a la vez (corriendo desde lejos; agachado te acercas mucho), cruzan
+    el cielo y se posan en otro sitio lejos de ti. Una Poké Ball que cae cerca también los espanta.
   - **Carteles que se leen:** ponte delante de un cartel y sale "L · Leer el cartel" (tócalo o pulsa L
     / Intro): una tabla de madera con lo que pone. Hay cuatro: Pueblo Paleta, la entrada al prado de
     hierba alta, un consejo sobre la hierba que se agita y la tienda de Poké Balls (cerrada). Explican
