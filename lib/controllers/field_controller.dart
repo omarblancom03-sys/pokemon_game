@@ -28,6 +28,9 @@ enum FieldNoticeKind {
 
   /// Se sacudió un arbusto que no tenía bayas.
   emptyBush,
+
+  /// Se quiso lanzar una baya sin tener ninguna.
+  noBerries,
 }
 
 /// Un aviso breve del campo ("+2 Poké Ball", "¡Capturado!"...). Guarda los
@@ -162,6 +165,14 @@ class FieldController extends ChangeNotifier {
     final ball = _trainer.takeBall();
     if (ball == null) _post(FieldNoticeKind.noBalls);
     return ball;
+  }
+
+  /// Saca una baya de la bolsa para lanzarla; si no queda ninguna, avisa
+  /// y devuelve false.
+  bool takeBerryToThrow() {
+    final ok = _trainer.takeBerry();
+    if (!ok) _post(FieldNoticeKind.noBerries);
+    return ok;
   }
 
   /// La vista quita el aviso cuando ya se ha mostrado el tiempo suficiente.

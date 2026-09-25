@@ -226,6 +226,52 @@ void main() {
       expect(notified, 1);
     });
 
+    test('a berry can be put in the hand; picking a ball puts it away', () {
+      final t = TrainerController()..selectBerry();
+      expect(t.berrySelected, isFalse, reason: 'no berries yet');
+      t
+        ..addBerries(2)
+        ..selectBerry();
+      expect(t.berrySelected, isTrue);
+      t.select(PokeBallType.poke);
+      expect(t.berrySelected, isFalse);
+      expect(t.selected, PokeBallType.poke);
+    });
+
+    test('R goes through the balls with stock and then the berry', () {
+      final t = TrainerController(
+        startingBag: const {PokeBallType.poke: 1, PokeBallType.ultra: 1},
+        berries: 1,
+      );
+      final seen = <String>[];
+      for (var i = 0; i < 4; i++) {
+        t.selectNext();
+        seen.add(t.berrySelected ? 'berry' : t.selected.name);
+      }
+      expect(seen, ['ultra', 'berry', 'poke', 'ultra']);
+    });
+
+    test('throwing the last berry goes back to the ball; running out of '
+        'balls does not grab a berry', () {
+      final t = TrainerController(
+        startingBag: const {PokeBallType.poke: 1},
+        berries: 1,
+      )..selectBerry();
+      expect(t.takeBerry(), isTrue);
+      expect(t.berries, 0);
+      expect(t.berrySelected, isFalse);
+      expect(t.takeBerry(), isFalse);
+
+      t.addBerries(1);
+      expect(t.takeBall(), PokeBallType.poke);
+      expect(t.berrySelected, isFalse, reason: 'the hand is not changed');
+    });
+
+    test('with no balls at all, picked berries go to the hand', () {
+      final t = TrainerController(startingBag: const {})..addBerries(3);
+      expect(t.berrySelected, isTrue);
+    });
+
     test('captures are listed newest first', () {
       final t = TrainerController()
         ..registerCapture(fakePokemon(1), PokeBallType.poke)

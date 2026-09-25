@@ -196,6 +196,7 @@ class _Scene3DViewState extends State<Scene3DView> {
         throwProgress: _sim.throwProgress,
       ),
       heldBall: _sim.heldBall,
+      heldBerry: _sim.heldBerry,
     );
   }
 

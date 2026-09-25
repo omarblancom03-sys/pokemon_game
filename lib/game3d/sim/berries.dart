@@ -5,6 +5,7 @@ import 'package:vector_math/vector_math.dart';
 import '../../game/map/map_layout.dart';
 import 'cell_noise.dart';
 import 'reach.dart';
+import 'throwing.dart' as throwing;
 import 'world3d_events.dart';
 
 /// Una bola de hojas del arbusto: centro y radios en una casilla "unidad"
@@ -80,19 +81,24 @@ class BerryBush {
   }
 }
 
-/// Una baya suelta: saltando de un arbusto o en el suelo (se recoge al
-/// pasar por encima, como las Poké Balls).
+/// Una baya suelta: saltando de un arbusto, lanzada por el jugador o en el
+/// suelo (se recoge al pasar por encima, como las Poké Balls).
 class LooseBerry {
   LooseBerry({
     required this.id,
     required Vector3 position,
     required Vector3 velocity,
+    this.thrown = false,
   }) : position = position.clone(),
        velocity = velocity.clone();
 
   final String id;
   final Vector3 position;
   final Vector3 velocity;
+
+  /// La lanzó el jugador (choca con árboles y casas). Las que saltan de un
+  /// arbusto no: salen de entre sus propias hojas.
+  final bool thrown;
 
   /// Segundos desde que salió.
   double age = 0;
@@ -118,11 +124,14 @@ class LooseBerry {
 /// ARBUSTOS CON BAYAS (Dart puro): el jugador se pone delante de uno y lo
 /// sacude; las bayas que tenga saltan y caen a sus pies, y se recogen al
 /// pisarlas (van a la bolsa). Al arbusto le vuelven a crecer poco a poco.
+/// También vuelan aquí las bayas que lanza el jugador para distraer a un
+/// Pokémon.
 class BerrySystem {
   BerrySystem({
     required this.bushes,
     required this.tileSize,
     required this.isWalkable,
+    required this.heightAt,
     math.Random? random,
   }) : _random = random ?? math.Random();
 
@@ -145,6 +154,9 @@ class BerrySystem {
     tileSize: tileSize,
     isWalkable: (p) =>
         layout.isWalkable((p.x / tileSize).floor(), (p.z / tileSize).floor()),
+    heightAt: (x, z) => throwing.obstacleHeight(
+      layout.tileAt((x / tileSize).floor(), (z / tileSize).floor()),
+    ),
     random: random,
   );
 
@@ -154,6 +166,10 @@ class BerrySystem {
   /// ¿Se puede pisar este punto? (las bayas no caen dentro de un arbusto
   /// ni de una valla).
   final bool Function(Vector3 p) isWalkable;
+
+  /// Altura del obstáculo en un punto del suelo (las lanzadas chocan con
+  /// árboles y casas, igual que las Poké Balls).
+  final double Function(double x, double z) heightAt;
 
   final math.Random _random;
   final List<LooseBerry> _loose = [];
@@ -184,7 +200,14 @@ class BerrySystem {
 
   /// Lo que tarda una baya en caer desde el arbusto hasta el suelo (s).
   static const flightTime = 0.55;
-  static const gravity = 9.8;
+
+  /// La misma gravedad que las Poké Balls: así el arco que se dibuja al
+  /// apuntar (el de las bolas) vale también para las bayas.
+  static const gravity = throwing.gravity;
+
+  /// Rapidez con la que sale una baya de la mano (m/s): más flojo que una
+  /// bola (se lanza con cuidado, en globo), así que llega menos lejos.
+  static const throwSpeed = 11.0;
 
   /// Una baya en el suelo se recoge al pasar a menos de esto (m), pero
   /// solo cuando ya ha dejado de botar y lleva [settleTime] s quieta (así
@@ -340,22 +363,87 @@ class BerrySystem {
     }
   }
 
+  /// Lanza una baya desde [from] (la mano) con [velocity].
+  LooseBerry throwBerry(Vector3 from, Vector3 velocity) {
+    final berry = LooseBerry(
+      id: 'berry-${_count++}',
+      position: from,
+      velocity: velocity,
+      thrown: true,
+    );
+    _loose.add(berry);
+    return berry;
+  }
+
   /// Vuelo con gravedad; al tocar el suelo bota (cada vez menos) hasta
-  /// quedarse quieta.
+  /// quedarse quieta. Las lanzadas van en pasos pequeños (vuelan deprisa)
+  /// y chocan con árboles y casas.
   void _fly(LooseBerry berry, double dt) {
-    berry.velocity.y -= gravity * dt;
-    berry.position.addScaled(berry.velocity, dt);
-    berry.spin += dt * 9;
-    if (berry.position.y > radius) return;
-    berry.position.y = radius;
-    if (berry.velocity.y < -1.2) {
-      berry.velocity
-        ..y = -berry.velocity.y * 0.35
+    final steps = berry.thrown ? math.max(1, (dt * 60).ceil()) : 1;
+    final h = dt / steps;
+    for (var i = 0; i < steps && !berry.landed; i++) {
+      _step(berry, h);
+    }
+  }
+
+  void _step(LooseBerry berry, double h) {
+    final v = berry.velocity;
+    final p = berry.position;
+    v.y -= gravity * h;
+    final next = p + v * h;
+    if (berry.thrown && next.y < heightAt(next.x, next.z)) {
+      // Rebota contra el árbol o la casa (como una bola) y cae.
+      final blockX = next.y < heightAt(next.x, p.z);
+      final blockZ = next.y < heightAt(p.x, next.z);
+      if (blockX || !blockZ) v.x = -v.x * 0.3;
+      if (blockZ || !blockX) v.z = -v.z * 0.3;
+      next
+        ..x = p.x
+        ..z = p.z;
+    }
+    berry.spin += h * 9;
+    if (next.y > radius) {
+      p.setFrom(next);
+      return;
+    }
+    next.y = radius;
+    p.setFrom(next);
+    if (v.y < -1.2) {
+      v
+        ..y = -v.y * 0.35
         ..x *= 0.3
         ..z *= 0.3;
       return;
     }
-    berry.velocity.setZero();
+    v.setZero();
     berry.landedFor = 0;
+    _moveToFreeGround(p);
+  }
+
+  /// Si una baya se queda donde no se pisa (encima de una valla, pegada a
+  /// un arbusto), se lleva al centro de la casilla libre más cercana: si
+  /// no, nadie podría recogerla ni comérsela.
+  void _moveToFreeGround(Vector3 p) {
+    if (isWalkable(p)) return;
+    final col = (p.x / tileSize).floor();
+    final row = (p.z / tileSize).floor();
+    Vector3? best;
+    var bestDistance = double.infinity;
+    for (var dr = -2; dr <= 2; dr++) {
+      for (var dc = -2; dc <= 2; dc++) {
+        final c = cellCenterOf((col: col + dc, row: row + dr), tileSize);
+        if (!isWalkable(c)) continue;
+        final d = c.distanceTo(Vector3(p.x, 0, p.z));
+        if (d < bestDistance) {
+          bestDistance = d;
+          best = c;
+        }
+      }
+    }
+    if (best != null) {
+      p
+        ..x = best.x
+        ..z = best.z;
+    }
   }
 }

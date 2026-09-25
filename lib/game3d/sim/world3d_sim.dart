@@ -29,7 +29,7 @@ import 'wild_pokemon.dart';
 import 'world3d_config.dart';
 import 'world3d_events.dart';
 
-export 'berries.dart' show BerryBush, LooseBerry;
+export 'berries.dart' show BerryBush, BerrySystem, LooseBerry;
 export 'dust.dart' show DustPuff;
 export 'field_items.dart' show GroundItem;
 export 'grass_blades.dart' show GrassBlade;
@@ -192,6 +192,11 @@ class World3DSim {
   /// Bola elegida en la bolsa (la pone la pantalla); null = bolsa vacía.
   PokeBallType? readyBall = PokeBallType.poke;
 
+  /// En la mano va una baya en vez de una bola (la pone la pantalla): al
+  /// lanzar sale una baya, que cae cerca del Pokémon fijado para
+  /// distraerlo.
+  bool berryReady = false;
+
   /// Probabilidad de captura crítica (la pone la pantalla según cuántas
   /// especies ha capturado el entrenador).
   double get criticalChance => ballSystem.criticalChance;
@@ -224,9 +229,11 @@ class World3DSim {
   int _lastFootstep = 0;
   double _runTime = 0;
 
-  // Lanzamiento en curso: tiempo desde que empezó, bola y objetivo.
+  // Lanzamiento en curso: tiempo desde que empezó, bola (null si es una
+  // baya) y objetivo.
   double? _throwTime;
   PokeBallType? _throwBall;
+  bool _throwingBerry = false;
   WildPokemon? _throwTarget;
   bool _released = false;
 
@@ -400,18 +407,28 @@ class World3DSim {
   bool get canThrow => !_paused && _throwTime == null;
 
   /// Bola que se ve en la mano: al apuntar, la elegida; al lanzar, la
-  /// lanzada hasta que sale de la mano.
+  /// lanzada hasta que sale de la mano. null si lleva una baya.
   PokeBallType? get heldBall {
     if (_throwTime != null) return _released ? null : _throwBall;
-    return aiming ? readyBall : null;
+    return aiming && !berryReady ? readyBall : null;
   }
 
+  /// ¿Se ve una baya en la mano? (al apuntar con ella o al lanzarla, hasta
+  /// que sale de la mano).
+  bool get heldBerry {
+    if (_throwTime != null) return _throwingBerry && !_released;
+    return aiming && berryReady;
+  }
+
+  /// ¿Hay algo en la mano para lanzar?
+  bool get _itemReady => berryReady || readyBall != null;
+
   /// Probabilidad de capturar al objetivo fijado con la bola elegida
-  /// (null si no hay objetivo o no quedan bolas).
+  /// (null si no hay objetivo, no quedan bolas o lleva una baya).
   double? get lockedChance {
     final target = lockedTarget;
     final ball = readyBall;
-    if (target == null || ball == null) return null;
+    if (target == null || ball == null || berryReady) return null;
     final toTarget = target.position - player.position
       ..y = 0;
     if (toTarget.length2 > 0) toTarget.normalize();
@@ -429,13 +446,37 @@ class World3DSim {
   /// Empieza a lanzar [ball] al objetivo fijado (o hacia donde mira la
   /// cámara). La bola sale de la mano un instante después, cuando el brazo
   /// pasa por delante. Devuelve false si ahora no se puede.
-  bool throwBall(PokeBallType ball) {
+  bool throwBall(PokeBallType ball) => _startThrow(ball);
+
+  /// Empieza a lanzar una baya: con un objetivo fijado cae un poco por
+  /// delante de él (ver [baitSpot]); si no, "a ojo". Devuelve false si
+  /// ahora no se puede.
+  bool throwBerry() => _startThrow(null);
+
+  bool _startThrow(PokeBallType? ball) {
     if (!canThrow) return false;
     _throwTime = 0;
     _throwBall = ball;
+    _throwingBerry = ball == null;
     _throwTarget = lockedTarget;
     _released = false;
     return true;
+  }
+
+  /// Distancia (m) por delante del Pokémon a la que se le lanza una baya:
+  /// cerca para que la vea, sin darle.
+  static const baitOffset = 1.4;
+
+  /// Dónde se lanza una baya para [target]: en el suelo, un poco por
+  /// delante de él, del lado del jugador (a mitad de camino si está muy
+  /// cerca).
+  Vector3 baitSpot(WildPokemon target) {
+    final to = player.position - target.position
+      ..y = 0;
+    final d = to.length;
+    final towards = d > 1e-6 ? to / d : Vector3(0, 0, 1);
+    return target.position + towards * math.min(baitOffset, d * 0.5)
+      ..y = BerrySystem.radius;
   }
 
   /// Hacia dónde mira el cuerpo al apuntar o lanzar (en el suelo).
@@ -465,11 +506,29 @@ class World3DSim {
     return freeThrowVelocity(camera);
   }
 
-  /// Trayectoria que seguiría la bola si se lanzara ahora (se dibuja al
-  /// apuntar). Vacía si no se está apuntando.
+  /// Una baya sale más floja que una bola (en globo): al sitio de
+  /// [baitSpot] si llega; si no, "a ojo" como una bola.
+  Vector3 _berryVelocity(Vector3 hand, WildPokemon? target) {
+    if (target != null && target.isFree) {
+      final v = ballisticVelocity(
+        hand,
+        baitSpot(target),
+        speed: BerrySystem.throwSpeed,
+      );
+      if (v != null) return v;
+    }
+    return freeThrowVelocity(camera, speed: BerrySystem.throwSpeed);
+  }
+
+  /// Trayectoria que seguiría la bola (o la baya) si se lanzara ahora (se
+  /// dibuja al apuntar). Vacía si no se está apuntando. Una baya no choca
+  /// con los Pokémon: el arco acaba en el suelo o en un obstáculo.
   List<Vector3> get aimPreview {
-    if (!aiming || !canThrow || readyBall == null) return const [];
+    if (!aiming || !canThrow || !_itemReady) return const [];
     final hand = _hand;
+    if (berryReady) {
+      return ballSystem.predict(hand, _berryVelocity(hand, lockedTarget));
+    }
     return ballSystem.predict(
       hand,
       _releaseVelocity(hand, lockedTarget),
@@ -485,11 +544,12 @@ class World3DSim {
     if (!_released && now >= releaseTime) {
       _released = true;
       final hand = _hand;
-      ballSystem.launch(
-        _throwBall!,
-        hand,
-        _releaseVelocity(hand, _throwTarget),
-      );
+      final ball = _throwBall;
+      if (ball == null) {
+        berries.throwBerry(hand, _berryVelocity(hand, _throwTarget));
+      } else {
+        ballSystem.launch(ball, hand, _releaseVelocity(hand, _throwTarget));
+      }
     }
     if (now >= throwDuration) {
       _throwTime = null;

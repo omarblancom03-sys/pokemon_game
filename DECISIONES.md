@@ -283,3 +283,19 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
   prados donde se usarán las bayas. No tapan caminos ni humos del 2D.
 - **2026-09-25 — `SignPanel` pasa a `ActionPanel`** (`widgets/action_panel.dart`): enseña lo que haría
   la tecla de acción (leer el cartel o sacudir el arbusto) y el cartel abierto.
+- **2026-09-25 — Lanzar bayas con el mismo gesto que las bolas.** En la mano va una bola O una baya
+  (`TrainerController.berrySelected`): tecla **4**, **R** (Poké → Super → Ultra → baya, saltando lo que
+  no tengas) o tocar la baya en la bolsa; elegir una bola la guarda. Apuntar y lanzar son los mismos
+  controles; el botón de lanzar enseña la baya. Al lanzar la última baya se vuelve a la bola; quedarse
+  sin bolas NO pone una baya en la mano (sería un cambio por sorpresa), salvo que no tengas ninguna
+  bola cuando recoges bayas.
+- **2026-09-25 — Física de la baya lanzada** (en `BerrySystem`, no en `BallSystem`: las bolas llevan un
+  tipo de Poké Ball y su secuencia de captura). Misma gravedad (14 m/s²) y mismo radio que una bola, así
+  que el arco previsto de las bolas (`BallSystem.predict`, sin Pokémon) vale para la baya. Sale más
+  floja (11 m/s en vez de 15, "en globo"): llega a unos 9–10 m, hay que acercarse. Con un objetivo
+  fijado cae en `baitSpot`: 1,4 m por delante del Pokémon, del lado del jugador (a mitad de camino si
+  está más cerca de 2,8 m), para que la vea sin darle; sin objetivo, "a ojo" como una bola. No choca
+  con los Pokémon (se lanza cerca, no a ellos); sí rebota en árboles y casas. Una baya que queda donde
+  no se pisa se lleva a la casilla libre más cercana. En el suelo se puede volver a recoger.
+- **2026-09-25 — Sin probabilidad con la baya en la mano:** el anillo de la mira sigue marcando el
+  objetivo (y su nombre), pero sin %: una baya no captura.

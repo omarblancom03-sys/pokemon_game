@@ -55,10 +55,11 @@ Vector3 handPosition(Vector3 feet, double facing) {
 
 /// Tiro "a ojo" hacia donde mira la cámara: la inclinación de la cámara
 /// decide la altura del arco (cámara baja = tiro más alto y largo).
-Vector3 freeThrowVelocity(OrbitCamera camera) {
+/// [speed]: rapidez con la que sale de la mano (las bayas, más flojo).
+Vector3 freeThrowVelocity(OrbitCamera camera, {double speed = throwSpeed}) {
   final elevation = (0.62 - camera.pitch * 0.9).clamp(-0.15, 0.85);
-  return camera.forward * (throwSpeed * math.cos(elevation)) +
-      Vector3(0, throwSpeed * math.sin(elevation), 0);
+  return camera.forward * (speed * math.cos(elevation)) +
+      Vector3(0, speed * math.sin(elevation), 0);
 }
 
 /// Tiro a un objetivo fijado: parábola hasta el centro de su cuerpo,

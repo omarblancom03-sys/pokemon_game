@@ -12,6 +12,7 @@ import 'package:pokemon_game/app/dependencies.dart';
 import 'package:pokemon_game/game/poke_game.dart';
 import 'package:pokemon_game/services/poke_api_exception.dart';
 import 'package:pokemon_game/views/game3d/game3d_screen.dart';
+import 'package:pokemon_game/views/game3d/widgets/field_hud.dart';
 
 import 'package:pokemon_game/game3d/sim/world3d_sim.dart';
 import 'package:pokemon_game/game3d/sim/wild_pokemon.dart';
@@ -299,53 +300,68 @@ void main() {
     await tester.pump(const Duration(seconds: 3));
   });
 
-  testWidgets(
-    '3D: a bush in front can be shaken (L) and berries fill the bag',
-    (tester) async {
-      final renderer = FakeSceneRenderer();
-      await tester.pumpWidget(
-        PokemonGameApp(
-          dependencies: AppDependencies.create(
-            repository: repository,
-            sceneRenderer: renderer,
-          ),
+  testWidgets('3D: shake a bush (L), berries fill the bag and can be thrown', (
+    tester,
+  ) async {
+    final renderer = FakeSceneRenderer();
+    await tester.pumpWidget(
+      PokemonGameApp(
+        dependencies: AppDependencies.create(
+          repository: repository,
+          sceneRenderer: renderer,
         ),
-      );
-      await tester.tap(find.byKey(const Key('menu_play_3d')));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 500));
-      expect(find.byKey(const Key('bush_prompt')), findsNothing);
-      Finder berriesInBag(String text) => find.descendant(
-        of: find.byKey(const Key('bag_berry')),
-        matching: find.text(text),
-      );
-      expect(berriesInBag('×0'), findsOneWidget);
+      ),
+    );
+    await tester.tap(find.byKey(const Key('menu_play_3d')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.byKey(const Key('bush_prompt')), findsNothing);
+    Finder berriesInBag(String text) => find.descendant(
+      of: find.byKey(const Key('bag_berry')),
+      matching: find.text(text),
+    );
+    expect(berriesInBag('×0'), findsOneWidget);
 
-      // Debajo del arbusto del pueblo (2,10), mirándolo (al norte).
-      final sim = renderer.lastSim!;
-      sim.player
-        ..teleport(sim.cellCenter(2, 11))
-        ..facing = 3.14159;
-      await tester.pump(const Duration(milliseconds: 50));
-      expect(find.byKey(const Key('bush_prompt')), findsOneWidget);
-      expect(find.text('Sacudir el arbusto'), findsOneWidget);
+    // Debajo del arbusto del pueblo (2,10), mirándolo (al norte).
+    final sim = renderer.lastSim!;
+    sim.player
+      ..teleport(sim.cellCenter(2, 11))
+      ..facing = 3.14159;
+    await tester.pump(const Duration(milliseconds: 50));
+    expect(find.byKey(const Key('bush_prompt')), findsOneWidget);
+    expect(find.text('Sacudir el arbusto'), findsOneWidget);
 
-      await tester.sendKeyEvent(LogicalKeyboardKey.keyL);
-      for (var i = 0; i < 90; i++) {
-        sim.update(1 / 60);
-      }
-      await tester.pump(const Duration(milliseconds: 50));
-      expect(berriesInBag('×3'), findsOneWidget);
-      expect(find.text('+3 Bayas Frambu'), findsOneWidget);
-      expect(find.text('sin bayas'), findsOneWidget);
+    await tester.sendKeyEvent(LogicalKeyboardKey.keyL);
+    for (var i = 0; i < 90; i++) {
+      sim.update(1 / 60);
+    }
+    await tester.pump(const Duration(milliseconds: 50));
+    expect(berriesInBag('×3'), findsOneWidget);
+    expect(find.text('+3 Bayas Frambu'), findsOneWidget);
+    expect(find.text('sin bayas'), findsOneWidget);
 
-      // Sacudirlo vacío avisa (tocando el aviso, como en una pantalla táctil).
-      await tester.tap(find.byKey(const Key('bush_prompt')));
-      await tester.pump(const Duration(milliseconds: 50));
-      expect(find.textContaining('no tiene bayas'), findsOneWidget);
-      await tester.pump(const Duration(seconds: 3));
-    },
-  );
+    // Sacudirlo vacío avisa (tocando el aviso, como en una pantalla táctil).
+    await tester.tap(find.byKey(const Key('bush_prompt')));
+    await tester.pump(const Duration(milliseconds: 50));
+    expect(find.textContaining('no tiene bayas'), findsOneWidget);
+
+    // Con la baya en la mano (tecla 4), el botón de lanzar la lanza.
+    await tester.sendKeyEvent(LogicalKeyboardKey.digit4);
+    await tester.pump();
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('game3d_throw')),
+        matching: find.byType(BerryIcon),
+      ),
+      findsOneWidget,
+    );
+    await tester.tap(find.byKey(const Key('game3d_throw')));
+    await tester.pump();
+    sim.update(World3DSim.releaseTime + 0.01);
+    expect(sim.berries.loose.where((b) => b.thrown), hasLength(1));
+    expect(berriesInBag('×2'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 3));
+  });
 
   testWidgets('3D: aiming at a species you have (or not) paints fine', (
     tester,

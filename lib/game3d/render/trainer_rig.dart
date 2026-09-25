@@ -6,6 +6,7 @@ import 'package:vector_math/vector_math.dart' as vm;
 import '../../models/poke_ball.dart';
 import '../mesh/ball_mesh.dart';
 import '../mesh/mesh_builder.dart';
+import '../mesh/props.dart' show buildBerry;
 import '../mesh/trainer_mesh.dart';
 import '../sim/throwing.dart';
 import '../sim/trainer_pose.dart';
@@ -41,6 +42,8 @@ class TrainerRig {
       _handBalls[type] = ball;
       _rightArm.add(ball);
     }
+    // Y una baya (cuando la lleva en la mano para lanzarla).
+    _rightArm.add(_handBerry..add(Node(mesh: toMesh(buildBerry()))));
     root.add(_hips);
   }
 
@@ -52,19 +55,25 @@ class TrainerRig {
   final Node _leftArm = Node(name: 'leftArm');
   final Node _rightArm = Node(name: 'rightArm');
   final Map<PokeBallType, Node> _handBalls = {};
+  final Node _handBerry = Node(name: 'handBerry')
+    ..position = vm.Vector3(0, -0.62, 0)
+    ..visible = false;
 
   static final _x = vm.Vector3(1, 0, 0);
   static final _y = vm.Vector3(0, 1, 0);
 
   /// Coloca al entrenador. [feet] y [facing] vienen de la simulación (mano
   /// derecha); aquí se pasan al espacio del motor (Z invertida, giros con
-  /// el signo cambiado). [heldBall] es la bola que lleva en la mano.
+  /// el signo cambiado). [heldBall] es la bola que lleva en la mano y
+  /// [heldBerry], si lleva una baya.
   void apply({
     required vm.Vector3 feet,
     required double facing,
     required TrainerPose pose,
     PokeBallType? heldBall,
+    bool heldBerry = false,
   }) {
+    _handBerry.visible = heldBerry;
     for (final MapEntry(:key, :value) in _handBalls.entries) {
       value.visible = key == heldBall;
     }

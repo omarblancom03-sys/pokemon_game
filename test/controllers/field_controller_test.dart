@@ -156,6 +156,17 @@ void main() {
     expect(field.notices.single.kind, FieldNoticeKind.noBalls);
   });
 
+  test('taking a berry spends it; with none left it warns', () {
+    final trainer = TrainerController(berries: 1)..selectBerry();
+    final field = newField(trainer);
+
+    expect(field.takeBerryToThrow(), isTrue);
+    expect(trainer.berries, 0);
+    expect(field.notices, isEmpty);
+    expect(field.takeBerryToThrow(), isFalse);
+    expect(field.notices.single.kind, FieldNoticeKind.noBerries);
+  });
+
   test('wild spawns come with their real capture rate', () async {
     repository.captureRate = 120;
     final spawn = (await newField(TrainerController()).pickWildSpawn())!;

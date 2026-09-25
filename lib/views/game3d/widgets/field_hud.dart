@@ -27,6 +27,7 @@ String noticeText(FieldNotice n) {
     FieldNoticeKind.berriesPickedUp => '+${n.count} ${berryLabel(n.count)}',
     FieldNoticeKind.emptyBush =>
       'Este arbusto no tiene bayas: le vuelven a crecer',
+    FieldNoticeKind.noBerries => 'No te quedan bayas: sacude algún arbusto',
   };
 }
 
@@ -135,9 +136,9 @@ class _BallPainter extends CustomPainter {
   bool shouldRepaint(_BallPainter old) => old.type != type;
 }
 
-/// La BOLSA: cuántas bolas quedan de cada tipo y cuál está elegida (se
-/// puede tocar para elegir otra). Debajo, cuántos Pokémon llevas (al
-/// tocarlo se abren tus capturas).
+/// La BOLSA: cuántas bolas quedan de cada tipo y cuántas bayas, y qué lleva
+/// en la mano (se puede tocar para elegir otra cosa). Debajo, cuántos
+/// Pokémon llevas (al tocarlo se abren tus capturas).
 class BagBar extends StatelessWidget {
   const BagBar({super.key, required this.trainer, this.onShowCaptures});
 
@@ -167,14 +168,16 @@ class BagBar extends StatelessWidget {
                     key: Key('bag_${type.name}'),
                     icon: BallIcon(type),
                     count: trainer.count(type),
-                    selected: trainer.selected == type,
+                    selected:
+                        !trainer.berrySelected && trainer.selected == type,
                     onTap: () => trainer.select(type),
                   ),
                 _BagSlot(
                   key: const Key('bag_berry'),
                   icon: const BerryIcon(),
                   count: trainer.berries,
-                  selected: false,
+                  selected: trainer.berrySelected,
+                  onTap: trainer.selectBerry,
                 ),
               ],
             ),
@@ -333,7 +336,7 @@ class _NoticeChipState extends State<_NoticeChip> {
       FieldNoticeKind.burstOut => const Color(0xFFE65100),
       FieldNoticeKind.peeked => const Color(0xFF00796B),
       FieldNoticeKind.berriesPickedUp => const Color(0xFFAD1457),
-      FieldNoticeKind.emptyBush => Colors.black87,
+      FieldNoticeKind.emptyBush || FieldNoticeKind.noBerries => Colors.black87,
     };
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0, end: 1),

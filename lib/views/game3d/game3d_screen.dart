@@ -89,14 +89,16 @@ class _Game3DScreenState extends State<Game3DScreen> {
 
   void _syncPause() => _sim.setPaused(_controller.isPaused || _capturesOpen);
 
-  /// Lo que la simulación necesita del entrenador: la bola que se ve en la
-  /// mano (y con la que se calcula la probabilidad) y la probabilidad de
-  /// captura crítica, que crece con las especies capturadas.
+  /// Lo que la simulación necesita del entrenador: lo que lleva en la mano
+  /// (la bola, con la que se calcula la probabilidad, o una baya) y la
+  /// probabilidad de captura crítica, que crece con las especies
+  /// capturadas.
   void _syncTrainer() {
     _sim
       ..readyBall = _trainer.count(_trainer.selected) > 0
           ? _trainer.selected
           : null
+      ..berryReady = _trainer.berrySelected && _trainer.berries > 0
       ..criticalChance = CaptureCalculator.criticalChanceFor(
         _trainer.speciesCaught,
       );
@@ -130,9 +132,14 @@ class _Game3DScreenState extends State<Game3DScreen> {
     if (mounted) _syncPause();
   }
 
-  /// Lanzar: saca una bola de la bolsa (si hay) y la simulación la lanza.
+  /// Lanzar: saca de la bolsa lo que lleva en la mano (una bola o una
+  /// baya, si quedan) y la simulación lo lanza.
   void _throw() {
     if (!_sim.canThrow) return;
+    if (_trainer.berrySelected) {
+      if (_field.takeBerryToThrow()) _sim.throwBerry();
+      return;
+    }
     final ball = _field.takeBallToThrow();
     if (ball != null) _sim.throwBall(ball);
   }
@@ -187,6 +194,10 @@ class _Game3DScreenState extends State<Game3DScreen> {
     if (slot >= 0) {
       final type = PokeBallType.values[slot];
       if (down && _trainer.count(type) > 0) _trainer.select(type);
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.digit4) {
+      if (down) _trainer.selectBerry();
       return KeyEventResult.handled;
     }
     if (!MovementInput.isMovementKey(key) && !CameraInput.isCameraKey(key)) {
@@ -293,6 +304,7 @@ class _Game3DScreenState extends State<Game3DScreen> {
                 listenable: _trainer,
                 builder: (_, _) => _ThrowButtons(
                   ball: _trainer.selected,
+                  berry: _trainer.berrySelected,
                   aiming: _aimButton,
                   crouching: _sim.crouching,
                   onRecenter: _sim.recenterCamera,
@@ -357,6 +369,7 @@ class _Game3DScreenState extends State<Game3DScreen> {
 class _ThrowButtons extends StatelessWidget {
   const _ThrowButtons({
     required this.ball,
+    required this.berry,
     required this.aiming,
     required this.crouching,
     required this.onRecenter,
@@ -366,6 +379,9 @@ class _ThrowButtons extends StatelessWidget {
   });
 
   final PokeBallType ball;
+
+  /// Lleva una baya en la mano (el botón de lanzar la enseña).
+  final bool berry;
   final bool aiming;
   final bool crouching;
   final VoidCallback onRecenter;
@@ -414,7 +430,7 @@ class _ThrowButtons extends StatelessWidget {
           tooltip: 'Lanzar (clic / Espacio)',
           backgroundColor: Colors.black54,
           onPressed: onThrow,
-          child: BallIcon(ball, size: 44),
+          child: berry ? const BerryIcon(size: 44) : BallIcon(ball, size: 44),
         ),
       ],
     );
@@ -437,7 +453,7 @@ class _Hint extends StatelessWidget {
         child: Text(
           'WASD mover · Mayús correr · Arrastrar / Q-E cámara · V detrás · '
           'Rueda zoom\n'
-          'Clic der. / F apuntar · Clic / Espacio lanzar · R / 1-3 cambiar bola\n'
+          'Clic der. / F apuntar · Clic / Espacio lanzar · R / 1-4 bola o baya\n'
           'C agacharse: en la hierba alta no te ven · Correr hace ruido · '
           'P tus capturas · L leer carteles y sacudir arbustos (bayas)',
           style: TextStyle(color: Colors.white),
