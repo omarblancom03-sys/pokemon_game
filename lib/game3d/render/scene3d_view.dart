@@ -13,6 +13,7 @@ import '../sim/world3d_sim.dart';
 import 'ball_renderer.dart';
 import 'butterfly_renderer.dart';
 import 'dust_renderer.dart';
+import 'grass_blade_renderer.dart';
 import 'grass_renderer.dart';
 import 'item_renderer.dart';
 import 'trainer_rig.dart';
@@ -44,6 +45,7 @@ class _Scene3DViewState extends State<Scene3DView> {
   late ItemRenderer _items;
   late BallRenderer _balls;
   late DustRenderer _dust;
+  late GrassBladeRenderer _blades;
   late ButterflyRenderer _butterflies;
   Object? _error;
 
@@ -134,6 +136,8 @@ class _Scene3DViewState extends State<Scene3DView> {
 
     _dust = DustRenderer();
     scene.add(_dust.node);
+    _blades = GrassBladeRenderer(_mesh);
+    scene.add(_blades.node);
     _butterflies = ButterflyRenderer(_sim.butterflies, _mesh);
     scene.add(_butterflies.node);
 
@@ -189,6 +193,7 @@ class _Scene3DViewState extends State<Scene3DView> {
     _wild.update(_sim.wild, _sim.balls, _sim.camera.yaw, _sim.time);
     _items.update(_sim.fieldItems.items, _sim.time);
     _dust.update(_sim.dust.puffs);
+    _blades.update(_sim.blades.blades);
     _butterflies.update();
     _balls.update(
       _sim.balls,

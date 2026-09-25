@@ -13,6 +13,7 @@ import 'butterflies.dart';
 import 'camera_input.dart';
 import 'dust.dart';
 import 'field_items.dart';
+import 'grass_blades.dart';
 import 'grass_field.dart';
 import 'orbit_camera.dart';
 import 'player_body.dart';
@@ -25,6 +26,7 @@ import 'world3d_events.dart';
 
 export 'dust.dart' show DustPuff;
 export 'field_items.dart' show GroundItem;
+export 'grass_blades.dart' show GrassBlade;
 export 'throwing.dart' show BallPhase, ThrownBall;
 export 'wild_behavior.dart' show PlayerStealth;
 export 'world3d_events.dart';
@@ -119,6 +121,10 @@ class World3DSim {
   /// Polvo que levantan los pies al correr y las bolas al botar. Es solo
   /// decorado: usa su propio azar para no alterar el del juego.
   final DustSystem dust = DustSystem(random: math.Random(7));
+
+  /// Briznas que saltan de la hierba alta al pisarla, sobre los escondidos
+  /// y cuando uno sale. Decorado con su propio azar, como el polvo.
+  final GrassBladeSystem blades = GrassBladeSystem(random: math.Random(13));
 
   /// Mariposas sobre los macizos de flores (decorado, con su propio azar).
   late final ButterflySwarm butterflies = ButterflySwarm.fromLayout(
@@ -438,7 +444,7 @@ class World3DSim {
     _lastDistance = player.distanceWalked;
     if (_paused) return;
 
-    _kickUpDust(dt, wish);
+    _kickUp(dt, wish);
     butterflies.update(
       dt,
       player.position,
@@ -480,21 +486,25 @@ class World3DSim {
       ..zoom(cameraInput.takeZoom());
   }
 
-  /// Polvo al correr (una nubecilla por pisada, en el pie que toca el
-  /// suelo) y al frenar en seco tras una carrera. En la hierba alta no.
-  void _kickUpDust(double dt, Vector3 wish) {
+  /// Lo que levantan los pies. Fuera de la hierba alta, polvo al correr
+  /// (una nubecilla por pisada, en el pie que toca el suelo) y al frenar
+  /// en seco tras una carrera. Dentro, briznas en cada pisada: tres
+  /// corriendo, una andando y ninguna agachado (se ve el ruido que haces).
+  void _kickUp(double dt, Vector3 wish) {
     dust.update(dt);
+    blades.update(dt);
     final feet = player.position;
     final onDirt = !isTallGrass(feet);
     final running = player.speed > config.walkSpeed * 1.15;
     final step = (player.distanceWalked / footstepSpacing).floor();
     if (step != _lastFootstep) {
       _lastFootstep = step;
-      if (running && onDirt) {
-        final f = player.facing;
-        final right = Vector3(-math.cos(f), 0, math.sin(f));
-        final side = step.isEven ? 0.12 : -0.12;
-        dust.footstep(feet + right * side, player.velocity);
+      final f = player.facing;
+      final right = Vector3(-math.cos(f), 0, math.sin(f));
+      final foot = feet + right * (step.isEven ? 0.12 : -0.12);
+      if (running && onDirt) dust.footstep(foot, player.velocity);
+      if (!onDirt && !crouching) {
+        blades.footstep(foot, player.velocity, running: running);
       }
     }
     final stopping = wish.length2 < 0.01;
@@ -645,6 +655,7 @@ class World3DSim {
     w
       ..velocity = Vector3.zero()
       ..hiddenTime += dt;
+    blades.rustle(w.position, GrassField.rustleBurst(time, w.position), dt);
     if (w.hiddenTime > hiddenLifetime) {
       removeWild(w.id);
       return;
@@ -673,6 +684,7 @@ class World3DSim {
           ? towards
           : towards + math.pi + (_random.nextDouble() - 0.5) * 1.6;
     if (startled) behavior.startle(w);
+    blades.burst(w.position);
     _emit(PokemonRevealed(w, startled: startled));
   }
 

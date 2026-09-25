@@ -77,7 +77,8 @@ El combate lo hace OTRO equipo (se engancha por el contrato EncounterHandler). N
 - [x] Hierba que se agita: Pokémon escondidos en la hierba alta que salen al acercarte
       (35 % aparecen escondidos; de pie salen asustados, agachado se asoman de espaldas; una bola cerca
       los hace salir; darles de lleno los captura por sorpresa; a los 60 s se van)
-- [ ] Briznas de hierba al correr por la hierba alta
+- [x] Briznas de hierba al correr por la hierba alta (y sobre los escondidos, y al salir de un salto)
+      (GrassBladeSystem: 3 por pisada corriendo, 1 andando, 0 agachado; suben, giran y caen planeando)
 - [ ] Carteles que se pueden leer
 - [ ] Recentrar la cámara detrás del jugador
 - [ ] Nubes que pasan (sombras) y pájaros

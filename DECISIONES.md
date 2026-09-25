@@ -184,4 +184,19 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
   `.dart_tool/hooks_runner` quedaron corruptos al escribirse sin espacio. Solución: borrar `build/`,
   cachés viejas de %TEMP% (`flutter_tools.*`, perfiles HeadlessChrome) y `.dart_tool/hooks_runner`
   (se regenera solo).
+- **2026-09-25 — Briznas de hierba** (`sim/grass_blades.dart`, como el polvo: Dart puro, azar propio
+  con semilla fija, máx. 48, una malla instanciada). Al pisar la hierba alta: 3 por pisada corriendo,
+  1 andando, 0 agachado (mismo lenguaje que el sigilo: se VE el ruido que haces). Sobre un Pokémon
+  escondido, la mata escupe briznas grandes (0,34 m) y más claras mientras se agita (hasta 14/s en
+  lo más fuerte de la ráfaga); al salir de un salto, un surtidor de 12. Física: gravedad 6 m/s² y
+  rozamiento asimétrico (0,8/s subiendo: salen disparadas por encima de la hierba, que mide ~0,6–0,9
+  m; 3/s bajando: caen planeando a ≤ 2 m/s). Al tocar el suelo se quedan quietas y se encogen en
+  0,4 s (sin transparencias). Con un rozamiento único las briznas no pasaban de 0,66 m: quedaban
+  escondidas dentro de la propia hierba (lo detectó un test).
+- **2026-09-25 — Sacudida de la hierba reforzada** tras mirarla en el navegador: radio 1,8 m (antes
+  1,5) y 0,7 rad (antes 0,5). En capturas fijas se ve moderada; en movimiento destaca porque vibra a
+  2,5 Hz y el viento va lento. La pista principal a distancia son las briznas claras que saltan.
+- **2026-09-25 — Vista previa `?hide`:** Pokémon escondido 4 m delante del jugador (casilla 24,9, sin
+  árboles delante). Para ver movimiento en capturas fijas: `diff.mjs` (mapa de cambios entre
+  fotogramas, `TH` = umbral) y `crop.mjs` (recorte ampliado) en el scratchpad.
 

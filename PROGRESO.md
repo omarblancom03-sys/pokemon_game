@@ -19,7 +19,9 @@
   - Cámara en tercera persona: arrastrar con el ratón para girar, rueda para zoom, Q/E para girar con
     teclado. WASD/flechas mueven relativo a la cámara; Mayús corre. D-pad en pantalla. La cámara no
     atraviesa árboles ni casas: se acerca si algo estorba y, de espaldas a un árbol, mira desde arriba.
-  - Hierba alta 3D que se mece con el viento y se aparta al pasar.
+  - Hierba alta 3D que se mece con el viento y se aparta al pasar. Al pisarla saltan briznas que dan
+    vueltas y caen planeando: tres por pisada corriendo, una andando y ninguna agachado (se ve el
+    ruido que haces).
   - Mariposas de colores sobre las flores: se espantan si te acercas (agachado puedes verlas de cerca).
   - Pokémon salvajes VISIBLES (arte oficial de PokeAPI) que deambulan por la hierba alta.
   - **Hierba que se agita:** algunos Pokémon están ESCONDIDOS en la hierba alta: no se ven (ni en el
@@ -27,6 +29,7 @@
     salto, asustados ("¡Un X salvaje salió de la hierba!"); si llegas agachado se asoman sin verte y de
     espaldas ("X asoma entre la hierba… ¡no te ha visto!"): la ocasión perfecta. Una bola que cae cerca
     también los hace salir, y si le das de lleno a la mata que se agita, ¡lo capturas por sorpresa!
+    La mata donde se esconde escupe briznas grandes y claras a ratos; al salir, un surtidor de briznas.
   - **Sigilo:** los Pokémon ven en un cono delante de ellos y oyen tus pasos (correr se oye de lejos).
     Si sospechan sale "?" y se giran; si te descubren, "!" y reaccionan según su carácter: los
     asustadizos huyen, los curiosos se acercan a mirarte y los agresivos (¡rojo!) cargan: si te

@@ -76,8 +76,8 @@ class GrassField {
 
   /// Hierba que se agita sobre un Pokémon escondido: radio (m) y fuerza
   /// máxima de la sacudida (rad).
-  static const rustleRadius = 1.5;
-  static const rustleStrength = 0.5;
+  static const rustleRadius = 1.8;
+  static const rustleStrength = 0.7;
 
   /// Cuánto se agita ahora la hierba sobre un escondido en [at] (0..1): a
   /// RÁFAGAS (unas 3 por cada 3 s, distintas en cada sitio), así llama la

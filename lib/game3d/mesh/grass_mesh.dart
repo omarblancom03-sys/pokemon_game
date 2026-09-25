@@ -41,3 +41,41 @@ MeshBuffers buildGrassTuft({int blades = 7, double height = 0.75}) {
   }
   return b.build();
 }
+
+/// Una brizna suelta (la que salta al pisar la hierba): hoja plana de
+/// 1 m de largo a lo largo de Y, centrada en el origen para que gire
+/// sobre su mitad, con la punta arriba y de doble cara. Se escala al
+/// tamaño real al dibujarla.
+MeshBuffers buildLooseBlade() {
+  const w = 0.1; // media anchura
+  final baseL = Vector3(-w, -0.5, 0);
+  final baseR = Vector3(w, -0.5, 0);
+  final midL = Vector3(-w * 1.1, 0.1, 0);
+  final midR = Vector3(w * 1.1, 0.1, 0);
+  final tip = Vector3(0, 0.5, 0);
+  return (MeshBuilder()
+        // Cara delantera (mirando a +Z) y su gemela trasera.
+        ..shadedQuad(
+          baseL,
+          baseR,
+          midR,
+          midL,
+          GrassPalette.middle,
+          GrassPalette.middle,
+          GrassPalette.tip,
+          GrassPalette.tip,
+        )
+        ..triangle(midL, midR, tip, GrassPalette.tip)
+        ..shadedQuad(
+          baseR,
+          baseL,
+          midL,
+          midR,
+          GrassPalette.middle,
+          GrassPalette.middle,
+          GrassPalette.tip,
+          GrassPalette.tip,
+        )
+        ..triangle(midR, midL, tip, GrassPalette.tip))
+      .build();
+}
