@@ -31,6 +31,9 @@ enum FieldNoticeKind {
 
   /// Se quiso lanzar una baya sin tener ninguna.
   noBerries,
+
+  /// Un Pokémon se puso a comerse una baya.
+  eating,
 }
 
 /// Un aviso breve del campo ("+2 Poké Ball", "¡Capturado!"...). Guarda los
@@ -132,6 +135,8 @@ class FieldController extends ChangeNotifier {
         _post(FieldNoticeKind.berriesPickedUp, count: total);
       case BushShaken(:final berries):
         if (berries == 0) _post(FieldNoticeKind.emptyBush);
+      case PokemonEating(:final wild):
+        _post(FieldNoticeKind.eating, pokemon: wild.pokemon);
       case PokemonRevealed(:final wild, :final startled):
         _post(
           startled ? FieldNoticeKind.burstOut : FieldNoticeKind.peeked,

@@ -159,6 +159,8 @@ class WildRenderer {
     v.material.baseColorFactor = tint;
     // Respiración: se estira un poco arriba y abajo cuando está quieto.
     final breathe = 1 + 0.035 * math.sin(time * 3 + w.id.hashCode % 7);
+    // Comiendo: se achata un poco con cada mordisco (se agacha a la baya).
+    final munch = w.munch;
 
     v.node.position = vm.Vector3(p.x, 0, -p.z); // espacio del motor
     v.shadow
@@ -168,7 +170,11 @@ class WildRenderer {
       ..position = offset
       // Mirar a la cámara: el mismo giro que la cámara (signo del motor).
       ..rotation = vm.Quaternion.axisAngle(_y, -cameraYaw)
-      ..scale = vm.Vector3(h * pop, h * pop * breathe, 1);
+      ..scale = vm.Vector3(
+        h * pop * (1 + 0.05 * munch),
+        h * pop * breathe * (1 - 0.09 * munch),
+        1,
+      );
   }
 
   /// Cuadrado de 1x1 con la base en y = 0, mirando hacia -Z del motor

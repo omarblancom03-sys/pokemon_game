@@ -323,7 +323,7 @@ void main() {
         s.update(1 / 60);
       }
       final ball = s.balls.single;
-      expect(ball.hit, (unaware: true, fromBehind: true));
+      expect(ball.hit, (unaware: true, fromBehind: true, eating: false));
       expect(ball.sinceHit, closeTo(0, 0.02));
       step(s, 0.5);
       expect(ball.sinceHit, closeTo(0.5, 0.03));
@@ -344,7 +344,11 @@ void main() {
       expect(s.lockedTarget, front);
       s.throwBall(PokeBallType.poke);
       step(s, 0.6);
-      expect(s.balls.single.hit, (unaware: false, fromBehind: false));
+      expect(s.balls.single.hit, (
+        unaware: false,
+        fromBehind: false,
+        eating: false,
+      ));
       step(s, 5.4);
       expect(
         events.whereType<PokemonCaught>().single.result.chance,

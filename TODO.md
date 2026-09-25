@@ -90,14 +90,37 @@ El combate lo hace OTRO equipo (se engancha por el contrato EncounterHandler). N
 - [x] Arbustos con bayas: acércate y sacúdelos para recoger bayas (van a la bolsa)
       (L / Intro o tocar el aviso; caen a tus pies y se recogen al pasar; vuelven a crecer; hace ruido;
       2 arbustos nuevos junto a los prados)
-- [x] Lanzar bayas: la baya en la mano (4, R o tocarla en la bolsa), arco previsto y cae un poco por delante
+- [x] Lanzar bayas: la baya en la mano (4, R o tocarla en la bolsa), arco previsto y cae un poco por detrás
       del Pokémon fijado (más floja que una bola: llega menos lejos); rebota en árboles; se puede recoger
-- [ ] Bayas para distraer: el Pokémon va a comérsela y, mientras come, no te ve (bonus "¡Está comiendo!")
+- [x] Bayas para distraer: el Pokémon va a comérsela y, mientras come, no te ve (bonus "¡Está comiendo!")
+      (la baya cae POR DETRÁS del fijado: se da la vuelta para comer; huele bayas a 10 m, no las que
+      están junto a ti; ×1,5 que se suma al sigilo; bocadillo con la baya y mordiscos)
 - [ ] Mapa grande (M): todo el mundo con carteles, bolas del suelo, arbustos con bayas y dónde estás
 
 ## 8.13 Exploración: detalles (añadido 2026-09-25)
+- [ ] Ayuda de controles plegable (H): se ve al entrar y luego queda en una pestaña pequeña (ahora tapa
+      a los Pokémon lejanos de la parte de arriba de la pantalla)
 - [ ] Huellas del entrenador en la tierra del camino (se borran con el tiempo)
 - [ ] Pokémon que dejan rastro: la hierba pisada por donde pasó uno que huyó
 
+## 8.14 Diversión sin quitar protagonismo a los combates (añadido 2026-09-25)
+Principio: todo es OPCIONAL. El modo libre no tiene tiempo ni límites; capturar alimenta los
+combates (tus capturas = tu equipo), nunca compite con ellos. Nada de lo de aquí da niveles ni stats.
+
+- [ ] Acordar con el equipo de combate: qué hace el botón "Combatir" y que lean los capturados
+      de TrainerController como equipo
+- [ ] Botón "Combatir" siempre visible en el HUD 3D (y en pausa) → hook del otro equipo
+- [ ] Sonido: gritos de PokeAPI (campo cries) al alertarse, "fiu" al lanzar, clic por sacudida,
+      fanfarria al capturar
+- [ ] Anillo que se encoge al apuntar: "¡Bien!/¡Genial!/¡Excelente!" ×1,2/×1,5/×2 (en ambos modos)
+- [ ] Reto Safari (opcional): se empieza en un puesto del mapa o con un botón; 10 min, 25 bolas
+      propias sin reaparición; "Abandonar reto" en cualquier momento sin penalización
+  - [ ] Puntuación solo en el Safari: base por rareza (capture_rate) × bonus que ya existen
+  - [ ] Solo en el Safari: probabilidad de que huyan al fallar (mayor si es raro)
+  - [ ] Pantalla final con resumen y récord; premio en bolas y bayas
+- [ ] Shinies (sprites.front_shiny, 1/100, destello al aparecer; solo cosmético)
+- [ ] Pokédex con huecos en "Mis capturas": siluetas de las especies del mapa (7/20)
+- [ ] Misiones cortas opcionales (3 activas, panel plegable, sin tiempo): enseñan sigilo, espalda,
+      hierba y bayas; premio en Super/Ultra Balls
 ## Mejoras continuas
 - [ ] (se irán añadiendo)

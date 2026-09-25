@@ -1,8 +1,8 @@
 // PRUEBAS de LANZAR BAYAS: con una baya en la mano se ve la baya (no la
 // bola), no hay probabilidad de captura y el arco previsto no choca con los
-// Pokémon; al lanzarla sale de la mano, cae un poco por delante del Pokémon
-// fijado (del lado del jugador), rebota contra los árboles y, en el suelo,
-// se puede volver a recoger.
+// Pokémon; al lanzarla sale de la mano, cae un poco por detrás del Pokémon
+// fijado (del lado contrario al jugador), rebota contra los árboles y, en el
+// suelo, se puede volver a recoger.
 
 import 'dart:math';
 
@@ -88,7 +88,7 @@ void main() {
     expect(s.throwBerry(), isTrue);
   });
 
-  test('thrown at a locked Pokémon, it lands just in front of it', () {
+  test('thrown at a locked Pokémon, it lands just behind it', () {
     final s = world();
     s.player.teleport(s.cellCenter(3, 6));
     final w = wildAt(s, Vector3(7, 0, 0));
@@ -109,8 +109,8 @@ void main() {
     expect(berry.landed, isTrue);
     final flat = Vector3(berry.position.x, 0, berry.position.z);
     expect(flat.distanceTo(Vector3(spot.x, 0, spot.z)), lessThan(1.2));
-    // Del lado del jugador y sin pasarse del Pokémon.
-    expect(berry.position.x, lessThan(w.position.x));
+    // Al otro lado del Pokémon: para comérsela te dará la espalda.
+    expect(berry.position.x, greaterThan(w.position.x));
   });
 
   test('a berry thrown at a tree bounces back and falls on this side', () {

@@ -34,8 +34,13 @@
     recogen solas y van a la bolsa ("+3 Bayas Frambu"; el contador de bayas está junto a las bolas). Le
     vuelven a crecer poco a poco. Ojo: sacudirlo hace ruido (los Pokémon cercanos se giran a mirar).
   - **Lanzar bayas:** pulsa 4 (o R, o toca la baya en la bolsa) para llevar una baya en la mano. Apunta
-    y lanza igual que una bola: con un Pokémon fijado, la baya cae un poco por delante de él. Llega
+    y lanza igual que una bola: con un Pokémon fijado, la baya cae un poco POR DETRÁS de él. Llega
     menos lejos que una bola (se lanza en globo). Si cae lejos de todo, puedes volver a recogerla.
+  - **Bayas para distraer:** un Pokémon tranquilo que huele una baya en el suelo (a unos 10 m) va a por
+    ella (sale una baya en un bocadillo sobre él) y se la come unos segundos. Mientras come no te ve y
+    casi no te oye: como la baya cayó detrás de él, se da la vuelta y te da la espalda. ¡Lánzale una
+    bola! "¡Por la espalda! ×2" y "¡Está comiendo! ×1,5" se suman. Una baya junto a la hierba que se
+    agita hace asomarse al escondido. Si corres cerca o te ve, deja la baya.
   - **Carteles que se leen:** ponte delante de un cartel y sale "L · Leer el cartel" (tócalo o pulsa L
     / Intro): una tabla de madera con lo que pone. Hay cuatro: Pueblo Paleta, la entrada al prado de
     hierba alta, un consejo sobre la hierba que se agita y la tienda de Poké Balls (cerrada). Explican
@@ -80,6 +85,8 @@
 2. Mantén clic derecho: mira, arco y anillo con el %. Suelta clic izquierdo para lanzar.
 3. Recoge bolas brillantes del suelo (y las que falles). Cambia de bola con R o 1-2-3.
 4. Agáchate (C) en la hierba alta y acércate por la espalda: sin "?" ni "!" la captura es más fácil.
+5. Con bayas: sacude un arbusto (L), pulsa 4 y lanza la baya a un Pokémon tranquilo (cae detrás de él).
+   Cuando se ponga a comer (bocadillo con la baya), pulsa 1 y lánzale una bola por la espalda.
 
 ## Cómo probar el 3D
 1. Menú → **Jugar 3D**. Espera a que cargue (círculo de progreso).

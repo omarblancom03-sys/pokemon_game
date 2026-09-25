@@ -9,7 +9,8 @@ export '../../models/capture_result.dart';
 /// bajar, así que la probabilidad depende de
 ///  - el ratio de captura REAL de la especie (PokeAPI, 3..255),
 ///  - el tipo de Poké Ball,
-///  - el sigilo: si el Pokémon no te ha visto ×1,5, y por la espalda ×2.
+///  - el sigilo: si el Pokémon no te ha visto ×1,5, y por la espalda ×2,
+///  - y si se está comiendo una baya ×1,5 (distraído; se suma al sigilo).
 ///
 /// Las sacudidas imitan a los juegos: se hacen 4 comprobaciones, cada una
 /// con probabilidad `p^(1/4)` (así las 4 juntas dan exactamente `p`). Se
@@ -24,20 +25,25 @@ class CaptureCalculator {
   static const unawareBonus = 1.5;
   static const backStrikeBonus = 2.0;
 
+  /// Bonus si se está comiendo una baya (como la Baya Frambu de los juegos).
+  static const eatingBonus = 1.5;
+
   /// Probabilidad de captura (0..1).
   static double chance({
     required int captureRate,
     required PokeBallType ball,
     required bool unaware,
     required bool fromBehind,
+    bool eating = false,
   }) {
     final stealth = !unaware
         ? 1.0
         : fromBehind
         ? backStrikeBonus
         : unawareBonus;
+    final food = eating ? eatingBonus : 1.0;
     final rate = captureRate.clamp(1, 255) / 255;
-    return (rate * ball.multiplier * stealth).clamp(0.0, 1.0);
+    return (rate * ball.multiplier * stealth * food).clamp(0.0, 1.0);
   }
 
   /// Probabilidad de CAPTURA CRÍTICA según cuántas especies distintas ha
@@ -56,6 +62,7 @@ class CaptureCalculator {
     required PokeBallType ball,
     required bool unaware,
     required bool fromBehind,
+    bool eating = false,
     double criticalChance = 0,
   }) {
     final p = chance(
@@ -63,6 +70,7 @@ class CaptureCalculator {
       ball: ball,
       unaware: unaware,
       fromBehind: fromBehind,
+      eating: eating,
     );
     final perCheck = math.pow(p, 0.25).toDouble();
     // Sin posibilidad de crítico no se tira ese dado (no gasta azar).

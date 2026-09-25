@@ -299,3 +299,28 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
   no se pisa se lleva a la casilla libre más cercana. En el suelo se puede volver a recoger.
 - **2026-09-25 — Sin probabilidad con la baya en la mano:** el anillo de la mira sigue marcando el
   objetivo (y su nombre), pero sin %: una baya no captura.
+- **2026-09-25 — Bayas para distraer** (como la comida de Leyendas Arceus). Un Pokémon TRANQUILO
+  (sin "!"; si tenía "?" se le pasa: la sospecha baja a 0,2) huele la baya libre más cercana del
+  suelo a ≤ 10 m, se la queda (nadie más va a por ella y el jugador ya no puede recogerla), va a
+  por ella a 2 m/s rodeando obstáculos y se la come quieto y mirándola durante 6 s (mengua a
+  mordiscos); luego desaparece. Aviso "¡X se está comiendo la baya! Aprovecha". Mientras COME: no
+  ve (solo si lo tocas) y oye a un 35 % de lo normal (correr a < 5 m sí lo oye). Si te descubre,
+  deja la baya a medio comer para otro. Si en 15 s no llega (atascado), se rinde. Dentro de una bola
+  deja de comer. Una baya que cae a < 3,5 m de un escondido lo hace ASOMARSE sin verte (viene a
+  comer).
+- **2026-09-25 — La baya cae POR DETRÁS del Pokémon fijado** (1,4 m más allá, del lado contrario al
+  jugador). Primero se probó delante (entre los dos): al girarse para ir a por ella te miraba y te
+  veía. Detrás, se da la vuelta y come de espaldas: la jugada es "baya detrás → se gira → bola por la
+  espalda" y el golpe suma los tres bonus (sin ser visto ×1,5 o por la espalda ×2, y comiendo ×1,5).
+- **2026-09-25 — "¡Está comiendo!" ×1,5 se MULTIPLICA con el sigilo** (el sigilo sigue siendo
+  "sin ser visto" ×1,5 o "por la espalda" ×2, sin sumarse entre ellos). Como la Baya Frambu de los
+  juegos. Se enseña al golpear ("¡Está comiendo! ×1,5", en rosa) y ya cuenta en el % del anillo.
+- **2026-09-25 — Nadie va a por una baya a < 3,5 m del jugador.** Lo detectó la vista previa: las
+  bayas que un arbusto suelta a tus pies atraían a un Pokémon a 9 m, que venía hacia ti y te veía.
+  Un Pokémon salvaje no se acerca tanto a una persona; y así las del arbusto son para ti.
+- **2026-09-25 — Señales de las bayas:** bocadillo blanco con una baya sobre el Pokémon que va a por
+  una (late con cada mordisco mientras come) y el dibujo se achata un poco con cada mordisco
+  (`WildPokemon.munch`, ~3 por segundo). Vista previa `?bait` (junto al prado del noreste, 3 bayas en
+  la mano, Pokémon 8 m delante y de espaldas).
+- **2026-09-25 — TODO 8.14 lo añadió el usuario** (diversión sin quitar protagonismo a los
+  combates: todo opcional, nada da niveles). Se respeta ese principio en lo que se haga de ahí.

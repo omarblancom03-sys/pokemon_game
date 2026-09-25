@@ -67,3 +67,11 @@ class PokemonRevealed extends World3DEvent {
   final WildPokemon wild;
   final bool startled;
 }
+
+/// Un Pokémon empezó a comerse una baya del suelo (mientras come está
+/// distraído: no te ve y es más fácil de capturar).
+class PokemonEating extends World3DEvent {
+  const PokemonEating(this.wild);
+
+  final WildPokemon wild;
+}

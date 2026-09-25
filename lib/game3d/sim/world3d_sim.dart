@@ -437,6 +437,7 @@ class World3DSim {
       ball: ball,
       unaware: !target.isAlert,
       fromBehind: toTarget.dot(target.facingDirection) > 0.5,
+      eating: target.isEating,
     );
   }
 
@@ -463,19 +464,20 @@ class World3DSim {
     return true;
   }
 
-  /// Distancia (m) por delante del Pokémon a la que se le lanza una baya:
-  /// cerca para que la vea, sin darle.
+  /// Distancia (m) más allá del Pokémon a la que se le lanza una baya:
+  /// cerca para que la huela, sin darle.
   static const baitOffset = 1.4;
 
-  /// Dónde se lanza una baya para [target]: en el suelo, un poco por
-  /// delante de él, del lado del jugador (a mitad de camino si está muy
-  /// cerca).
+  /// Dónde se lanza una baya para [target]: en el suelo, un poco POR
+  /// DETRÁS de él (del lado contrario al jugador). Así, para ir a por ella
+  /// y comérsela, se da la vuelta y te da la espalda: la ocasión de
+  /// lanzarle una bola sin que te vea.
   Vector3 baitSpot(WildPokemon target) {
-    final to = player.position - target.position
+    final away = target.position - player.position
       ..y = 0;
-    final d = to.length;
-    final towards = d > 1e-6 ? to / d : Vector3(0, 0, 1);
-    return target.position + towards * math.min(baitOffset, d * 0.5)
+    final d = away.length;
+    final beyond = d > 1e-6 ? away / d : Vector3(0, 0, 1);
+    return target.position + beyond * baitOffset
       ..y = BerrySystem.radius;
   }
 
@@ -580,7 +582,12 @@ class World3DSim {
   }
 
   /// Quita un Pokémon salvaje (tras su encuentro).
-  void removeWild(String id) => wild.removeWhere((w) => w.id == id);
+  void removeWild(String id) {
+    for (final w in wild) {
+      if (w.id == id) _dropBait(w); // su baya queda libre
+    }
+    wild.removeWhere((w) => w.id == id);
+  }
 
   /// Deja de aceptar Pokémon que lleguen tarde (la pantalla se cerró).
   void dispose() => _disposed = true;
@@ -637,7 +644,7 @@ class World3DSim {
       moving: player.isMoving,
     );
     fieldItems.update(dt, player.position, _emit);
-    berries.update(dt, player.position, _emit);
+    berries.update(dt, player.position, _emit, landed: _berryLanded);
     for (final w in wild.toList()) {
       _updateWild(w, dt);
     }
@@ -831,6 +838,7 @@ class World3DSim {
     }
     if (!w.isFree) {
       w.velocity = Vector3.zero();
+      _dropBait(w); // dentro de una bola ya no come
       return;
     }
     if (w.hidden) {
@@ -844,10 +852,104 @@ class World3DSim {
       moving: player.isMoving,
       dt: dt,
     );
+    // Si te descubre (o la baya ya no está), se olvida de ella.
+    final bait = w.bait;
+    if (bait != null && (w.isAlert || !berries.contains(bait))) _dropBait(w);
+    if (w.bait == null && !w.isAlert) _lookForBait(w);
+
     final before = w.position;
-    final fled = behavior.act(w, player.position, dt);
+    var fled = false;
+    if (w.bait != null) {
+      _feed(w, dt);
+    } else {
+      fled = behavior.act(w, player.position, dt);
+    }
     w.velocity = dt > 0 ? (w.position - before) / dt : Vector3.zero();
     if (fled) removeWild(w.id);
+  }
+
+  // --- Bayas para distraer -----------------------------------------------
+
+  /// Hasta dónde (m) huele un Pokémon una baya que está en el suelo.
+  static const baitRange = 10.0;
+
+  /// Si en este tiempo (s) no llega a su baya (se atasca), se rinde.
+  static const baitPatience = 15.0;
+
+  /// Ningún Pokémon va a por una baya que está a menos de esto (m) del
+  /// jugador (no se acercan tanto a una persona). Así las que caen de un
+  /// arbusto a tus pies son para ti.
+  static const baitShyDistance = 3.5;
+
+  /// Una baya que cae a menos de esto (m) de un escondido lo hace asomarse
+  /// (sin verte: viene a por la baya).
+  static const baitRevealRange = 3.5;
+
+  /// Un Pokémon tranquilo busca la baya libre más cercana del suelo (que
+  /// no esté junto al jugador). Si la encuentra, se la queda (nadie más va
+  /// a por ella) y se distrae: se le pasa la sospecha que tuviera.
+  void _lookForBait(WildPokemon w) {
+    LooseBerry? best;
+    var bestDistance = baitRange;
+    final me = player.position;
+    for (final berry in berries.loose) {
+      if (!berry.landed || berry.claimedBy != null) continue;
+      final fromPlayer = berry.position - me
+        ..y = 0;
+      if (fromPlayer.length < baitShyDistance) continue;
+      final to = berry.position - w.position
+        ..y = 0;
+      final d = to.length;
+      if (d < bestDistance) {
+        best = berry;
+        bestDistance = d;
+      }
+    }
+    if (best == null) return;
+    best.claimedBy = w.id;
+    w
+      ..bait = best
+      ..baitTime = 0
+      ..target = null
+      ..awareness = math.min(w.awareness, 0.2);
+  }
+
+  /// Va hacia su baya y se la come. Avisa al empezar a comer; al terminar,
+  /// la baya desaparece y se queda un rato tranquilo.
+  void _feed(WildPokemon w, double dt) {
+    final wasEating = w.isEating;
+    behavior.feed(w, dt);
+    if (!wasEating && w.isEating) _emit(PokemonEating(w));
+    if ((w.eatingFor ?? 0) >= WildPokemon.eatSeconds) {
+      berries.consume(w.bait!);
+      w
+        ..bait = null
+        ..eatingFor = null
+        ..idleTime = 2;
+    } else if (!w.isEating && w.baitTime > baitPatience) {
+      _dropBait(w);
+    }
+  }
+
+  /// Deja su baya (a medio comer, si había empezado) para quien la quiera.
+  void _dropBait(WildPokemon w) {
+    final bait = w.bait;
+    if (bait == null) return;
+    if (bait.claimedBy == w.id) bait.claimedBy = null;
+    w
+      ..bait = null
+      ..eatingFor = null;
+  }
+
+  /// Una baya acaba de caer al suelo: los escondidos cerca se asoman a
+  /// por ella, sin verte.
+  void _berryLanded(LooseBerry berry) {
+    for (final w in wild) {
+      if (!w.hidden || !w.isFree) continue;
+      final to = berry.position - w.position
+        ..y = 0;
+      if (to.length < baitRevealRange) _reveal(w, startled: false);
+    }
   }
 
   /// Un escondido no se mueve ni te busca: espera en la hierba. Sale si te

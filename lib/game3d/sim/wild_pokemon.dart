@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:vector_math/vector_math.dart';
 
 import '../../models/pokemon.dart';
+import 'berries.dart';
 import 'cell_noise.dart';
 
 /// Carácter de un Pokémon salvaje: qué hace cuando te descubre.
@@ -93,6 +94,16 @@ class WildPokemon {
   /// Segundos que lleva escondido (si nadie lo encuentra, se va).
   double hiddenTime = 0;
 
+  /// Baya del suelo a la que va o que se está comiendo (null = ninguna).
+  LooseBerry? bait;
+
+  /// Segundos que lleva yendo hacia su baya (si se atasca, se rinde).
+  double baitTime = 0;
+
+  /// Segundos que lleva comiendo (null = no está comiendo). Mientras
+  /// come apenas se entera de nada: no ve y casi no oye.
+  double? eatingFor;
+
   /// Metros por segundo al deambular, huir y cargar.
   static const wanderSpeed = 1.3;
   static const fleeSpeed = 4.4;
@@ -100,6 +111,22 @@ class WildPokemon {
 
   bool get isAlert => alertTime > 0;
   bool get isFree => capturedBy == null;
+
+  /// Se está comiendo una baya (distraído: más fácil de capturar).
+  bool get isEating => eatingFor != null;
+
+  /// Lo que tarda en comerse una baya (s).
+  static const eatSeconds = 6.0;
+
+  /// Rapidez (m/s) con la que va hacia una baya: con ganas.
+  static const baitSpeed = 2.0;
+
+  /// Mordiscos (0..1) para la animación: se agacha un poco a comer, unas
+  /// tres veces por segundo. 0 si no está comiendo.
+  double get munch {
+    final t = eatingFor;
+    return t == null ? 0 : math.sin(t * 9).abs();
+  }
 
   /// "?" en la cabeza: sospecha pero aún no te ha descubierto.
   bool get isSuspicious => !isAlert && awareness > 0.35;

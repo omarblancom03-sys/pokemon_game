@@ -108,9 +108,10 @@ class ThrownBall {
   WildPokemon? target;
   CaptureResult? result;
 
-  /// Cómo fue el golpe (sin ser visto, por la espalda): se le enseña al
-  /// jugador sobre el Pokémon. null si aún no ha golpeado a nadie.
-  ({bool unaware, bool fromBehind})? hit;
+  /// Cómo fue el golpe (sin ser visto, por la espalda, mientras comía): se
+  /// le enseña al jugador sobre el Pokémon. null si aún no ha golpeado a
+  /// nadie.
+  ({bool unaware, bool fromBehind, bool eating})? hit;
 
   /// [age] en el momento del golpe.
   double? hitAge;
@@ -433,15 +434,17 @@ class BallSystem {
     // "Por la espalda": la bola viaja en el mismo sentido en que mira él.
     final fromBehind = flat.dot(w.facingDirection) > 0.5;
     final unaware = !w.isAlert;
+    final eating = w.isEating;
     ball
       ..target = w
-      ..hit = (unaware: unaware, fromBehind: fromBehind)
+      ..hit = (unaware: unaware, fromBehind: fromBehind, eating: eating)
       ..hitAge = ball.age
       ..result = calculator.roll(
         captureRate: w.captureRate,
         ball: ball.ball,
         unaware: unaware,
         fromBehind: fromBehind,
+        eating: eating,
         criticalChance: criticalChance,
       )
       ..velocity = flat * -1.2 + Vector3(0, 4.2, 0)

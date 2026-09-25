@@ -127,6 +127,14 @@ void main() {
     expect(field.notices.single.kind, FieldNoticeKind.emptyBush);
   });
 
+  test('a Pokémon that starts eating a berry posts a notice', () {
+    final field = newField(TrainerController())
+      ..onWorldEvent(PokemonEating(wild(12)));
+    final notice = field.notices.single;
+    expect(notice.kind, FieldNoticeKind.eating);
+    expect(notice.pokemon?.id, 12);
+  });
+
   test('only the newest notices are kept; dismiss removes one', () {
     final field = newField(TrainerController());
     for (var i = 0; i < 5; i++) {

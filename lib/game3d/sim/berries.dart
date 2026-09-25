@@ -111,13 +111,21 @@ class LooseBerry {
 
   bool get landed => landedFor != null;
 
-  /// Tamaño relativo para dibujarla: al final de su vida en el suelo se
-  /// encoge hasta desaparecer.
+  /// Id del Pokémon que va a por ella o se la está comiendo (nadie más la
+  /// toma y el jugador ya no la recoge). null = de nadie.
+  String? claimedBy;
+
+  /// Cuánto se ha comido ya (0..1).
+  double eaten = 0;
+
+  /// Tamaño relativo para dibujarla: mengua a mordiscos y, al final de su
+  /// vida en el suelo, se encoge hasta desaparecer.
   double get scale {
+    final bitten = 1 - 0.75 * eaten;
     final t = landedFor;
-    if (t == null) return 1;
+    if (t == null) return bitten;
     final left = BerrySystem.groundLifetime - t;
-    return (left / 0.5).clamp(0.0, 1.0);
+    return bitten * (left / 0.5).clamp(0.0, 1.0);
   }
 }
 
@@ -313,8 +321,14 @@ class BerrySystem {
 
   /// Avanza [dt] segundos: balanceo y crecimiento de los arbustos, bayas
   /// que caen y botan, y las que el jugador en [player] recoge (se cuentan
-  /// con [emit]).
-  void update(double dt, Vector3 player, void Function(World3DEvent) emit) {
+  /// con [emit]; las que un Pokémon ha reclamado, no). [landed] avisa de
+  /// cada baya que acaba de quedarse quieta en el suelo.
+  void update(
+    double dt,
+    Vector3 player,
+    void Function(World3DEvent) emit, {
+    void Function(LooseBerry berry)? landed,
+  }) {
     for (final bush in bushes) {
       _updateBush(bush, dt);
     }
@@ -322,18 +336,21 @@ class BerrySystem {
     var picked = 0;
     for (final berry in _loose.toList()) {
       berry.age += dt;
-      final landed = berry.landedFor;
-      if (landed == null) {
+      final resting = berry.landedFor;
+      if (resting == null) {
         _fly(berry, dt);
+        if (berry.landed) landed?.call(berry);
         continue;
       }
-      berry.landedFor = landed + dt;
+      berry.landedFor = resting + dt;
       if (berry.landedFor! >= groundLifetime) {
         _loose.remove(berry);
         continue;
       }
       final flat = Vector3(berry.position.x, 0, berry.position.z);
-      if (landed >= settleTime && flat.distanceTo(flatPlayer) < pickupRadius) {
+      if (resting >= settleTime &&
+          berry.claimedBy == null &&
+          flat.distanceTo(flatPlayer) < pickupRadius) {
         _loose.remove(berry);
         picked++;
       }
@@ -362,6 +379,12 @@ class BerrySystem {
         ..grownFor = 0;
     }
   }
+
+  /// ¿Sigue [berry] en el mundo? (se pudo recoger, comer o pudrir).
+  bool contains(LooseBerry berry) => _loose.contains(berry);
+
+  /// Un Pokémon terminó de comerse [berry].
+  void consume(LooseBerry berry) => _loose.remove(berry);
 
   /// Lanza una baya desde [from] (la mano) con [velocity].
   LooseBerry throwBerry(Vector3 from, Vector3 velocity) {

@@ -20,9 +20,11 @@ import '../../common/pokemon_formatters.dart';
 ///  - POKÉDEX: una Poké Ball pequeña sobre los Pokémon cercanos cuya
 ///    especie ya tienes; al apuntar, el nombre del fijado ("¡Nuevo!" si no
 ///    lo tienes aún).
-///  - AL GOLPEAR: sobre el Pokémon, qué bonus de sigilo ha tenido el tiro
-///    ("¡No te vio!", "¡Por la espalda!"), que sube y se desvanece. Si es
-///    una captura crítica, también lo dice.
+///  - BAYAS: una baya en un bocadillo sobre los Pokémon que van a por una
+///    baya del suelo (late con cada mordisco mientras se la comen).
+///  - AL GOLPEAR: sobre el Pokémon, qué bonus ha tenido el tiro ("¡No te
+///    vio!", "¡Por la espalda!", "¡Está comiendo!"), que sube y se
+///    desvanece. Si es una captura crítica, también lo dice.
 ///
 /// Se repinta en cada fotograma leyendo el estado de la simulación; no
 /// cambia nada de ella.
@@ -105,9 +107,21 @@ class _WorldPainter extends CustomPainter {
     }
 
     for (final w in sim.wild) {
-      if (!w.isFree || (!w.isAlert && !w.isSuspicious)) continue;
+      if (!w.isFree) continue;
+      final marked = w.isAlert || w.isSuspicious;
+      final baited = w.bait != null && !w.isAlert;
+      if (!marked && !baited) continue;
       final head = onScreen(w.position..y = w.displayHeight + 0.35);
-      if (head != null) _paintMark(canvas, head, w);
+      if (head == null) continue;
+      if (marked) _paintMark(canvas, head, w);
+      // Va a por una baya (o se la está comiendo): una baya en un bocadillo.
+      if (baited) {
+        _paintBerryBubble(
+          canvas,
+          marked ? head - const Offset(24, 0) : head,
+          w.munch,
+        );
+      }
     }
     // Especie ya capturada: una Poké Ball junto a la cabeza (a la derecha
     // del "?" / "!" si lo hay).
@@ -306,6 +320,11 @@ class _WorldPainter extends CustomPainter {
           '¡Por la espalda! ×${_factor(CaptureCalculator.backStrikeBonus)}',
           Colors.lightGreenAccent,
         ),
+      if (hit.eating)
+        (
+          '¡Está comiendo! ×${_factor(CaptureCalculator.eatingBonus)}',
+          Colors.pinkAccent,
+        ),
     ];
     if (lines.isEmpty) return;
     // Donde golpeó la bola (a media altura del Pokémon).
@@ -351,6 +370,47 @@ class _WorldPainter extends CustomPainter {
       text.paint(canvas, Offset(anchor.dx - text.width / 2, y));
       y += text.height;
     }
+  }
+
+  /// Una baya en un bocadillo: el Pokémon va a por ella. Comiendo, el
+  /// bocadillo late con cada mordisco ([munch]).
+  void _paintBerryBubble(Canvas canvas, Offset at, double munch) {
+    final r = 11 + 2 * munch;
+    canvas
+      ..drawCircle(at, r, Paint()..color = Colors.white)
+      ..drawCircle(
+        at,
+        r,
+        Paint()
+          ..color = Colors.black54
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.5,
+      )
+      ..drawCircle(
+        at + Offset(0, r * 0.12),
+        r * 0.5,
+        Paint()..color = const Color(0xFFD8384A),
+      )
+      ..drawCircle(
+        at + Offset(-r * 0.17, -r * 0.05),
+        r * 0.14,
+        Paint()..color = const Color(0xAAFFFFFF),
+      );
+    final leaf = Path()
+      ..moveTo(at.dx, at.dy - r * 0.35)
+      ..quadraticBezierTo(
+        at.dx + r * 0.3,
+        at.dy - r * 0.75,
+        at.dx + r * 0.5,
+        at.dy - r * 0.5,
+      )
+      ..quadraticBezierTo(
+        at.dx + r * 0.25,
+        at.dy - r * 0.3,
+        at.dx,
+        at.dy - r * 0.35,
+      );
+    canvas.drawPath(leaf, Paint()..color = const Color(0xFF3FA34D));
   }
 
   /// "?" (sospecha) o "!" (te ha visto; rojo si va a por ti) en un bocadillo.

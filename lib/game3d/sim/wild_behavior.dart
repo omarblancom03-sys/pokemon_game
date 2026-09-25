@@ -66,6 +66,13 @@ class WildBehavior {
   /// Umbral de sospecha para enseñar "?" y pararse a mirar.
   static const suspiciousLevel = 0.35;
 
+  /// Mientras come solo te oye si haces MUCHO ruido cerca: esta parte de
+  /// lo que oiría normalmente. Y no te ve (salvo que lo toques).
+  static const eatingHearing = 0.35;
+
+  /// Se para a comer a esta distancia (m) de la baya.
+  static const eatDistance = 0.5;
+
   /// Alcance de la vista según lo escondido que va el jugador.
   static double sightFor(PlayerStealth s) => switch (s) {
     PlayerStealth.hidden => sightRange * 0.2,
@@ -104,8 +111,11 @@ class WildBehavior {
     required double dt,
   }) {
     final d = (Vector3(player.x, 0, player.z) - w.position).length;
-    final seen = sees(w, player, stealth);
-    final noise = noiseFor(stealth, moving: moving);
+    // Comiendo está distraído: no ve y casi no oye.
+    final eating = w.isEating;
+    final seen = eating ? d < touchRange : sees(w, player, stealth);
+    final noise =
+        noiseFor(stealth, moving: moving) * (eating ? eatingHearing : 1);
     final heard = d < noise;
 
     var gain = 0.0;
@@ -168,6 +178,33 @@ class WildBehavior {
     }
     _wander(w, dt);
     return false;
+  }
+
+  /// Va hacia su baya ([WildPokemon.bait]) y, al llegar, se la come: quieto
+  /// y mirándola, a mordiscos, durante [WildPokemon.eatSeconds]. Qué baya
+  /// le toca y qué pasa al terminar lo decide la simulación.
+  void feed(WildPokemon w, double dt) {
+    final bait = w.bait;
+    if (bait == null) return;
+    final to = bait.position - w.position
+      ..y = 0;
+    final eating = w.eatingFor;
+    if (eating != null) {
+      w
+        ..eatingFor = eating + dt
+        ..target = null;
+      bait.eaten = math.min(1, (eating + dt) / WildPokemon.eatSeconds);
+      _turnTowards(w, to, dt);
+      return;
+    }
+    w.baitTime += dt;
+    if (to.length <= eatDistance) {
+      w
+        ..eatingFor = 0
+        ..target = null;
+      return;
+    }
+    _move(w, to, WildPokemon.baitSpeed, dt);
   }
 
   /// Anda hacia [dir] a [speed]. Si hay un obstáculo, prueba a desviarse
