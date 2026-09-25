@@ -10,6 +10,7 @@ import '../../models/poke_ball.dart';
 import '../../models/pokemon.dart';
 import 'aiming.dart';
 import 'butterflies.dart';
+import 'clouds.dart';
 import 'camera_input.dart';
 import 'dust.dart';
 import 'field_items.dart';
@@ -133,6 +134,14 @@ class World3DSim {
     layout,
     config.tileSize,
     random: math.Random(11),
+  );
+
+  /// Nubes que pasan con el viento (y sus sombras). Decorado con su
+  /// propio azar, como el polvo.
+  late final CloudLayer clouds = CloudLayer(
+    width: width,
+    depth: depth,
+    random: math.Random(17),
   );
 
   /// Carteles del mapa: cuál se puede leer y cuál está abierto.
@@ -469,6 +478,7 @@ class World3DSim {
     if (_paused) return;
 
     _kickUp(dt, wish);
+    clouds.update(dt);
     butterflies.update(
       dt,
       player.position,

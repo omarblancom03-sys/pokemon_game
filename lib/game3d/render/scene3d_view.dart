@@ -9,9 +9,11 @@ import '../mesh/props.dart';
 import '../mesh/terrain_mesh.dart';
 import '../sim/orbit_camera.dart';
 import '../sim/trainer_pose.dart';
+import '../sim/world3d_config.dart';
 import '../sim/world3d_sim.dart';
 import 'ball_renderer.dart';
 import 'butterfly_renderer.dart';
+import 'cloud_renderer.dart';
 import 'dust_renderer.dart';
 import 'grass_blade_renderer.dart';
 import 'grass_renderer.dart';
@@ -47,6 +49,7 @@ class _Scene3DViewState extends State<Scene3DView> {
   late DustRenderer _dust;
   late GrassBladeRenderer _blades;
   late ButterflyRenderer _butterflies;
+  late CloudRenderer _clouds;
   Object? _error;
 
   World3DSim get _sim => widget.sim;
@@ -67,7 +70,7 @@ class _Scene3DViewState extends State<Scene3DView> {
   Scene _buildScene() {
     final scene = Scene()
       ..directionalLight = DirectionalLight(
-        direction: _toEngine(vm.Vector3(-0.45, -1, 0.35)),
+        direction: _toEngine(World3DConfig.sunDirection),
         color: vm.Vector3(1, 0.96, 0.88),
         intensity: 3.2,
         castsShadow: true,
@@ -140,6 +143,8 @@ class _Scene3DViewState extends State<Scene3DView> {
     scene.add(_blades.node);
     _butterflies = ButterflyRenderer(_sim.butterflies, _mesh);
     scene.add(_butterflies.node);
+    _clouds = CloudRenderer(_sim.clouds);
+    scene.add(_clouds.node);
 
     _trainer = TrainerRig(_mesh);
     scene.add(_trainer.root);
@@ -195,6 +200,7 @@ class _Scene3DViewState extends State<Scene3DView> {
     _dust.update(_sim.dust.puffs);
     _blades.update(_sim.blades.blades);
     _butterflies.update();
+    _clouds.update();
     _balls.update(
       _sim.balls,
       preview: _sim.aimPreview,

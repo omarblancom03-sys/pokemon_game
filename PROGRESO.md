@@ -20,6 +20,8 @@
     teclado. V (o el botón de la cámara) la vuelve a poner detrás del jugador con un giro suave.
     WASD/flechas mueven relativo a la cámara; Mayús corre. D-pad en pantalla. La cámara no
     atraviesa árboles ni casas: se acerca si algo estorba y, de espaldas a un árbol, mira desde arriba.
+  - **Nubes:** sus sombras cruzan despacio el suelo con el viento (se ve cómo se oscurece el césped
+    y vuelve el sol); si levantas la cámara, hay nubes blancas lejanas sobre el bosque.
   - Hierba alta 3D que se mece con el viento y se aparta al pasar. Al pisarla saltan briznas que dan
     vueltas y caen planeando: tres por pisada corriendo, una andando y ninguna agachado (se ve el
     ruido que haces).

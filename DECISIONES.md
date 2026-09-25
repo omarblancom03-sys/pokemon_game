@@ -218,4 +218,25 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
   el tiro "a ojo". Girar a mano (arrastrar, Q/E) lo cancela al instante; el zoom no. No se añade
   cámara automática que se recoloque sola al andar: la cámara la manda el jugador (decisión del
   22-09).
+- **2026-09-25 — Nubes en dos bandas** (`sim/clouds.dart`, Dart puro, azar propio): 16 ENCIMA del
+  mapa (a 40 m, radio 6–10 m) de las que solo se ve la SOMBRA, y 30 LEJANAS (50–80 m de altura,
+  hasta 260 m del mapa) que son las que se ven en el cielo. Motivo: con los límites de la cámara
+  (inclinación mínima 0,12 rad, campo vertical 55°) el borde de arriba de la pantalla queda a ~20°
+  sobre el horizonte, así que una nube a 40 m de altura solo se ve si está a más de ~110 m: las
+  que dan sombra en el mapa nunca se ven. Todas van con el mismo viento que la hierba (+X) y la que
+  sale de su zona entra por el otro lado. Cada nube guarda dónde cae su sombra y la nube se coloca en
+  la línea del sol (`World3DConfig.sunDirection`, la misma dirección que usa la luz de la escena).
+- **2026-09-25 — Sombra de nube = disco negro semitransparente** a 0,1 m del suelo (a 0,05
+  parpadeaba con las losas del camino), con el borde difuminado en el último cuarto del radio.
+  Las nubes se dibujan SIN luz (con luz, la tripa quedaba gris de tormenta) y algo por encima de 1
+  para que se vean blancas.
+- **2026-09-25 — flutter_scene, alfa en mallas instanciadas SIN luz** (comprobado con experimentos en
+  el navegador): el alfa POR VÉRTICE sí llega, pero atenuado (0,5 oscurece como ~0,2: parece tratarse
+  como un color sRGB), por eso la sombra usa 0,72 en el centro. El alfa POR INSTANCIA se ignora si
+  `vertexColorWeight = 0`. El alfa del `baseColorFactor` funciona tal cual.
+- **2026-09-25 — Lección: nunca `dart format lib` con la vista previa puesta.** Partió las líneas
+  TEMP-PREVIEW en varias sin la marca; se arregló restaurando el archivo desde HEAD (el diff solo
+  tenía la vista previa). Con la vista previa puesta, formatear solo `lib/game3d`, `lib/game` y
+  `test`. Nuevas opciones de la vista previa: `?cloud` (sombra delante) y `?town` (lejos de la
+  hierba, para que ningún Pokémon agresivo interrumpa las capturas).
 
