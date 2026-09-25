@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:vector_math/vector_math.dart';
 
 import '../../game/map/map_layout.dart';
+import '../sim/berries.dart' show bushLeafBalls;
 import '../sim/cell_noise.dart';
 import 'mesh_builder.dart';
 
@@ -73,7 +74,10 @@ List<HouseBlock> findHouseBlocks(MapLayout layout) {
 
 /// Construye TODOS los objetos fijos del mapa (árboles, casas, vallas...)
 /// en una sola malla: una única llamada de dibujo para el mundo entero.
-MeshBuffers buildProps(MapLayout layout, double tile) {
+///
+/// Con [bushes] = false se saltan los arbustos: en el juego se dibujan
+/// aparte porque se balancean al sacudirlos.
+MeshBuffers buildProps(MapLayout layout, double tile, {bool bushes = true}) {
   final b = MeshBuilder();
   for (var row = 0; row < layout.rows; row++) {
     for (var col = 0; col < layout.columns; col++) {
@@ -86,7 +90,7 @@ MeshBuffers buildProps(MapLayout layout, double tile) {
           TileKind.tree => addTree(b, n),
           TileKind.pine => addPine(b, n),
           TileKind.autumnTree => addTree(b, n, autumn: true),
-          TileKind.bush => addBush(b, n),
+          TileKind.bush => bushes ? addBush(b) : null,
           TileKind.fence => _addFence(b, layout, col, row),
           TileKind.sign => addSign(b),
           TileKind.mushroom => addMushrooms(b, col, row),
@@ -154,23 +158,43 @@ void addPine(MeshBuilder b, double n) {
   }
 }
 
-/// Arbusto: racimo de bolas verdes con alguna baya.
-void addBush(MeshBuilder b, double n) {
-  b
-    ..gem(Vector3(0, 0.45, 0), Vector3(0.75, 0.55, 0.75), Palette.bush)
-    ..gem(Vector3(0.4, 0.4, 0.2), Vector3(0.45, 0.4, 0.45), Palette.leaf)
-    ..gem(Vector3(-0.35, 0.35, -0.2), Vector3(0.45, 0.38, 0.45), Palette.leaf);
-  if (n > 0.4) {
-    for (var i = 0; i < 3; i++) {
-      final a = i * 2.1 + n * 6;
-      b.gem(
-        Vector3(math.sin(a) * 0.6, 0.55 + i * 0.1, math.cos(a) * 0.6),
-        Vector3.all(0.09),
-        Palette.berry,
-        detail: 0,
-      );
-    }
+/// Arbusto: racimo de bolas verdes ([bushLeafBalls], la forma que también
+/// usa la simulación). Las bayas NO van aquí: se sacuden y vuelven a
+/// crecer, así que las dibuja aparte el renderer de arbustos.
+void addBush(MeshBuilder b) {
+  for (var i = 0; i < bushLeafBalls.length; i++) {
+    final ball = bushLeafBalls[i];
+    b.gem(
+      Vector3(ball.x, ball.y, ball.z),
+      Vector3(ball.rx, ball.ry, ball.rz),
+      i == 0 ? Palette.bush : Palette.leaf,
+    );
   }
+}
+
+/// Una baya de radio [radius] (m): roja, facetada, con un rabito de hojas
+/// verde arriba.
+MeshBuffers buildBerry({double radius = 0.12}) {
+  final b = MeshBuilder()
+    ..gem(
+      Vector3(0, 0, 0),
+      Vector3(radius, radius * 0.92, radius),
+      Palette.berry,
+    );
+  for (var i = 0; i < 3; i++) {
+    final a = i * 2 * math.pi / 3;
+    b.gem(
+      Vector3(
+        math.sin(a) * radius * 0.35,
+        radius * 0.9,
+        math.cos(a) * radius * 0.35,
+      ),
+      Vector3(radius * 0.32, radius * 0.12, radius * 0.32),
+      Palette.leafLight,
+      detail: 0,
+    );
+  }
+  return b.build();
 }
 
 /// Valla: postes y dos travesaños; se une con las vallas vecinas.

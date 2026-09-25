@@ -87,9 +87,11 @@ El combate lo hace OTRO equipo (se engancha por el contrato EncounterHandler). N
 
 ## 8.12 Captura: más estrategia (añadido 2026-09-25)
 - [x] Poké Ball pequeña sobre los Pokémon cuya especie ya tienes; al apuntar, su nombre (y "¡Nuevo!" si no la tienes)
-- [ ] Arbustos con bayas: acércate y sacúdelos para recoger bayas (van a la bolsa)
+- [x] Arbustos con bayas: acércate y sacúdelos para recoger bayas (van a la bolsa)
+      (L / Intro o tocar el aviso; caen a tus pies y se recogen al pasar; vuelven a crecer; hace ruido;
+      2 arbustos nuevos junto a los prados)
 - [ ] Lanzar bayas para distraer: el Pokémon va a comérsela y, mientras come, no te ve (bonus "¡Está comiendo!")
-- [ ] Mapa grande (M): todo el mundo con carteles, bolas del suelo y dónde estás
+- [ ] Mapa grande (M): todo el mundo con carteles, bolas del suelo, arbustos con bayas y dónde estás
 
 ## 8.13 Exploración: detalles (añadido 2026-09-25)
 - [ ] Huellas del entrenador en la tierra del camino (se borran con el tiempo)

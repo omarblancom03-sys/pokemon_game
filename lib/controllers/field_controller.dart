@@ -22,6 +22,12 @@ enum FieldNoticeKind {
 
   /// Un Pokémon escondido se asomó sin verte (te acercaste con sigilo).
   peeked,
+
+  /// Se recogieron bayas del suelo.
+  berriesPickedUp,
+
+  /// Se sacudió un arbusto que no tenía bayas.
+  emptyBush,
 }
 
 /// Un aviso breve del campo ("+2 Poké Ball", "¡Capturado!"...). Guarda los
@@ -110,6 +116,19 @@ class FieldController extends ChangeNotifier {
           pokemon: wild.pokemon,
           shakes: result.shakes,
         );
+      case BerriesPickedUp(:final count):
+        _trainer.addBerries(count);
+        // Las bayas de una sacudida se recogen una tras otra: se suman en
+        // el mismo aviso ("+3") en vez de enseñar tres "+1".
+        final last = _notices.lastOrNull;
+        var total = count;
+        if (last?.kind == FieldNoticeKind.berriesPickedUp) {
+          _notices.removeLast();
+          total += last!.count;
+        }
+        _post(FieldNoticeKind.berriesPickedUp, count: total);
+      case BushShaken(:final berries):
+        if (berries == 0) _post(FieldNoticeKind.emptyBush);
       case PokemonRevealed(:final wild, :final startled):
         _post(
           startled ? FieldNoticeKind.burstOut : FieldNoticeKind.peeked,

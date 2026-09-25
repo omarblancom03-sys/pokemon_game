@@ -1,11 +1,9 @@
-import 'dart:math' as math;
-
 import 'package:vector_math/vector_math.dart';
 
 import '../../game/map/map_layout.dart';
+import 'reach.dart';
 
-/// Una casilla del mapa.
-typedef MapCell = ({int col, int row});
+export 'reach.dart' show MapCell;
 
 /// CARTELES que se pueden leer (Dart puro): cuál tiene el jugador delante
 /// y cuál está abierto. Aquí solo hay casillas; lo que pone cada cartel es
@@ -35,32 +33,18 @@ class SignReader {
   /// Si te alejas más que esto, el cartel abierto se cierra solo.
   static const closeRange = 3.6;
 
-  /// Hay que mirarlo: como mucho a 80° de hacia donde mira el jugador.
-  static final _minFacingCos = math.cos(80 * math.pi / 180);
-
   /// Cartel que se está leyendo (null = ninguno).
   MapCell? open;
 
-  Vector3 _center(MapCell c) =>
-      Vector3((c.col + 0.5) * tileSize, 0, (c.row + 0.5) * tileSize);
-
   /// El cartel que el jugador en [player], mirando hacia [facing] (rad),
   /// podría leer ahora: el más cercano a su alcance y delante de él.
-  MapCell? readable(Vector3 player, double facing) {
-    final forward = Vector3(math.sin(facing), 0, math.cos(facing));
-    MapCell? best;
-    var bestDistance = double.infinity;
-    for (final sign in signs) {
-      final to = _center(sign) - player
-        ..y = 0;
-      final d = to.length;
-      if (d > readRange || d >= bestDistance) continue;
-      if (d > 1e-6 && to.dot(forward) / d < _minFacingCos) continue;
-      best = sign;
-      bestDistance = d;
-    }
-    return best;
-  }
+  MapCell? readable(Vector3 player, double facing) => nearestInReach(
+    signs,
+    player,
+    facing,
+    tileSize: tileSize,
+    range: readRange,
+  );
 
   /// Leer o dejar de leer (tecla / botón): si hay uno abierto se cierra; si
   /// no, se abre el que se puede leer. Devuelve si algo cambió.
@@ -77,7 +61,7 @@ class SignReader {
   void update(Vector3 player) {
     final sign = open;
     if (sign == null) return;
-    final to = _center(sign) - player
+    final to = cellCenterOf(sign, tileSize) - player
       ..y = 0;
     if (to.length > closeRange) open = null;
   }

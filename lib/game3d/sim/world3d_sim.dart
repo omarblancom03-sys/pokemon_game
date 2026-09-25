@@ -9,6 +9,7 @@ import '../../game/map/map_layout.dart';
 import '../../models/poke_ball.dart';
 import '../../models/pokemon.dart';
 import 'aiming.dart';
+import 'berries.dart';
 import 'birds.dart';
 import 'butterflies.dart';
 import 'clouds.dart';
@@ -19,6 +20,7 @@ import 'grass_blades.dart';
 import 'grass_field.dart';
 import 'orbit_camera.dart';
 import 'player_body.dart';
+import 'reach.dart';
 import 'signs.dart';
 import 'throwing.dart';
 import 'trainer_pose.dart';
@@ -27,6 +29,7 @@ import 'wild_pokemon.dart';
 import 'world3d_config.dart';
 import 'world3d_events.dart';
 
+export 'berries.dart' show BerryBush, LooseBerry;
 export 'dust.dart' show DustPuff;
 export 'field_items.dart' show GroundItem;
 export 'grass_blades.dart' show GrassBlade;
@@ -158,6 +161,14 @@ class World3DSim {
   late final SignReader signReader = SignReader.fromLayout(
     layout,
     config.tileSize,
+  );
+
+  /// Arbustos con bayas (se sacuden) y las bayas sueltas por el suelo. Con
+  /// su propio azar: dónde caen las bayas no cambia el del juego.
+  late final BerrySystem berries = BerrySystem.fromLayout(
+    layout,
+    config.tileSize,
+    random: math.Random(29),
   );
 
   /// Encuentros al azar andando por la hierba alta (como en los juegos
@@ -302,20 +313,84 @@ class World3DSim {
 
   void _emit(World3DEvent event) => onEvent?.call(event);
 
+  /// Lo que el jugador tiene a mano delante: un cartel o un arbusto (si
+  /// hay los dos, el más cercano). Con el mundo congelado, nada.
+  ({MapCell? sign, BerryBush? bush}) get _reachable {
+    if (_paused) return (sign: null, bush: null);
+    final p = player.position;
+    final sign = signReader.readable(p, player.facing);
+    final bush = berries.reachable(p, player.facing);
+    if (sign == null || bush == null) return (sign: sign, bush: bush);
+    final toSign = cellCenterOf(sign, config.tileSize).distanceTo(p);
+    return toSign <= bush.center.distanceTo(p)
+        ? (sign: sign, bush: null)
+        : (sign: null, bush: bush);
+  }
+
   /// Cartel que el jugador tiene delante y podría leer ahora (null si no
   /// hay ninguno o el mundo está congelado).
-  MapCell? get readableSign =>
-      _paused ? null : signReader.readable(player.position, player.facing);
+  MapCell? get readableSign => _reachable.sign;
 
   /// Cartel que se está leyendo (null = ninguno).
   MapCell? get openSign => signReader.open;
+
+  /// Arbusto que el jugador tiene delante y podría sacudir ahora (null si
+  /// no hay ninguno, está leyendo un cartel o el mundo está congelado).
+  BerryBush? get shakableBush => openSign != null ? null : _reachable.bush;
 
   /// Vuelve a poner la cámara detrás del jugador (girando con suavidad).
   void recenterCamera() => camera.recenterBehind(player.facing);
 
   /// Leer el cartel de delante o cerrar el abierto. Devuelve si cambió.
-  bool toggleSign() =>
-      !_paused && signReader.toggle(player.position, player.facing);
+  bool toggleSign() {
+    if (_paused || (openSign == null && readableSign == null)) return false;
+    return signReader.toggle(player.position, player.facing);
+  }
+
+  /// Sacudir un arbusto hace ruido: a esta distancia (m) los Pokémon lo
+  /// oyen y se giran a mirar ("?").
+  static const shakeNoiseRange = 7.0;
+
+  /// Sacude el arbusto de delante: se balancea, se le caen unas hojas y
+  /// suelta sus bayas a los pies del jugador. Hace ruido (ver
+  /// [shakeNoiseRange]). Devuelve false si no hay arbusto a mano o aún se
+  /// balancea de la vez anterior.
+  bool shakeBush() {
+    final bush = shakableBush;
+    if (bush == null) return false;
+    final released = berries.shake(bush, player.position);
+    if (released == null) return false;
+    blades.leaves(bush.center, top: config.tileSize / 2);
+    _shakeNoise(bush.center);
+    _emit(BushShaken(released));
+    return true;
+  }
+
+  /// La tecla de acción (L / Intro): cierra el cartel abierto o usa lo que
+  /// el jugador tenga delante (lee el cartel o sacude el arbusto).
+  bool act() {
+    if (openSign != null || readableSign != null) return toggleSign();
+    return shakeBush();
+  }
+
+  /// Los Pokémon cerca de [at] oyen el arbusto: los tranquilos sospechan
+  /// y se giran; los escondidos muy cerca salen asustados. Los pájaros
+  /// cercanos se van volando.
+  void _shakeNoise(Vector3 at) {
+    final ground = Vector3(at.x, 0, at.z);
+    birds.startle(ground, player.position);
+    for (final w in wild) {
+      if (!w.isFree) continue;
+      final d = w.position.distanceTo(ground);
+      if (w.hidden) {
+        if (d < 4) _reveal(w, startled: true);
+      } else if (d < shakeNoiseRange && !w.isAlert) {
+        w
+          ..awareness = math.max(w.awareness, 0.6)
+          ..target = null;
+      }
+    }
+  }
 
   /// 0..1 mientras dura la animación de lanzar; null si no lanza.
   double? get throwProgress =>
@@ -502,6 +577,7 @@ class World3DSim {
       moving: player.isMoving,
     );
     fieldItems.update(dt, player.position, _emit);
+    berries.update(dt, player.position, _emit);
     for (final w in wild.toList()) {
       _updateWild(w, dt);
     }

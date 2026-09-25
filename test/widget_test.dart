@@ -299,6 +299,54 @@ void main() {
     await tester.pump(const Duration(seconds: 3));
   });
 
+  testWidgets(
+    '3D: a bush in front can be shaken (L) and berries fill the bag',
+    (tester) async {
+      final renderer = FakeSceneRenderer();
+      await tester.pumpWidget(
+        PokemonGameApp(
+          dependencies: AppDependencies.create(
+            repository: repository,
+            sceneRenderer: renderer,
+          ),
+        ),
+      );
+      await tester.tap(find.byKey(const Key('menu_play_3d')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(find.byKey(const Key('bush_prompt')), findsNothing);
+      Finder berriesInBag(String text) => find.descendant(
+        of: find.byKey(const Key('bag_berry')),
+        matching: find.text(text),
+      );
+      expect(berriesInBag('×0'), findsOneWidget);
+
+      // Debajo del arbusto del pueblo (2,10), mirándolo (al norte).
+      final sim = renderer.lastSim!;
+      sim.player
+        ..teleport(sim.cellCenter(2, 11))
+        ..facing = 3.14159;
+      await tester.pump(const Duration(milliseconds: 50));
+      expect(find.byKey(const Key('bush_prompt')), findsOneWidget);
+      expect(find.text('Sacudir el arbusto'), findsOneWidget);
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.keyL);
+      for (var i = 0; i < 90; i++) {
+        sim.update(1 / 60);
+      }
+      await tester.pump(const Duration(milliseconds: 50));
+      expect(berriesInBag('×3'), findsOneWidget);
+      expect(find.text('+3 Bayas Frambu'), findsOneWidget);
+      expect(find.text('sin bayas'), findsOneWidget);
+
+      // Sacudirlo vacío avisa (tocando el aviso, como en una pantalla táctil).
+      await tester.tap(find.byKey(const Key('bush_prompt')));
+      await tester.pump(const Duration(milliseconds: 50));
+      expect(find.textContaining('no tiene bayas'), findsOneWidget);
+      await tester.pump(const Duration(seconds: 3));
+    },
+  );
+
   testWidgets('3D: aiming at a species you have (or not) paints fine', (
     tester,
   ) async {

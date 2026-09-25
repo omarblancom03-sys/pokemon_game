@@ -11,25 +11,36 @@ class CapturedPokemon {
   final PokeBallType ball;
 }
 
-/// CONTROLADOR del entrenador (a nivel de app): la BOLSA de Poké Balls,
-/// cuál está elegida para lanzar y los Pokémon capturados.
+/// CONTROLADOR del entrenador (a nivel de app): la BOLSA (Poké Balls y
+/// bayas), cuál está elegida para lanzar y los Pokémon capturados.
 ///
 /// Vive mientras la app esté abierta: salir del mapa y volver a entrar
 /// conserva las bolas y las capturas.
 class TrainerController extends ChangeNotifier {
-  TrainerController({Map<PokeBallType, int>? startingBag})
+  TrainerController({Map<PokeBallType, int>? startingBag, this._berries = 0})
     : _bag = {
         for (final type in PokeBallType.values) type: 0,
         ...(startingBag ?? const {PokeBallType.poke: 5}),
       };
 
   final Map<PokeBallType, int> _bag;
+  int _berries;
   final List<CapturedPokemon> _captured = [];
   PokeBallType _selected = PokeBallType.poke;
 
   int count(PokeBallType type) => _bag[type]!;
 
   int get totalBalls => _bag.values.fold(0, (a, b) => a + b);
+
+  /// Bayas en la bolsa (se recogen sacudiendo arbustos).
+  int get berries => _berries;
+
+  /// Mete [amount] bayas en la bolsa.
+  void addBerries(int amount) {
+    if (amount <= 0) return;
+    _berries += amount;
+    notifyListeners();
+  }
 
   PokeBallType get selected => _selected;
 

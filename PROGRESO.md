@@ -29,6 +29,10 @@
   - **Pájaros:** dos bandadas de gorriones picotean y dan saltitos en el campo abierto. Si te
     acercas salen volando todos a la vez (corriendo desde lejos; agachado te acercas mucho), cruzan
     el cielo y se posan en otro sitio lejos de ti. Una Poké Ball que cae cerca también los espanta.
+  - **Arbustos con bayas:** ponte delante de un arbusto y sale "L · Sacudir el arbusto" con las bayas que
+    le quedan. Al sacudirlo se balancea, se le caen unas hojas y sus bayas saltan y caen a tus pies: se
+    recogen solas y van a la bolsa ("+3 Bayas Frambu"; el contador de bayas está junto a las bolas). Le
+    vuelven a crecer poco a poco. Ojo: sacudirlo hace ruido (los Pokémon cercanos se giran a mirar).
   - **Carteles que se leen:** ponte delante de un cartel y sale "L · Leer el cartel" (tócalo o pulsa L
     / Intro): una tabla de madera con lo que pone. Hay cuatro: Pueblo Paleta, la entrada al prado de
     hierba alta, un consejo sobre la hierba que se agita y la tienda de Poké Balls (cerrada). Explican

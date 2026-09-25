@@ -175,6 +175,27 @@ class GrassBladeSystem {
     }
   }
 
+  /// Un arbusto sacudido en [at] (de [top] m de alto): se le caen unas
+  /// hojitas desde arriba, que salen hacia los lados y bajan planeando.
+  void leaves(Vector3 at, {double top = 1}) {
+    const count = 6;
+    for (var i = 0; i < count; i++) {
+      final a = _random.nextDouble() * 2 * math.pi;
+      _add(
+        position: Vector3(
+          at.x + math.sin(a) * 0.5,
+          top * (0.6 + _random.nextDouble() * 0.4),
+          at.z + math.cos(a) * 0.5,
+        ),
+        velocity: Vector3(
+          math.sin(a) * (0.6 + _random.nextDouble()),
+          1 + _random.nextDouble() * 1.2,
+          math.cos(a) * (0.6 + _random.nextDouble()),
+        ),
+      );
+    }
+  }
+
   /// Altura a la que se posan (justo sobre el suelo).
   static const groundY = 0.02;
 

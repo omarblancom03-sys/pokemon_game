@@ -35,6 +35,25 @@ void main() {
     expect(withTree.triangleCount, greaterThan(meadow.triangleCount));
   });
 
+  test('bushes can be left out (the game draws them apart, to sway)', () {
+    final layout = MapLayout.parse(const ['.b', '.@']);
+    final all = buildProps(layout, 2);
+    final noBush = buildProps(layout, 2, bushes: false);
+    expect(all.triangleCount, greaterThan(noBush.triangleCount));
+  });
+
+  test('a berry fits in its radius (plus its little leaves on top)', () {
+    final m = buildBerry(radius: 0.1);
+    for (var i = 0; i < m.vertexCount; i++) {
+      final p = Vector3(
+        m.positions[i * 3],
+        m.positions[i * 3 + 1],
+        m.positions[i * 3 + 2],
+      );
+      expect(p.length, lessThan(0.12));
+    }
+  });
+
   test('a tree stays roughly inside its own cell', () {
     final b = MeshBuilder();
     b.withTransform(Matrix4.translation(Vector3(5, 0, 5)), () {

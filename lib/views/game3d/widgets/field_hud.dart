@@ -24,7 +24,51 @@ String noticeText(FieldNotice n) {
     FieldNoticeKind.noBalls => 'No te quedan Poké Balls: busca más brillos',
     FieldNoticeKind.burstOut => '¡Un $name salvaje salió de la hierba!',
     FieldNoticeKind.peeked => '$name asoma entre la hierba… ¡no te ha visto!',
+    FieldNoticeKind.berriesPickedUp => '+${n.count} ${berryLabel(n.count)}',
+    FieldNoticeKind.emptyBush =>
+      'Este arbusto no tiene bayas: le vuelven a crecer',
   };
+}
+
+/// Nombre de las bayas que dan los arbustos (la Baya Frambu de los juegos).
+String berryLabel(int count) => count == 1 ? 'Baya Frambu' : 'Bayas Frambu';
+
+/// Icono de baya dibujado a mano: roja con brillo y una hojita.
+class BerryIcon extends StatelessWidget {
+  const BerryIcon({super.key, this.size = 22});
+
+  final double size;
+
+  @override
+  Widget build(BuildContext context) =>
+      CustomPaint(size: Size.square(size), painter: const _BerryPainter());
+}
+
+class _BerryPainter extends CustomPainter {
+  const _BerryPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final r = size.width / 2;
+    final c = Offset(r, r * 1.12);
+    canvas
+      ..drawCircle(c, r * 0.8, Paint()..color = const Color(0xFFD8384A))
+      ..drawCircle(
+        c + Offset(-r * 0.3, -r * 0.28),
+        r * 0.22,
+        Paint()..color = const Color(0xAAFFFFFF),
+      );
+    // Hojita arriba.
+    final leaf = Path()
+      ..moveTo(r, r * 0.4)
+      ..quadraticBezierTo(r * 1.5, -r * 0.05, r * 1.75, r * 0.3)
+      ..quadraticBezierTo(r * 1.4, r * 0.6, r, r * 0.4)
+      ..close();
+    canvas.drawPath(leaf, Paint()..color = const Color(0xFF3FA34D));
+  }
+
+  @override
+  bool shouldRepaint(_BerryPainter old) => false;
 }
 
 /// Colores de cada bola para los iconos de la interfaz.
@@ -121,11 +165,17 @@ class BagBar extends StatelessWidget {
                 for (final type in PokeBallType.values)
                   _BagSlot(
                     key: Key('bag_${type.name}'),
-                    type: type,
+                    icon: BallIcon(type),
                     count: trainer.count(type),
                     selected: trainer.selected == type,
                     onTap: () => trainer.select(type),
                   ),
+                _BagSlot(
+                  key: const Key('bag_berry'),
+                  icon: const BerryIcon(),
+                  count: trainer.berries,
+                  selected: false,
+                ),
               ],
             ),
             GestureDetector(
@@ -169,16 +219,18 @@ class BagBar extends StatelessWidget {
 class _BagSlot extends StatelessWidget {
   const _BagSlot({
     super.key,
-    required this.type,
+    required this.icon,
     required this.count,
     required this.selected,
-    required this.onTap,
+    this.onTap,
   });
 
-  final PokeBallType type;
+  final Widget icon;
   final int count;
   final bool selected;
-  final VoidCallback onTap;
+
+  /// Elegir este objeto (null = no se puede elegir).
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -201,7 +253,7 @@ class _BagSlot extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              BallIcon(type),
+              icon,
               const SizedBox(width: 5),
               Text(
                 '×$count',
@@ -280,6 +332,8 @@ class _NoticeChipState extends State<_NoticeChip> {
       FieldNoticeKind.missed || FieldNoticeKind.noBalls => Colors.black87,
       FieldNoticeKind.burstOut => const Color(0xFFE65100),
       FieldNoticeKind.peeked => const Color(0xFF00796B),
+      FieldNoticeKind.berriesPickedUp => const Color(0xFFAD1457),
+      FieldNoticeKind.emptyBush => Colors.black87,
     };
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0, end: 1),
@@ -301,6 +355,10 @@ class _NoticeChipState extends State<_NoticeChip> {
                 children: [
                   if (n.ball != null) ...[
                     BallIcon(n.ball!, size: 18),
+                    const SizedBox(width: 8),
+                  ],
+                  if (n.kind == FieldNoticeKind.berriesPickedUp) ...[
+                    const BerryIcon(size: 18),
                     const SizedBox(width: 8),
                   ],
                   Text(

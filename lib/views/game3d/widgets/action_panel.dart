@@ -3,54 +3,63 @@ import 'package:flutter/scheduler.dart';
 
 import '../../../game/map/world_signs.dart';
 import '../../../game3d/sim/world3d_sim.dart';
+import 'field_hud.dart';
 
-/// CARTELES: con uno delante sale abajo "L · Leer el cartel"; al leerlo,
-/// un panel de madera con el título y el texto (L o tocarlo lo cierra;
-/// alejarse, también).
+/// Qué ofrece ahora la tecla de acción (L / Intro): la simulación dice qué
+/// hay a mano; este panel lo enseña abajo y se puede tocar.
 ///
-/// La simulación dice QUÉ cartel (casilla); lo que pone lo aporta el
-/// contenido del mapa ([signTextAt]). Se mira la simulación en cada
-/// fotograma, pero solo se reconstruye cuando cambia el cartel.
-class SignPanel extends StatefulWidget {
-  const SignPanel({super.key, required this.sim, required this.onToggle});
+///  - CARTELES: con uno delante sale "L · Leer el cartel"; al leerlo, un
+///    panel de madera con el título y el texto (L o tocarlo lo cierra;
+///    alejarse, también). Lo que pone lo aporta el contenido del mapa
+///    ([signTextAt]).
+///  - ARBUSTOS: con uno delante sale "L · Sacudir el arbusto" con las
+///    bayas que le quedan (o "sin bayas").
+///
+/// Se mira la simulación en cada fotograma, pero solo se reconstruye
+/// cuando cambia lo que hay que enseñar.
+class ActionPanel extends StatefulWidget {
+  const ActionPanel({super.key, required this.sim, required this.onAction});
 
   final World3DSim sim;
 
-  /// Leer / cerrar (lo mismo que la tecla L).
-  final VoidCallback onToggle;
+  /// Lo mismo que la tecla L: leer / cerrar el cartel o sacudir el arbusto.
+  final VoidCallback onAction;
 
   @override
-  State<SignPanel> createState() => _SignPanelState();
+  State<ActionPanel> createState() => _ActionPanelState();
 }
 
-class _SignPanelState extends State<SignPanel>
+/// Lo que se enseña: el cartel abierto, el que se puede leer o las bayas
+/// del arbusto que se puede sacudir (-1 = ningún arbusto).
+typedef _Shown = ({MapCell? open, MapCell? readable, int bushBerries});
+
+class _ActionPanelState extends State<ActionPanel>
     with SingleTickerProviderStateMixin {
   late final Ticker _ticker;
-  MapCell? _readable;
-  MapCell? _open;
+  late _Shown _shown;
 
   @override
   void initState() {
     super.initState();
-    final (open, readable) = _current();
-    _open = open;
-    _readable = readable;
+    _shown = _current();
     _ticker = createTicker((_) => _sync())..start();
   }
 
-  /// Cartel abierto y, si no hay ninguno abierto, el que se puede leer.
-  (MapCell?, MapCell?) _current() {
-    final open = widget.sim.openSign;
-    return (open, open == null ? widget.sim.readableSign : null);
+  _Shown _current() {
+    final sim = widget.sim;
+    final open = sim.openSign;
+    if (open != null) return (open: open, readable: null, bushBerries: -1);
+    return (
+      open: null,
+      readable: sim.readableSign,
+      bushBerries: sim.shakableBush?.berries ?? -1,
+    );
   }
 
   void _sync() {
-    final (open, readable) = _current();
-    if (open == _open && readable == _readable) return;
-    setState(() {
-      _open = open;
-      _readable = readable;
-    });
+    final shown = _current();
+    if (shown == _shown) return;
+    setState(() => _shown = shown);
   }
 
   @override
@@ -61,26 +70,65 @@ class _SignPanelState extends State<SignPanel>
 
   @override
   Widget build(BuildContext context) {
-    final open = _open;
+    final (:open, :readable, :bushBerries) = _shown;
     if (open != null) {
       return _Board(
         key: const Key('sign_panel'),
         text: signTextAt(open.col, open.row),
-        onTap: widget.onToggle,
+        onTap: widget.onAction,
       );
     }
-    if (_readable != null) {
-      return _Prompt(key: const Key('sign_prompt'), onTap: widget.onToggle);
+    if (readable != null) {
+      return _Prompt(
+        key: const Key('sign_prompt'),
+        onTap: widget.onAction,
+        icon: const Icon(Icons.signpost, color: Color(0xFFE8C88C), size: 20),
+        label: 'Leer el cartel',
+      );
+    }
+    if (bushBerries >= 0) {
+      return _Prompt(
+        key: const Key('bush_prompt'),
+        onTap: widget.onAction,
+        icon: const Icon(Icons.grass, color: Color(0xFF7BD389), size: 20),
+        label: 'Sacudir el arbusto',
+        trailing: bushBerries == 0
+            ? const Text(
+                'sin bayas',
+                style: TextStyle(color: Colors.white54, fontSize: 13),
+              )
+            : Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (var i = 0; i < bushBerries; i++)
+                    const Padding(
+                      padding: EdgeInsets.only(left: 2),
+                      child: BerryIcon(size: 16),
+                    ),
+                ],
+              ),
+      );
     }
     return const SizedBox.shrink();
   }
 }
 
-/// Aviso "L · Leer el cartel" (se puede tocar).
+/// Aviso "L · …" (se puede tocar).
 class _Prompt extends StatelessWidget {
-  const _Prompt({super.key, required this.onTap});
+  const _Prompt({
+    super.key,
+    required this.onTap,
+    required this.icon,
+    required this.label,
+    this.trailing,
+  });
 
   final VoidCallback onTap;
+  final Widget icon;
+  final String label;
+
+  /// Algo más a la derecha (las bayas del arbusto).
+  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -90,22 +138,23 @@ class _Prompt extends StatelessWidget {
       child: InkWell(
         customBorder: const StadiumBorder(),
         onTap: onTap,
-        child: const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _KeyCap('L'),
-              SizedBox(width: 8),
-              Icon(Icons.signpost, color: Color(0xFFE8C88C), size: 20),
-              SizedBox(width: 6),
+              const _KeyCap('L'),
+              const SizedBox(width: 8),
+              icon,
+              const SizedBox(width: 6),
               Text(
-                'Leer el cartel',
-                style: TextStyle(
+                label,
+                style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w700,
                 ),
               ),
+              if (trailing != null) ...[const SizedBox(width: 8), trailing!],
             ],
           ),
         ),

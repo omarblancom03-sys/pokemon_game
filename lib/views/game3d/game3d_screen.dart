@@ -20,10 +20,10 @@ import '../../game3d/sim/world3d_sim.dart';
 import '../../models/poke_ball.dart';
 import '../game/widgets/d_pad.dart';
 import '../game/widgets/encounter_overlay.dart';
+import 'widgets/action_panel.dart';
 import 'widgets/capture_card.dart';
 import 'widgets/field_hud.dart';
 import 'widgets/minimap.dart';
-import 'widgets/sign_panel.dart';
 import 'widgets/world_overlay.dart';
 
 /// VISTA: exploración en 3D (tercera persona) y captura con Poké Balls.
@@ -104,8 +104,9 @@ class _Game3DScreenState extends State<Game3DScreen> {
 
   void _syncAim() => _sim.aiming = _aimMouse || _aimKey || _aimButton;
 
-  /// Leer el cartel de delante o cerrar el abierto.
-  void _toggleSign() => _sim.toggleSign();
+  /// Tecla de acción: leer (o cerrar) el cartel de delante o sacudir el
+  /// arbusto.
+  void _act() => _sim.act();
 
   /// Agacharse / levantarse (sigilo).
   void _toggleCrouch() => setState(() => _sim.crouching = !_sim.crouching);
@@ -171,7 +172,7 @@ class _Game3DScreenState extends State<Game3DScreen> {
       return KeyEventResult.handled;
     }
     if (key == LogicalKeyboardKey.keyL || key == LogicalKeyboardKey.enter) {
-      if (down) _toggleSign();
+      if (down) _act();
       return KeyEventResult.handled;
     }
     if (key == LogicalKeyboardKey.keyP) {
@@ -274,7 +275,7 @@ class _Game3DScreenState extends State<Game3DScreen> {
               right: 0,
               bottom: 64,
               child: Center(
-                child: SignPanel(sim: _sim, onToggle: _toggleSign),
+                child: ActionPanel(sim: _sim, onAction: _act),
               ),
             ),
             Positioned(
@@ -438,7 +439,7 @@ class _Hint extends StatelessWidget {
           'Rueda zoom\n'
           'Clic der. / F apuntar · Clic / Espacio lanzar · R / 1-3 cambiar bola\n'
           'C agacharse: en la hierba alta no te ven · Correr hace ruido · '
-          'P tus capturas · L leer carteles',
+          'P tus capturas · L leer carteles y sacudir arbustos (bayas)',
           style: TextStyle(color: Colors.white),
         ),
       ),

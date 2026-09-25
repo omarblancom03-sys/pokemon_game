@@ -1,7 +1,8 @@
 // PRUEBAS del controlador del campo 3D: recoger bolas llena la bolsa, una
 // captura se apunta en el entrenador, cada suceso deja su aviso (como mucho
 // tres a la vez; también cuando un Pokémon sale de la hierba) y sin bolas no
-// se lanza nada.
+// se lanza nada. Las bayas recogidas van a la bolsa (varias seguidas, un
+// solo aviso) y sacudir un arbusto vacío avisa.
 
 import 'dart:math';
 
@@ -98,6 +99,32 @@ void main() {
       FieldNoticeKind.peeked,
     ]);
     expect(field.notices.map((n) => n.pokemon?.id), [5, 6]);
+  });
+
+  test('berries go to the bag; pickups in a row add up in one notice', () {
+    final trainer = TrainerController();
+    final field = newField(trainer)
+      ..onWorldEvent(const BerriesPickedUp(1))
+      ..onWorldEvent(const BerriesPickedUp(2));
+    expect(trainer.berries, 3);
+    final notice = field.notices.single;
+    expect(notice.kind, FieldNoticeKind.berriesPickedUp);
+    expect(notice.count, 3);
+
+    // Si entre medias pasa otra cosa, ya es otro aviso.
+    field
+      ..onWorldEvent(const BallMissed(PokeBallType.poke))
+      ..onWorldEvent(const BerriesPickedUp(1));
+    expect(field.notices.map((n) => n.count), [3, 0, 1]);
+    expect(trainer.berries, 4);
+  });
+
+  test('shaking an empty bush warns; one with berries says nothing yet', () {
+    final field = newField(TrainerController())
+      ..onWorldEvent(const BushShaken(3));
+    expect(field.notices, isEmpty);
+    field.onWorldEvent(const BushShaken(0));
+    expect(field.notices.single.kind, FieldNoticeKind.emptyBush);
   });
 
   test('only the newest notices are kept; dismiss removes one', () {

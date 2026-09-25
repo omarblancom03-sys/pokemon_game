@@ -214,6 +214,18 @@ void main() {
       expect(t.selected, PokeBallType.poke);
     });
 
+    test('berries: none at first, picked ones are kept', () {
+      final t = TrainerController();
+      var notified = 0;
+      t.addListener(() => notified++);
+      expect(t.berries, 0);
+      t
+        ..addBerries(2)
+        ..addBerries(0);
+      expect(t.berries, 2);
+      expect(notified, 1);
+    });
+
     test('captures are listed newest first', () {
       final t = TrainerController()
         ..registerCapture(fakePokemon(1), PokeBallType.poke)

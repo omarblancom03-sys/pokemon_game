@@ -259,3 +259,27 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
   (atrapar y explorar): más estrategia de captura (bayas para distraer, como en Leyendas Arceus,
   recogidas de los arbustos con bayas que ya hay en el mapa) y detalles de exploración.
 
+- **2026-09-25 — Arbustos con bayas** (`sim/berries.dart`, Dart puro). Una sola baya: la **Baya
+  Frambu** (Razz Berry: en los juegos es la que ayuda a capturar). Cada arbusto (`b`) empieza con 3
+  bayas colgando y le crece UNA cada 40 s hasta volver a 3 (con un pequeño "pop"). Se sacude con la
+  **tecla de acción L / Intro** (la misma de los carteles: una sola tecla para "usar lo que tengo
+  delante"; si hay cartel y arbusto a mano, el más cercano) o tocando el aviso "Sacudir el arbusto",
+  que enseña cuántas bayas le quedan. Mismo alcance que los carteles (2,6 m y mirándolo); la lógica
+  común está en `sim/reach.dart` (`nearestInReach`). Al sacudirlo se balancea 0,7 s (no se puede
+  repetir mientras), se le caen unas hojitas (briznas) y TODAS sus bayas saltan y caen a los pies
+  del jugador (entre él y el arbusto, nunca dentro de una casilla que no se pisa), botan y, cuando
+  llevan 0,25 s quietas, se recogen al pasar (radio 1,1 m, como las bolas). Las que nadie recoge se
+  pudren a los 2 min. Recoger varias seguidas junta el aviso ("+3 Bayas Frambu" y no tres "+1": lo
+  decide el FieldController). Sacudir un arbusto vacío avisa ("le vuelven a crecer").
+- **2026-09-25 — Sacudir hace ruido** (mismo lenguaje que el sigilo): los Pokémon tranquilos a < 7 m
+  se ponen en "?" (sospecha 0,6) y se giran; los escondidos a < 4 m salen asustados; los pájaros
+  cercanos se van. Así coger bayas junto al prado tiene un precio.
+- **2026-09-25 — Arbustos fuera de la malla única:** para que se balanceen, cada arbusto es su propio
+  nodo (`BushRenderer`) con sus bayas como hijos (`buildProps(..., bushes: false)`). Son pocos (6).
+  La forma del arbusto (`bushLeafBalls`) vive en la simulación porque también decide dónde cuelgan
+  las bayas (justo por fuera de las hojas); la malla la usa desde ahí.
+- **2026-09-25 — Dos arbustos nuevos en el mapa** (compartido con el 2D): (26,10) al sur del prado del
+  noreste y (10,23) bajo el prado del suroeste. Los 4 que había estaban en el pueblo, lejos de los
+  prados donde se usarán las bayas. No tapan caminos ni humos del 2D.
+- **2026-09-25 — `SignPanel` pasa a `ActionPanel`** (`widgets/action_panel.dart`): enseña lo que haría
+  la tecla de acción (leer el cartel o sacudir el arbusto) y el cartel abierto.

@@ -43,6 +43,21 @@ class PokemonBrokeFree extends World3DEvent {
   final CaptureResult result;
 }
 
+/// El jugador sacudió un arbusto; soltó [berries] bayas (0 = no le
+/// quedaba ninguna).
+class BushShaken extends World3DEvent {
+  const BushShaken(this.berries);
+
+  final int berries;
+}
+
+/// El jugador recogió bayas del suelo.
+class BerriesPickedUp extends World3DEvent {
+  const BerriesPickedUp(this.count);
+
+  final int count;
+}
+
 /// Un Pokémon escondido en la hierba alta salió de ella. [startled]: salió
 /// asustado (te oyó llegar o cayó una bola cerca); si no, se asomó sin
 /// verte (te acercaste con sigilo).
