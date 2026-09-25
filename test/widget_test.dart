@@ -299,6 +299,51 @@ void main() {
     await tester.pump(const Duration(seconds: 3));
   });
 
+  testWidgets('3D: aiming at a species you have (or not) paints fine', (
+    tester,
+  ) async {
+    final renderer = FakeSceneRenderer();
+    await tester.pumpWidget(
+      PokemonGameApp(
+        dependencies: AppDependencies.create(
+          repository: repository,
+          sceneRenderer: renderer,
+        ),
+      ),
+    );
+    await tester.tap(find.byKey(const Key('menu_play_3d')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+
+    final sim = renderer.lastSim!;
+    // Uno ya capturado y otro nuevo, delante del jugador.
+    const caught = CaptureResult(chance: 0.5, shakes: 3, caught: true);
+    sim.onEvent!(
+      PokemonCaught(
+        WildPokemon(id: 'c', pokemon: fakePokemon(4), position: Vector3.zero()),
+        PokeBallType.poke,
+        caught,
+      ),
+    );
+    final ahead = sim.player.position + sim.camera.forward * 6;
+    for (final (id, species, side) in [('a', 4, -1.0), ('b', 7, 1.0)]) {
+      sim.wild.add(
+        WildPokemon(
+          id: id,
+          pokemon: fakePokemon(species),
+          position: ahead + sim.camera.right * side,
+        ),
+      );
+    }
+    sim
+      ..aiming = true
+      ..update(0.5);
+    expect(sim.lockedTarget, isNotNull);
+    await tester.pump(const Duration(milliseconds: 50));
+    expect(tester.takeException(), isNull);
+    await tester.pump(const Duration(seconds: 4));
+  });
+
   testWidgets('Pokédex shows a gallery of cards', (tester) async {
     await tester.pumpWidget(buildApp());
 

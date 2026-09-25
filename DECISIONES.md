@@ -249,4 +249,13 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
   de 6 al azar, el más al lado contrario; suben a un punto alto a medio camino (10 m) aleteando
   deprisa, allí alternan aletear y planear, y bajan frenando hasta posarse. El vuelo es un
   "steering" simple (velocidad deseada con aceleración máxima 14 m/s²). Vista previa: `?town&birds`.
+- **2026-09-25 — Marca de "ya capturado"** (como en Leyendas Arceus): la capa 2D recibe
+  `isCaught` (= `TrainerController.hasCaught`, por número de Pokédex) y pinta una Poké Ball
+  pequeña sobre los Pokémon que se ven a ≤ 22 m (`World3DSim.visibleWildNearby`: libres, no
+  escondidos). Al apuntar, el fijado lleva además su nombre encima del anillo (debajo si no cabe) y
+  "¡Nuevo!" en dorado si no tienes la especie. La simulación no sabe nada del entrenador: solo
+  filtra quién se ve cerca; la decisión de marcar es de la vista con el dato del controlador.
+- **2026-09-25 — Nuevas tareas (8.12 y 8.13)** al acabar la 8.11, siguiendo el enfoque pedido
+  (atrapar y explorar): más estrategia de captura (bayas para distraer, como en Leyendas Arceus,
+  recogidas de los arbustos con bayas que ya hay en el mapa) y detalles de exploración.
 

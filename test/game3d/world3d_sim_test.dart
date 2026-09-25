@@ -1,7 +1,8 @@
 // PRUEBAS de la simulación 3D: el jugador empieza en `@`, se mueve relativo a
 // la cámara, choca con los árboles del mapa ASCII, y la cámara responde al
 // arrastre del ratón, a Q/E y a la rueda (y se recentra detrás del jugador
-// con V hasta que se la gire a mano). En pausa no se mueve.
+// con V hasta que se la gire a mano). En pausa no se mueve. La vista solo
+// marca a los Pokémon que se ven cerca (libres, no escondidos, a ≤ 22 m).
 
 import 'dart:math' as math;
 
@@ -9,8 +10,11 @@ import 'package:flame/extensions.dart' show Vector2;
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pokemon_game/game/map/map_layout.dart';
+import 'package:pokemon_game/game3d/sim/wild_pokemon.dart';
 import 'package:pokemon_game/game3d/sim/world3d_sim.dart';
 import 'package:vector_math/vector_math.dart' show Vector3;
+
+import '../fakes/fake_pokemon_repository.dart';
 
 void main() {
   final layout = MapLayout.parse(const [
@@ -138,5 +142,24 @@ void main() {
     s.cameraInput.addDrag(30, 0);
     s.update(1 / 60);
     expect(s.camera.recenterGoal, isNull);
+  });
+
+  test('only nearby, free, not hidden Pokémon get marks', () {
+    final s = sim();
+    WildPokemon at(String id, double dx) {
+      final w = WildPokemon(
+        id: id,
+        pokemon: fakePokemon(1),
+        position: s.player.position + Vector3(dx, 0, 0),
+      );
+      s.wild.add(w);
+      return w;
+    }
+
+    at('near', 3);
+    at('far', World3DSim.markRange + 1);
+    at('hidden', 4).hidden = true;
+    at('in a ball', 5).capturedBy = 'ball-1';
+    expect(s.visibleWildNearby.map((w) => w.id), ['near']);
   });
 }

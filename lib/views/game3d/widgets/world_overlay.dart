@@ -8,6 +8,7 @@ import 'package:vector_math/vector_math.dart' show Vector3;
 import '../../../controllers/capture/capture_calculator.dart';
 import '../../../game3d/sim/wild_pokemon.dart';
 import '../../../game3d/sim/world3d_sim.dart';
+import '../../common/pokemon_formatters.dart';
 
 /// Capa 2D sobre el mundo 3D:
 ///  - APUNTAR: la mira en el centro y, sobre el Pokémon fijado, un anillo
@@ -16,6 +17,9 @@ import '../../../game3d/sim/world3d_sim.dart';
 ///  - SIGILO: "?" sobre los Pokémon que sospechan y "!" sobre los que te
 ///    han descubierto (rojo si van a por ti), y abajo cómo te notan
 ///    (escondido, agachado, haciendo ruido).
+///  - POKÉDEX: una Poké Ball pequeña sobre los Pokémon cercanos cuya
+///    especie ya tienes; al apuntar, el nombre del fijado ("¡Nuevo!" si no
+///    lo tienes aún).
 ///  - AL GOLPEAR: sobre el Pokémon, qué bonus de sigilo ha tenido el tiro
 ///    ("¡No te vio!", "¡Por la espalda!"), que sube y se desvanece. Si es
 ///    una captura crítica, también lo dice.
@@ -23,9 +27,14 @@ import '../../../game3d/sim/world3d_sim.dart';
 /// Se repinta en cada fotograma leyendo el estado de la simulación; no
 /// cambia nada de ella.
 class WorldOverlay extends StatefulWidget {
-  const WorldOverlay({super.key, required this.sim});
+  const WorldOverlay({super.key, required this.sim, this.isCaught = _never});
 
   final World3DSim sim;
+
+  /// ¿Ya tiene el entrenador esta especie? (por número de Pokédex).
+  final bool Function(int pokemonId) isCaught;
+
+  static bool _never(int _) => false;
 
   @override
   State<WorldOverlay> createState() => _WorldOverlayState();
@@ -53,15 +62,20 @@ class _WorldOverlayState extends State<WorldOverlay>
   Widget build(BuildContext context) => IgnorePointer(
     child: CustomPaint(
       size: Size.infinite,
-      painter: _WorldPainter(widget.sim, repaint: _frame),
+      painter: _WorldPainter(
+        widget.sim,
+        isCaught: widget.isCaught,
+        repaint: _frame,
+      ),
     ),
   );
 }
 
 class _WorldPainter extends CustomPainter {
-  _WorldPainter(this.sim, {super.repaint});
+  _WorldPainter(this.sim, {required this.isCaught, super.repaint});
 
   final World3DSim sim;
+  final bool Function(int pokemonId) isCaught;
 
   /// Color según la probabilidad: rojo (difícil) → amarillo → verde.
   static Color chanceColor(double chance) => Color.lerp(
@@ -95,6 +109,17 @@ class _WorldPainter extends CustomPainter {
       final head = onScreen(w.position..y = w.displayHeight + 0.35);
       if (head != null) _paintMark(canvas, head, w);
     }
+    // Especie ya capturada: una Poké Ball junto a la cabeza (a la derecha
+    // del "?" / "!" si lo hay).
+    // Al apuntar, el fijado ya lo dice junto a su nombre.
+    final named = aim >= 0.5 ? sim.lockedTarget : null;
+    for (final w in sim.visibleWildNearby) {
+      if (w == named || !isCaught(w.pokemon.id)) continue;
+      final head = onScreen(w.position..y = w.displayHeight + 0.35);
+      if (head == null) continue;
+      final marked = w.isAlert || w.isSuspicious;
+      _paintCaughtIcon(canvas, marked ? head + const Offset(22, 0) : head);
+    }
 
     final target = sim.lockedTarget;
     if (target == null) return;
@@ -127,6 +152,7 @@ class _WorldPainter extends CustomPainter {
         ring,
       );
     }
+    _paintLockName(canvas, mid, radius, target);
     if (chance != null) {
       final text = TextPainter(
         text: TextSpan(
@@ -141,6 +167,110 @@ class _WorldPainter extends CustomPainter {
         textDirection: TextDirection.ltr,
       )..layout();
       text.paint(canvas, mid + Offset(radius + 6, -text.height / 2));
+    }
+  }
+
+  /// Una Poké Ball pequeña: "esta especie ya la tienes".
+  void _paintCaughtIcon(Canvas canvas, Offset at) {
+    const r = 7.0;
+    final rect = Rect.fromCircle(center: at, radius: r);
+    canvas
+      ..drawArc(rect, math.pi, math.pi, true, Paint()..color = Colors.red)
+      ..drawArc(rect, 0, math.pi, true, Paint()..color = Colors.white)
+      ..drawLine(
+        at - const Offset(r, 0),
+        at + const Offset(r, 0),
+        Paint()
+          ..color = Colors.black87
+          ..strokeWidth = 1.6,
+      )
+      ..drawCircle(
+        at,
+        r,
+        Paint()
+          ..color = Colors.black87
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.4,
+      )
+      ..drawCircle(at, 2.2, Paint()..color = Colors.white)
+      ..drawCircle(
+        at,
+        2.2,
+        Paint()
+          ..color = Colors.black87
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1,
+      );
+  }
+
+  /// Encima del anillo de la mira (debajo si no cabe arriba): el nombre del
+  /// Pokémon fijado y, si aún no tienes su especie, "¡Nuevo!" (si ya la
+  /// tienes, su Poké Ball).
+  void _paintLockName(
+    Canvas canvas,
+    Offset ringCenter,
+    double radius,
+    WildPokemon w,
+  ) {
+    final caught = isCaught(w.pokemon.id);
+    final name = TextPainter(
+      text: TextSpan(
+        text: displayName(w.pokemon.name),
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 15,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    final badge = caught
+        ? null
+        : (TextPainter(
+            text: const TextSpan(
+              text: '¡Nuevo!',
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 11,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+            textDirection: TextDirection.ltr,
+          )..layout());
+    const gap = 6.0;
+    final extra = caught ? 14.0 + gap : badge!.width + 10 + gap;
+    final width = name.width + extra;
+    final height = name.height + 6;
+    final above = ringCenter.dy - radius - 10 - height;
+    final top = above >= 6 ? above : ringCenter.dy + radius + 10;
+    final box = Rect.fromLTWH(
+      ringCenter.dx - width / 2 - 8,
+      top,
+      width + 16,
+      height,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(box, const Radius.circular(10)),
+      Paint()..color = Colors.black54,
+    );
+    final x = box.left + 8;
+    final cy = box.center.dy;
+    name.paint(canvas, Offset(x, cy - name.height / 2));
+    final after = x + name.width + gap;
+    if (badge == null) {
+      _paintCaughtIcon(canvas, Offset(after + 7, cy));
+    } else {
+      final pill = Rect.fromLTWH(
+        after,
+        cy - badge.height / 2 - 1,
+        badge.width + 10,
+        badge.height + 2,
+      );
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(pill, const Radius.circular(8)),
+        Paint()..color = const Color(0xFFFFD54F),
+      );
+      badge.paint(canvas, Offset(after + 5, cy - badge.height / 2));
     }
   }
 

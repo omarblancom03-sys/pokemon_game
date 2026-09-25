@@ -85,5 +85,15 @@ El combate lo hace OTRO equipo (se engancha por el contrato EncounterHandler). N
 - [x] Pájaros: se posan en el suelo y salen volando al acercarte (y bandadas que cruzan el cielo)
       (2 bandadas de 5; picotean y saltan; se espantan según tu sigilo o si cae una bola cerca)
 
+## 8.12 Captura: más estrategia (añadido 2026-09-25)
+- [x] Poké Ball pequeña sobre los Pokémon cuya especie ya tienes; al apuntar, su nombre (y "¡Nuevo!" si no la tienes)
+- [ ] Arbustos con bayas: acércate y sacúdelos para recoger bayas (van a la bolsa)
+- [ ] Lanzar bayas para distraer: el Pokémon va a comérsela y, mientras come, no te ve (bonus "¡Está comiendo!")
+- [ ] Mapa grande (M): todo el mundo con carteles, bolas del suelo y dónde estás
+
+## 8.13 Exploración: detalles (añadido 2026-09-25)
+- [ ] Huellas del entrenador en la tierra del camino (se borran con el tiempo)
+- [ ] Pokémon que dejan rastro: la hierba pisada por donde pasó uno que huyó
+
 ## Mejoras continuas
 - [ ] (se irán añadiendo)

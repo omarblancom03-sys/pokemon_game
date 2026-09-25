@@ -48,6 +48,9 @@
   - El encuentro usa por ahora el diálogo provisional (Atrapar / Huir). El combate lo hace otro equipo.
   - **Captura crítica:** cuantas más especies distintas captures, más a menudo (hasta un 25 %) la bola
     brilla en dorado y se decide en una sola sacudida (mucho más fácil).
+  - **¿Ya lo tienes?** Sobre los Pokémon cercanos cuya especie ya capturaste sale una Poké Ball
+    pequeña. Al apuntar, encima de la mira aparece el nombre del fijado con "¡Nuevo!" si aún no lo
+    tienes (o su Poké Ball si ya lo tienes): así sabes a cuál merece la pena ir.
   - **Tus capturas:** cada captura enseña una tarjeta (arte, número, tipos, bola y "¡Nuevo!" si es
     la primera de su especie). Pulsa P (o toca "Capturados") para ver todas tus cartas.
   - **Minimapa** (arriba a la derecha): gira con la cámara (arriba = adelante), "N" = norte. Puntos

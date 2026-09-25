@@ -266,7 +266,9 @@ class _Game3DScreenState extends State<Game3DScreen> {
               },
               child: renderer.buildView(_sim),
             ),
-            Positioned.fill(child: WorldOverlay(sim: _sim)),
+            Positioned.fill(
+              child: WorldOverlay(sim: _sim, isCaught: _trainer.hasCaught),
+            ),
             Positioned(
               left: 0,
               right: 0,

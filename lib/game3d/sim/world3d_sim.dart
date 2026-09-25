@@ -578,6 +578,20 @@ class World3DSim {
     }
   }
 
+  /// Hasta qué distancia (m) la vista marca a los Pokémon que se ven (por
+  /// ejemplo, con una Poké Ball si ya tienes su especie).
+  static const markRange = 22.0;
+
+  /// Pokémon que se ven ahora cerca del jugador: libres (no dentro de una
+  /// bola), no escondidos y a menos de [markRange] m.
+  Iterable<WildPokemon> get visibleWildNearby sync* {
+    for (final w in wild) {
+      if (!w.isFree || w.hidden) continue;
+      final d = w.position.distanceTo(player.position);
+      if (d <= markRange) yield w;
+    }
+  }
+
   /// Dónde se agita la hierba: sobre los Pokémon escondidos.
   Iterable<Vector3> get grassRustlers sync* {
     for (final w in wild) {
