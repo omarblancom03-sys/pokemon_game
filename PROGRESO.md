@@ -33,6 +33,9 @@
     le quedan. Al sacudirlo se balancea, se le caen unas hojas y sus bayas saltan y caen a tus pies: se
     recogen solas y van a la bolsa ("+3 Bayas Frambu"; el contador de bayas está junto a las bolas). Le
     vuelven a crecer poco a poco. Ojo: sacudirlo hace ruido (los Pokémon cercanos se giran a mirar).
+  - **Lanzar bayas:** pulsa 4 (o R, o toca la baya en la bolsa) para llevar una baya en la mano. Apunta
+    y lanza igual que una bola: con un Pokémon fijado, la baya cae un poco por delante de él. Llega
+    menos lejos que una bola (se lanza en globo). Si cae lejos de todo, puedes volver a recogerla.
   - **Carteles que se leen:** ponte delante de un cartel y sale "L · Leer el cartel" (tócalo o pulsa L
     / Intro): una tabla de madera con lo que pone. Hay cuatro: Pueblo Paleta, la entrada al prado de
     hierba alta, un consejo sobre la hierba que se agita y la tienda de Poké Balls (cerrada). Explican
