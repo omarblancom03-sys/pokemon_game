@@ -79,7 +79,7 @@ El combate lo hace OTRO equipo (se engancha por el contrato EncounterHandler). N
       los hace salir; darles de lleno los captura por sorpresa; a los 60 s se van)
 - [x] Briznas de hierba al correr por la hierba alta (y sobre los escondidos, y al salir de un salto)
       (GrassBladeSystem: 3 por pisada corriendo, 1 andando, 0 agachado; suben, giran y caen planeando)
-- [ ] Carteles que se pueden leer
+- [x] Carteles que se pueden leer (L / Intro o tocar el aviso; 4 carteles con consejos de sigilo y captura)
 - [ ] Recentrar la cámara detrás del jugador
 - [ ] Nubes que pasan (sombras) y pájaros
 

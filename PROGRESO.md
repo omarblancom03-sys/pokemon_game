@@ -23,6 +23,10 @@
     vueltas y caen planeando: tres por pisada corriendo, una andando y ninguna agachado (se ve el
     ruido que haces).
   - Mariposas de colores sobre las flores: se espantan si te acercas (agachado puedes verlas de cerca).
+  - **Carteles que se leen:** ponte delante de un cartel y sale "L · Leer el cartel" (tócalo o pulsa L
+    / Intro): una tabla de madera con lo que pone. Hay cuatro: Pueblo Paleta, la entrada al prado de
+    hierba alta, un consejo sobre la hierba que se agita y la tienda de Poké Balls (cerrada). Explican
+    el sigilo y la captura dentro del propio juego. Alejarse lo cierra.
   - Pokémon salvajes VISIBLES (arte oficial de PokeAPI) que deambulan por la hierba alta.
   - **Hierba que se agita:** algunos Pokémon están ESCONDIDOS en la hierba alta: no se ven (ni en el
     minimapa) y solo se nota la hierba sacudiéndose a ratos. Si llegas andando o corriendo salen de un

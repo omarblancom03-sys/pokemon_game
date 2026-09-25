@@ -5,6 +5,7 @@
 
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pokemon_game/app/app.dart';
 import 'package:pokemon_game/app/dependencies.dart';
@@ -242,6 +243,53 @@ void main() {
     await tester.tap(find.byKey(const Key('game3d_crouch')));
     await tester.pump();
     expect(sim.crouching, isTrue);
+    await tester.pump(const Duration(seconds: 3));
+  });
+
+  testWidgets('3D: a sign in front can be read (tap or L) and closes', (
+    tester,
+  ) async {
+    final renderer = FakeSceneRenderer();
+    await tester.pumpWidget(
+      PokemonGameApp(
+        dependencies: AppDependencies.create(
+          repository: repository,
+          sceneRenderer: renderer,
+        ),
+      ),
+    );
+    await tester.tap(find.byKey(const Key('menu_play_3d')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.byKey(const Key('sign_prompt')), findsNothing);
+
+    // Delante del cartel del pueblo (7,7), mirando hacia él (al sur).
+    final sim = renderer.lastSim!;
+    sim.player
+      ..teleport(sim.cellCenter(7, 6))
+      ..facing = 0;
+    await tester.pump(const Duration(milliseconds: 50));
+    expect(find.byKey(const Key('sign_prompt')), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('sign_prompt')));
+    await tester.pump(const Duration(milliseconds: 50));
+    expect(find.byKey(const Key('sign_panel')), findsOneWidget);
+    expect(find.text('Pueblo Paleta'), findsOneWidget);
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.keyL);
+    await tester.pump(const Duration(milliseconds: 50));
+    expect(find.byKey(const Key('sign_panel')), findsNothing);
+    expect(find.byKey(const Key('sign_prompt')), findsOneWidget);
+
+    // Abierto otra vez: alejarse lo cierra.
+    await tester.sendKeyEvent(LogicalKeyboardKey.keyL);
+    await tester.pump(const Duration(milliseconds: 50));
+    expect(find.byKey(const Key('sign_panel')), findsOneWidget);
+    sim.player.teleport(sim.cellCenter(7, 3));
+    sim.update(1 / 60);
+    await tester.pump(const Duration(milliseconds: 50));
+    expect(find.byKey(const Key('sign_panel')), findsNothing);
+    expect(find.byKey(const Key('sign_prompt')), findsNothing);
     await tester.pump(const Duration(seconds: 3));
   });
 

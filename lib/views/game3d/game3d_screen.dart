@@ -23,6 +23,7 @@ import '../game/widgets/encounter_overlay.dart';
 import 'widgets/capture_card.dart';
 import 'widgets/field_hud.dart';
 import 'widgets/minimap.dart';
+import 'widgets/sign_panel.dart';
 import 'widgets/world_overlay.dart';
 
 /// VISTA: exploración en 3D (tercera persona) y captura con Poké Balls.
@@ -103,6 +104,9 @@ class _Game3DScreenState extends State<Game3DScreen> {
 
   void _syncAim() => _sim.aiming = _aimMouse || _aimKey || _aimButton;
 
+  /// Leer el cartel de delante o cerrar el abierto.
+  void _toggleSign() => _sim.toggleSign();
+
   /// Agacharse / levantarse (sigilo).
   void _toggleCrouch() => setState(() => _sim.crouching = !_sim.crouching);
 
@@ -160,6 +164,10 @@ class _Game3DScreenState extends State<Game3DScreen> {
         key == LogicalKeyboardKey.controlLeft ||
         key == LogicalKeyboardKey.controlRight) {
       if (down) _toggleCrouch();
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.keyL || key == LogicalKeyboardKey.enter) {
+      if (down) _toggleSign();
       return KeyEventResult.handled;
     }
     if (key == LogicalKeyboardKey.keyP) {
@@ -255,6 +263,14 @@ class _Game3DScreenState extends State<Game3DScreen> {
               child: renderer.buildView(_sim),
             ),
             Positioned.fill(child: WorldOverlay(sim: _sim)),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 64,
+              child: Center(
+                child: SignPanel(sim: _sim, onToggle: _toggleSign),
+              ),
+            ),
             Positioned(
               left: 16,
               bottom: 16,
@@ -402,7 +418,7 @@ class _Hint extends StatelessWidget {
           'WASD mover · Mayús correr · Arrastrar / Q-E cámara · Rueda zoom\n'
           'Clic der. / F apuntar · Clic / Espacio lanzar · R / 1-3 cambiar bola\n'
           'C agacharse: en la hierba alta no te ven · Correr hace ruido · '
-          'P tus capturas',
+          'P tus capturas · L leer carteles',
           style: TextStyle(color: Colors.white),
         ),
       ),

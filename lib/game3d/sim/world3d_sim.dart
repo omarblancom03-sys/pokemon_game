@@ -17,6 +17,7 @@ import 'grass_blades.dart';
 import 'grass_field.dart';
 import 'orbit_camera.dart';
 import 'player_body.dart';
+import 'signs.dart';
 import 'throwing.dart';
 import 'trainer_pose.dart';
 import 'wild_behavior.dart';
@@ -27,6 +28,7 @@ import 'world3d_events.dart';
 export 'dust.dart' show DustPuff;
 export 'field_items.dart' show GroundItem;
 export 'grass_blades.dart' show GrassBlade;
+export 'signs.dart' show MapCell;
 export 'throwing.dart' show BallPhase, ThrownBall;
 export 'wild_behavior.dart' show PlayerStealth;
 export 'world3d_events.dart';
@@ -131,6 +133,12 @@ class World3DSim {
     layout,
     config.tileSize,
     random: math.Random(11),
+  );
+
+  /// Carteles del mapa: cuál se puede leer y cuál está abierto.
+  late final SignReader signReader = SignReader.fromLayout(
+    layout,
+    config.tileSize,
   );
 
   /// Encuentros al azar andando por la hierba alta (como en los juegos
@@ -274,6 +282,18 @@ class World3DSim {
   }
 
   void _emit(World3DEvent event) => onEvent?.call(event);
+
+  /// Cartel que el jugador tiene delante y podría leer ahora (null si no
+  /// hay ninguno o el mundo está congelado).
+  MapCell? get readableSign =>
+      _paused ? null : signReader.readable(player.position, player.facing);
+
+  /// Cartel que se está leyendo (null = ninguno).
+  MapCell? get openSign => signReader.open;
+
+  /// Leer el cartel de delante o cerrar el abierto. Devuelve si cambió.
+  bool toggleSign() =>
+      !_paused && signReader.toggle(player.position, player.facing);
 
   /// 0..1 mientras dura la animación de lanzar; null si no lanza.
   double? get throwProgress =>
@@ -439,6 +459,7 @@ class World3DSim {
     );
     crouchAmount += ((crouching ? 1 : 0) - crouchAmount) * math.min(1, dt * 10);
     camera.avoidObstacles(player.position, ballSystem.heightAt, dt);
+    signReader.update(player.position);
 
     final moved = player.distanceWalked - _lastDistance;
     _lastDistance = player.distanceWalked;

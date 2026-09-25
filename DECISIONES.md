@@ -199,4 +199,16 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
 - **2026-09-25 — Vista previa `?hide`:** Pokémon escondido 4 m delante del jugador (casilla 24,9, sin
   árboles delante). Para ver movimiento en capturas fijas: `diff.mjs` (mapa de cambios entre
   fotogramas, `TH` = umbral) y `crop.mjs` (recorte ampliado) en el scratchpad.
+- **2026-09-25 — Carteles que se leen.** La simulación solo sabe QUÉ cartel (casilla `s`):
+  `sim/signs.dart` (`SignReader`) elige el más cercano a ≤ 2,6 m del centro de su casilla y a ≤ 80°
+  de hacia donde mira el jugador; leer abre/cierra; alejarse a > 3,6 m lo cierra; con el mundo
+  congelado no se lee. LO QUE PONE es contenido del mapa, junto al dibujo ASCII:
+  `game/map/world_signs.dart` (mapa casilla → título y texto; un `s` sin texto se lee "gastado";
+  un test obliga a que cada cartel tenga el suyo y a que no sobre ninguno). La vista
+  (`widgets/sign_panel.dart`) mira la simulación en cada fotograma y solo se reconstruye si cambia.
+  Tecla **L** ("leer") o Intro: la E ya gira la cámara. No congela el mundo (se lee de un vistazo).
+- **2026-09-25 — Tres carteles nuevos en el mapa** (compartido con el 2D): (21,10) entrada al prado,
+  (14,15) junto a la hierba del sur y (20,17) junto a la casa del sur. Sirven de TUTORIAL dentro del
+  juego (sigilo, hierba que se agita, bolas). Están en casillas libres junto a los caminos: no tapan
+  ningún paso ni los humos del 2D.
 
