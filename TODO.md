@@ -156,7 +156,9 @@ el campo (movimiento, cámara, hierba alta, encuentros, escenario). Va antes que
       como "no te vio"; rodando nadie te alcanza; ruido y polvo/briznas)
 - [x] Cámara que respira: al correr se aleja un poco, agachado se acerca y baja
       (+12 % corriendo; −15 % y 0,35 m más baja agachado; suave, ~0,4 s)
-- [ ] Pasos que suenan según el suelo (camino, césped, crujido en la hierba alta)
+- [x] Pasos que suenan según el suelo (camino, césped, crujido en la hierba alta)
+      (tierra, losas, césped y hierba alta; tan fuerte como te delata: corriendo 1, andando 0,5,
+      agachado 0,15, escondido en la hierba 0,08)
 - [ ] Pokémon dormidos (Zzz): se acercan sin despertar si vas con sigilo; bonus al capturarlos
 - [ ] Manadas: algunos aparecen en grupo; si uno te descubre, avisa a los demás
 - [ ] Árboles que se mecen con el viento y hojas que caen de los otoñales

@@ -47,13 +47,28 @@ class WebSoundService implements SoundService {
     }
   }
 
+  /// Volumen del sonido que se está sintetizando (ver [play]).
+  double _level = 1;
+
   @override
-  void play(GameSound sound) {
-    if (muted) return;
+  void play(GameSound sound, {double volume = 1}) {
+    if (muted || volume <= 0) return;
     final ctx = _ready();
     if (ctx == null) return;
+    _level = volume.clamp(0.0, 1.0);
     try {
       switch (sound) {
+        case GameSound.stepDirt:
+          _hiss(ctx, 450, q: 0.8, duration: 0.07, gain: 0.07);
+          _tone(ctx, 'sine', 95, to: 60, duration: 0.06, gain: 0.12);
+        case GameSound.stepStone:
+          _hiss(ctx, 2200, q: 4, duration: 0.035, gain: 0.07);
+          _tone(ctx, 'triangle', 190, to: 150, duration: 0.04, gain: 0.07);
+        case GameSound.stepGrass:
+          _hiss(ctx, 1400, q: 0.7, duration: 0.06, gain: 0.035);
+        case GameSound.stepTallGrass:
+          _hiss(ctx, 900, to: 2600, q: 0.9, duration: 0.2, gain: 0.09);
+          _hiss(ctx, 3500, q: 2, duration: 0.08, at: 0.05, gain: 0.03);
         case GameSound.throwBall:
           _tone(ctx, 'sine', 500, to: 1500, duration: 0.2, gain: 0.18);
           _hiss(ctx, 900, to: 2500, duration: 0.25, gain: 0.12);
@@ -234,7 +249,7 @@ class WebSoundService implements SoundService {
     final amp = ctx.createGain();
     amp.gain
       ..setValueAtTime(0.0001, t)
-      ..exponentialRampToValueAtTime(gain, t + 0.01)
+      ..exponentialRampToValueAtTime(math.max(0.0002, gain * _level), t + 0.01)
       ..exponentialRampToValueAtTime(0.0001, t + duration);
     amp.connect(_master!);
     return amp;

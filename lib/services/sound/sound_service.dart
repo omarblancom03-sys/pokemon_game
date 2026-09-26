@@ -41,6 +41,13 @@ enum GameSound {
 
   /// "Uiuiui": un Pokémon que te embestía se queda aturdido.
   dazed,
+
+  /// Pisadas según el suelo: tierra del camino, losas, césped y el
+  /// crujido de la hierba alta (el que te delata).
+  stepDirt,
+  stepStone,
+  stepGrass,
+  stepTallGrass,
 }
 
 /// SONIDO (solo I/O): hace sonar lo que le piden. Qué sonido toca en cada
@@ -50,8 +57,9 @@ abstract interface class SoundService {
   /// El de esta plataforma.
   factory SoundService.create() => createPlatformSoundService();
 
-  /// Suena [sound] (si no está silenciado).
-  void play(GameSound sound);
+  /// Suena [sound] (si no está silenciado), a [volume] (0..1) de su
+  /// volumen normal.
+  void play(GameSound sound, {double volume = 1});
 
   /// El grito de la especie [pokemonId] (los de PokeAPI).
   void playCry(int pokemonId);
@@ -67,7 +75,7 @@ class SilentSoundService implements SoundService {
   bool muted = false;
 
   @override
-  void play(GameSound sound) {}
+  void play(GameSound sound, {double volume = 1}) {}
 
   @override
   void playCry(int pokemonId) {}

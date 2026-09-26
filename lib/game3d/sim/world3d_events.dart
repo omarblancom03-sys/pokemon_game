@@ -73,6 +73,18 @@ class PokemonDodged extends World3DEvent {
   final WildPokemon wild;
 }
 
+/// Qué hay bajo los pies (para el sonido de las pisadas).
+enum GroundSurface { dirt, stone, lawn, tallGrass }
+
+/// Una pisada del jugador: sobre qué y cómo de fuerte (0..1; corriendo 1,
+/// andando ~0,5, agachado casi nada).
+class Footstep extends World3DEvent {
+  const Footstep(this.surface, this.loudness);
+
+  final GroundSurface surface;
+  final double loudness;
+}
+
 /// El jugador dio una voltereta.
 class PlayerRolled extends World3DEvent {
   const PlayerRolled();

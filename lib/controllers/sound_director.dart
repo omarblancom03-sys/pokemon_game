@@ -60,6 +60,13 @@ class SoundDirector {
         sound.play(GameSound.dodge);
       case PokemonDazed():
         sound.play(GameSound.dazed);
+      case Footstep(:final surface, :final loudness):
+        sound.play(switch (surface) {
+          GroundSurface.dirt => GameSound.stepDirt,
+          GroundSurface.stone => GameSound.stepStone,
+          GroundSurface.lawn => GameSound.stepGrass,
+          GroundSurface.tallGrass => GameSound.stepTallGrass,
+        }, volume: loudness);
       case BallMissed() || PokemonEating() || SafariTimeUp():
         break;
     }

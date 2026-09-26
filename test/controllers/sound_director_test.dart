@@ -22,8 +22,13 @@ class _RecordingSound implements SoundService {
   @override
   bool muted = false;
 
+  final volumes = <double>[];
+
   @override
-  void play(GameSound sound) => played.add(sound);
+  void play(GameSound sound, {double volume = 1}) {
+    played.add(sound);
+    volumes.add(volume);
+  }
 
   @override
   void playCry(int pokemonId) => cries.add(pokemonId);
@@ -161,5 +166,20 @@ void main() {
     expect(silent.muted, isFalse);
     silent.muted = true;
     expect(silent.muted, isTrue);
+  });
+
+  test('footsteps sound by surface, as loud as you step', () {
+    director
+      ..onWorldEvent(const Footstep(GroundSurface.tallGrass, 1))
+      ..onWorldEvent(const Footstep(GroundSurface.dirt, 0.5))
+      ..onWorldEvent(const Footstep(GroundSurface.lawn, 0.15))
+      ..onWorldEvent(const Footstep(GroundSurface.stone, 0.5));
+    expect(sound.played, [
+      GameSound.stepTallGrass,
+      GameSound.stepDirt,
+      GameSound.stepGrass,
+      GameSound.stepStone,
+    ]);
+    expect(sound.volumes, [1, 0.5, 0.15, 0.5]);
   });
 }

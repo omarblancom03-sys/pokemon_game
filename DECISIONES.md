@@ -540,3 +540,11 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
   DISTANCIA y no el campo de visión: el FOV fijo lo usan el motor y `project` (marcas, mira), y
   cambiarlo obligaba a pasarlo por todos lados; alejarse da la misma sensación. Mientras ruedas no
   cambia (la voltereta es muy corta y daría un tirón). Nada de balanceo al correr: marea.
+- **2026-09-26 — Pisadas con sonido** (TODO 8.15). Evento `Footstep(superficie, fuerza)` en cada
+  pisada (las mismas que el polvo, las briznas y las huellas: cada 0,75 m). Superficie por casilla:
+  camino = tierra, `o` = losas, hierba alta, y el resto césped. La FUERZA es la del sigilo
+  (`footstepLoudness`, de `stealth`): el jugador oye lo mismo que le delata, así el sonido enseña el
+  sigilo sin carteles. Para eso `SoundService.play` admite `volume` (0..1; escala todas las ganancias
+  del sonido sintetizado). Durante la voltereta no hay pisadas (suena su "¡zas!"). Comprobado en
+  Chrome contando nodos de audio: 8 pisadas (ruido + golpe) en 1,5 s andando por el camino. Ojo en
+  los tests: la casilla de inicio `@` del mapa es CAMINO.

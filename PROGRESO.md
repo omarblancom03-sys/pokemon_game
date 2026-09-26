@@ -146,7 +146,9 @@
     sacudida (más fuerte y con destellos si es crítica), "¡clic!" y fanfarria al capturar o "¡pop!" si
     se escapa; también al recoger bolas o bayas y al sacudir arbustos. Los Pokémon GRITAN (su grito
     real de PokeAPI) cuando te descubren, cuando salen asustados de la hierba y al escaparse de la
-    bola. Tecla N o el altavoz bajo el minimapa para silenciar. En Windows, por ahora, sin sonido.
+    bola. Las PISADAS suenan según el suelo (golpe sordo en la tierra, clic en las losas, roce en el
+    césped y un crujido en la hierba alta) y tan fuerte como te oyen los Pokémon: corriendo mucho,
+    agachado casi nada. Tecla N o el altavoz bajo el minimapa para silenciar. En Windows, por ahora, sin sonido.
   - **El aro que se encoge:** al apuntar a un Pokémon con una bola, dentro del anillo del % hay un aro
     que se encoge (en 1,6 s) y vuelve a empezar. Lanza cuando esté pequeño: blanco = sin bonus, azul =
     "¡Bien!" ×1,2, violeta = "¡Genial!" ×1,5 y dorado (el más pequeño, dura un suspiro) = "¡Excelente!"

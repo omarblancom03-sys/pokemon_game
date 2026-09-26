@@ -358,6 +358,26 @@ class World3DSim {
     return layout.tileAt(cell.col, cell.row) == TileKind.tallGrass;
   }
 
+  /// Qué suelo hay en [p] (para el sonido de las pisadas).
+  GroundSurface surfaceAt(Vector3 p) {
+    final cell = cellAt(p);
+    return switch (layout.tileAt(cell.col, cell.row)) {
+      TileKind.path => GroundSurface.dirt,
+      TileKind.stone => GroundSurface.stone,
+      TileKind.tallGrass => GroundSurface.tallGrass,
+      _ => GroundSurface.lawn,
+    };
+  }
+
+  /// Lo fuerte que pisa el jugador ahora (0..1): se oye lo mismo que te
+  /// delata (ver [stealth]).
+  double get footstepLoudness => switch (stealth) {
+    PlayerStealth.noisy => 1,
+    PlayerStealth.normal => 0.5,
+    PlayerStealth.crouching => 0.15,
+    PlayerStealth.hidden => 0.08,
+  };
+
   /// ¿Es tierra de camino? (ahí quedan las huellas; en las losas, no).
   bool isDirtPath(Vector3 p) {
     final cell = cellAt(p);
@@ -1146,6 +1166,8 @@ class World3DSim {
       final f = player.facing;
       final right = Vector3(-math.cos(f), 0, math.sin(f));
       final foot = feet + right * (step.isEven ? 0.12 : -0.12);
+      // Cada pisada suena según el suelo (rodando, no: suena la voltereta).
+      if (!isRolling) _emit(Footstep(surfaceAt(foot), footstepLoudness));
       if (running && onDirt) dust.footstep(foot, player.velocity);
       if (!onDirt && !crouching) {
         blades.footstep(foot, player.velocity, running: running);
