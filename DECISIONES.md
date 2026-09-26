@@ -485,3 +485,14 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
   el suelo. Los tiempos salen de `ThrownBall.shakeStart(i)` / `pauseAfter(i, n)` (Dart puro, con
   tests); `shakeCycle` desaparece. `BallShook` (el "toc") se emitía al TERMINAR cada ciclo, es decir,
   ~1 s después del vaivén que se veía; ahora se emite al empezar, a la vez que la bola se mueve.
+- **2026-09-26 — El resultado se ve** (TODO 8.15). CAPTURADO: la bola ya no se encoge en el sitio;
+  tras el "¡clic!" (0–0,35 s) y las estrellas (hasta 1,2 s) VUELVE A LA MOCHILA en 0,6 s
+  (`caughtTime` 1,6 → 1,8 s): curva de Bézier con un arco más alto cuanto más lejos (1 m + 10 %
+  de la distancia, hasta 2,5 m), que sale despacio y entra deprisa (ease-in, como atraída), girando
+  y encogiéndose, con un destellito al llegar. Es solo visual: la simulación da el tiempo y la
+  curva (`ThrownBall.returnProgress` / `returnPosition`, con tests) y la mochila
+  (`World3DSim.backpackPosition`: a la espalda, a 1,1 m; más baja agachado). La cámara de captura
+  suelta la bola a los 1,1 s: vuelve al jugador a la vez que la bola, así se ve llegar.
+  SE ESCAPA: la bola se PARTE (la tapa se abre de golpe y sale volando hacia arriba y atrás, la
+  base se vuelca) y saltan 7 chispas. El fogonazo blanco se redujo (1,3 m y 0,75 de opacidad →
+  0,9 m, 0,55 y 0,3 s): en la vista previa tapaba la rotura entera.

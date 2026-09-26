@@ -72,6 +72,9 @@
   - **Sacudidas con tensión:** cada sacudida ladea la bola más que la anterior y la espera entre una
     y otra se alarga; tras la última, un silencio más largo antes del "¡clic!" (o del escape). El
     "toc" suena justo cuando empieza cada vaivén.
+  - **El final:** si lo capturas, tras el "¡clic!" y las estrellas la bola sale volando en arco y
+    se mete en la mochila del entrenador (con un destellito al llegar). Si se escapa, la bola se
+    parte: la tapa sale volando, la base se vuelca, un fogonazo corto y saltan chispas.
   - **Cámara de captura:** cuando la bola le da a un Pokémon, la cámara va sola a verla de cerca
     (en un segundo, sin dar tirones): se ve cómo lo absorbe, cómo cae, cada sacudida con el botón
     rojo y el "¡clic!" con estrellas (o cómo se escapa). Al terminar vuelve detrás del jugador (o al

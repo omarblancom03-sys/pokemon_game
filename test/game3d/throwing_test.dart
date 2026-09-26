@@ -493,6 +493,49 @@ void main() {
     expect(ball.shakesStarted, 2);
   });
 
+  test('once caught, the ball flies back in an arc to the backpack', () {
+    final ball =
+        ThrownBall(
+            id: 'b',
+            ball: PokeBallType.poke,
+            position: Vector3(6, ballRadius, 0),
+            velocity: Vector3.zero(),
+          )
+          ..result = const CaptureResult(chance: 0.5, shakes: 3, caught: true)
+          ..setPhase(BallPhase.caught);
+    final backpack = Vector3(0, 1.1, 0);
+    expect(ball.returnProgress, isNull, reason: 'the click and the stars');
+    expect(ball.returnPosition(backpack), ball.position);
+
+    ball.phaseTime = ThrownBall.returnStart;
+    expect(ball.returnProgress, 0);
+    expect(ball.returnPosition(backpack).distanceTo(ball.position), 0);
+    const flight = ThrownBall.caughtTime - ThrownBall.returnStart;
+    // Sale despacio y llega deprisa: a la mitad del tiempo, aún le queda
+    // más de la mitad del camino.
+    ball.phaseTime = ThrownBall.returnStart + flight / 2;
+    expect(ball.returnPosition(backpack).x, greaterThan(4));
+    // Por el medio del camino va por encima de los dos (un arco).
+    ball.phaseTime = ThrownBall.returnStart + flight * sqrt(0.5);
+    final mid = ball.returnPosition(backpack);
+    expect(mid.x, closeTo(3, 1e-5));
+    expect(mid.y, greaterThan(backpack.y + 0.2));
+    ball.phaseTime = ThrownBall.caughtTime;
+    expect(ball.returnProgress, 1);
+    expect(ball.returnPosition(backpack).distanceTo(backpack), lessThan(1e-6));
+  });
+
+  test('the backpack is on the back of the trainer, lower when crouching', () {
+    final s = World3DSim(layout: open, maxFieldItems: 0);
+    s.player.facing = 0; // mirando hacia +Z
+    final feet = s.player.position;
+    final pack = s.backpackPosition;
+    expect(pack.z, lessThan(feet.z), reason: 'behind');
+    expect(pack.y, closeTo(1.1, 1e-6));
+    s.crouchAmount = 1;
+    expect(s.backpackPosition.y, lessThan(pack.y));
+  });
+
   test('the button glows red with each shake and clicks white when caught', () {
     final ball =
         ThrownBall(

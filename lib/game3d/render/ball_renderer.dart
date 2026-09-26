@@ -17,8 +17,10 @@ import '../sim/throwing.dart';
 ///  - al absorber: la tapa se abre y se cierra con un destello rojo;
 ///  - en el suelo: se sacude mirando a la cámara, con el botón encendido
 ///    en rojo en cada sacudida;
-///  - ¡capturado!: "clic" (destello blanco del botón) y estrellas;
-///  - se escapa: la tapa salta, destello blanco y la bola desaparece.
+///  - ¡capturado!: "clic" (destello blanco del botón), estrellas y la bola
+///    vuelve en arco a la mochila del entrenador;
+///  - se escapa: la bola se parte en dos (la tapa sale volando), destello
+///    blanco y chispas.
 /// Además, al apuntar, la trayectoria prevista (puntos) y dónde caerá.
 class BallRenderer {
   BallRenderer({required this.root, required this.toMesh}) {
@@ -183,13 +185,14 @@ class BallRenderer {
     required List<vm.Vector3> preview,
     required bool locked,
     required double cameraYaw,
+    required vm.Vector3 backpack,
   }) {
     final alive = {for (final b in balls) b.id};
     for (final id in _visuals.keys.toList()) {
       if (!alive.contains(id)) root.remove(_visuals.remove(id)!.node);
     }
     for (final ball in balls) {
-      _place(_visuals[ball.id] ??= _create(ball), ball, cameraYaw);
+      _place(_visuals[ball.id] ??= _create(ball), ball, cameraYaw, backpack);
     }
     _updatePreview(preview, locked);
     _updateTrails(balls);
@@ -234,6 +237,14 @@ class BallRenderer {
       ..visible = false
       ..add(ring)
       ..add(burst);
+    // Chispas al partirse la bola (todas con el mismo material).
+    final shardMaterial = blend();
+    final shards = [
+      for (var i = 0; i < 7; i++)
+        Node(mesh: Mesh(_flash.primitives.first.geometry, shardMaterial))
+          ..castsShadows = false
+          ..visible = false,
+    ];
     final stars = [
       for (var i = 0; i < 5; i++)
         Node(mesh: _star.clone())
@@ -245,10 +256,12 @@ class BallRenderer {
       ..add(flash)
       ..add(impact);
     stars.forEach(node.add);
+    shards.forEach(node.add);
     root.add(node);
     return _BallVisual(
       node: node,
       orient: orient,
+      base: base,
       lidPivot: lidPivot,
       flash: flash,
       flashMaterial: flashMaterial,
@@ -260,15 +273,25 @@ class BallRenderer {
       ringMaterial: ringMaterial,
       burst: burst,
       burstMaterial: burstMaterial,
+      shards: shards,
+      shardMaterial: shardMaterial,
     );
   }
 
-  void _place(_BallVisual v, ThrownBall ball, double cameraYaw) {
+  void _place(
+    _BallVisual v,
+    ThrownBall ball,
+    double cameraYaw,
+    vm.Vector3 backpack,
+  ) {
     // La captura crítica brilla en dorado en vez de rojo.
     final critical = ball.result?.critical ?? false;
     v.node.position = _engine(ball.position);
     var scale = 1.0;
     var lidOpen = 0.0;
+    // La tapa y la base, separadas al partirse (en el espacio de la bola).
+    var lidOffset = vm.Vector3.zero();
+    var baseTilt = 0.0;
     var flashColor = vm.Vector4(1, 1, 1, 0);
     var flashSize = 0.0;
     vm.Quaternion rotation;
@@ -314,27 +337,46 @@ class BallRenderer {
         }
       case BallPhase.caught:
         rotation = _heading(cameraYaw);
-        // "Clic": un saltito y, al final, se desvanece.
-        final end = ThrownBall.caughtTime;
-        scale = t > end - 0.3 ? math.max(0, (end - t) / 0.3) : 1;
         if (t < 0.25) {
           flashColor = vm.Vector4(2.5, 2.3, 1.2, 0.6 * (1 - t / 0.25));
           flashSize = 0.2 + t * 1.6;
         }
+        // Vuelve a la mochila: en arco, girando y algo más pequeña; al
+        // llegar, un destellito.
+        final back = ball.returnProgress;
+        if (back != null) {
+          v.node.position = _engine(ball.returnPosition(backpack));
+          rotation = rotation * vm.Quaternion.axisAngle(_x, back * 9);
+          scale = 1 - 0.45 * back;
+          if (back > 0.8) {
+            final a = (back - 0.8) / 0.2;
+            flashColor = vm.Vector4(2.6, 2.4, 1.6, 0.55 * a);
+            flashSize = 0.12 + 0.12 * a;
+          }
+          if (back >= 1) scale = 0;
+        }
       case BallPhase.escaped:
-        // La tapa salta, destello blanco y la bola se encoge.
+        // Se parte: la tapa se abre de golpe y sale volando hacia arriba y
+        // atrás; la base se vuelca; destello blanco; y todo se encoge.
         rotation = _heading(cameraYaw);
-        lidOpen = math.min(1, t / 0.12) * 2.1;
-        final f = (t / 0.4).clamp(0.0, 1.0);
-        flashColor = vm.Vector4(2.6, 2.6, 2.6, 0.75 * (1 - f));
-        flashSize = 0.2 + f * 1.1;
-        scale = t < 0.2 ? 1 : math.max(0, 1 - (t - 0.2) / 0.35);
+        final s = (t / ThrownBall.escapeTime).clamp(0.0, 1.0);
+        lidOpen = math.min(1, t / 0.08) * 2.6 + s * 2;
+        lidOffset = vm.Vector3(0, 1.5 * s - 1.7 * s * s, 0.35 * s);
+        baseTilt = -0.9 * math.min(1, s * 2.5);
+        // Un fogonazo breve y no muy grande: que se vea cómo se rompe.
+        final f = (t / 0.3).clamp(0.0, 1.0);
+        flashColor = vm.Vector4(2.6, 2.6, 2.6, 0.55 * (1 - f));
+        flashSize = 0.2 + f * 0.7;
+        scale = t < 0.3 ? 1 : math.max(0, 1 - (t - 0.3) / 0.3);
     }
 
     v.orient
       ..rotation = rotation
       ..scale = vm.Vector3.all(scale);
-    v.lidPivot.rotation = vm.Quaternion.axisAngle(_x, lidOpen);
+    v.lidPivot
+      ..rotation = vm.Quaternion.axisAngle(_x, lidOpen)
+      ..position = vm.Vector3(0, 0, ballRadius) + lidOffset;
+    v.base.rotation = vm.Quaternion.axisAngle(_x, baseTilt);
     v.flashMaterial.baseColorFactor = flashColor;
     v.flash
       ..visible = flashColor.w > 0.01
@@ -350,6 +392,28 @@ class BallRenderer {
     v.button.visible = glow > 0.01 || click > 0.01;
     _placeStars(v, ball);
     _placeImpact(v, ball, cameraYaw, critical: critical);
+    _placeShards(v, ball);
+  }
+
+  /// Al escaparse, siete chispas salen disparadas en todas direcciones y
+  /// caen apagándose.
+  void _placeShards(_BallVisual v, ThrownBall ball) {
+    final show = ball.phase == BallPhase.escaped;
+    for (final shard in v.shards) {
+      shard.visible = show;
+    }
+    if (!show) return;
+    final s = (ball.phaseTime / ThrownBall.escapeTime).clamp(0.0, 1.0);
+    final e = 1 - (1 - s) * (1 - s);
+    v.shardMaterial.baseColorFactor = vm.Vector4(3, 2.2, 1.9, 1 - s);
+    for (var i = 0; i < v.shards.length; i++) {
+      final a = i * 2 * math.pi / v.shards.length + 0.4;
+      final up = i.isEven ? 0.9 : 0.35;
+      final dir = vm.Vector3(math.cos(a), up, math.sin(a))..normalize();
+      v.shards[i]
+        ..position = dir * (0.12 + 0.8 * e) + vm.Vector3(0, -0.6 * s * s, 0)
+        ..scale = vm.Vector3.all(0.035 * (1 - 0.5 * s));
+    }
   }
 
   /// El golpe: una onda que se abre mirando a la cámara y un fogonazo
@@ -391,7 +455,8 @@ class BallRenderer {
       final a = i * 2 * math.pi / v.stars.length + 0.3;
       final r = 0.15 + t * 0.9;
       final y = 0.15 + 1.9 * t - 1.6 * t * t;
-      final fade = t > 1.1 ? math.max(0, 1 - (t - 1.1) / 0.4) : 1.0;
+      // Se apagan antes de que la bola vuelva a la mochila.
+      final fade = t > 0.9 ? math.max(0, 1 - (t - 0.9) / 0.3) : 1.0;
       star
         ..position = vm.Vector3(
           math.cos(a) * r,
@@ -500,6 +565,7 @@ class _BallVisual {
   _BallVisual({
     required this.node,
     required this.orient,
+    required this.base,
     required this.lidPivot,
     required this.flash,
     required this.flashMaterial,
@@ -511,10 +577,15 @@ class _BallVisual {
     required this.ringMaterial,
     required this.burst,
     required this.burstMaterial,
+    required this.shards,
+    required this.shardMaterial,
   });
 
   final Node node;
   final Node orient;
+
+  /// Mitad de abajo (se vuelca al partirse).
+  final Node base;
   final Node lidPivot;
   final Node flash;
   final UnlitMaterial flashMaterial;
@@ -530,6 +601,10 @@ class _BallVisual {
   final UnlitMaterial ringMaterial;
   final Node burst;
   final UnlitMaterial burstMaterial;
+
+  /// Chispas al partirse la bola.
+  final List<Node> shards;
+  final UnlitMaterial shardMaterial;
 
   /// Último rumbo conocido (para que no gire de golpe al pararse).
   double heading = 0;

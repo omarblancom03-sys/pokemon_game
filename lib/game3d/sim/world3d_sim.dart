@@ -498,6 +498,15 @@ class World3DSim {
   /// Bolas en el aire o en el suelo con un Pokémon dentro.
   List<ThrownBall> get balls => ballSystem.balls;
 
+  /// Dónde está la mochila del entrenador (a ella vuelven las bolas que
+  /// capturan): a la espalda, a la altura de la cintura; más baja agachado.
+  Vector3 get backpackPosition {
+    final f = player.facing;
+    return player.position +
+        Vector3(0, 1.1 - 0.3 * crouchAmount, 0) -
+        Vector3(math.sin(f), 0, math.cos(f)) * 0.26;
+  }
+
   /// Empieza a lanzar [ball] al objetivo fijado (o hacia donde mira la
   /// cámara). La bola sale de la mano un instante después, cuando el brazo
   /// pasa por delante. Devuelve false si ahora no se puede.

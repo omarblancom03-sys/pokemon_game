@@ -228,6 +228,7 @@ class _Scene3DViewState extends State<Scene3DView> {
       preview: _sim.aimPreview,
       locked: _sim.lockedTarget != null,
       cameraYaw: _sim.camera.yaw,
+      backpack: _sim.backpackPosition,
     );
   }
 

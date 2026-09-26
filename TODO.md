@@ -144,7 +144,8 @@ el campo (movimiento, cámara, hierba alta, encuentros, escenario). Va antes que
       (0,07 s; 0,14 s si va a ser crítica; onda que mira a la cámara 0,35 s, dorada si es crítica)
 - [x] Sacudidas con tensión: cada sacudida más larga y ladeada; pausa antes del resultado
       (inclinación 0,42 → 0,58 → 0,74 rad; pausas 0,35 → 0,5 s y 0,8 s tras la última; el "toc" al empezar)
-- [ ] Resultado: al capturar, la bola vuela a la mochila; al escaparse, la bola se parte con destellos
+- [x] Resultado: al capturar, la bola vuela a la mochila; al escaparse, la bola se parte con destellos
+      (vuelta en arco de 0,6 s tras las estrellas; al escaparse la tapa sale volando, 7 chispas)
 - [ ] La hierba alta se aparta alrededor de la bola que se sacude (se ve la bola en la hierba)
 - [ ] Pokémon que te miran pueden esquivar la bola de un salto (según carácter): el sigilo importa más
 - [ ] Rodar para esquivar (tecla X o botón): escapar de una carga sin combate

@@ -168,7 +168,7 @@ class ThrownBall {
   static const absorbTime = 0.55;
   static const shakeSettle = 0.4;
   static const shakeTime = 0.85;
-  static const caughtTime = 1.6;
+  static const caughtTime = 1.8;
   static const escapeTime = 0.6;
 
   /// SACUDIDAS CON TENSIÓN: tras cada sacudida la bola se queda quieta un
@@ -250,6 +250,36 @@ class ThrownBall {
   double get buttonGlow {
     final shake = currentShake;
     return shake == null ? 0 : math.sin(shake.progress * math.pi);
+  }
+
+  /// Tras el "¡clic!" y las estrellas, la bola VUELVE A LA MOCHILA del
+  /// entrenador: sale en [returnStart] y llega al final de [caughtTime].
+  static const returnStart = 1.2;
+
+  /// 0..1 del vuelo de vuelta a la mochila (null si no está volviendo).
+  double? get returnProgress {
+    if (phase != BallPhase.caught || phaseTime < returnStart) return null;
+    return ((phaseTime - returnStart) / (caughtTime - returnStart)).clamp(
+      0.0,
+      1.0,
+    );
+  }
+
+  /// Dónde se ve la bola que vuelve a [backpack]: un arco (más alto cuanto
+  /// más lejos) que sale despacio y entra deprisa, como si la mochila la
+  /// atrajera. Si no está volviendo, donde está.
+  Vector3 returnPosition(Vector3 backpack) {
+    final p = returnProgress;
+    if (p == null) return position.clone();
+    final e = p * p;
+    final from = position;
+    final lift = math.min(2.5, 1.0 + 0.1 * from.distanceTo(backpack));
+    final mid = (from + backpack)
+      ..scale(0.5)
+      ..y += lift;
+    return from * ((1 - e) * (1 - e)) +
+        mid * (2 * (1 - e) * e) +
+        backpack * (e * e);
   }
 
   /// "¡Clic!" al capturar: destello blanco del botón (1 → 0 en [clickTime]).
