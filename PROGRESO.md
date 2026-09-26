@@ -103,6 +103,10 @@
     normal, hasta ~920 un legendario) multiplicado por cómo fue el tiro: sin ser visto ×1,5 o por la
     espalda ×2, comiendo ×1,5 y el aro ×1,2/×1,5/×2. El marcador enseña "Capturas: N · P pts" y el
     resumen, cada captura con su cuenta ("238 ×3 … +714") y el total.
+    **Huyen (solo en el reto):** si uno se escapa de la bola, puede HUIR para siempre ("¡El X salvaje
+    huyó!"): sale corriendo lejos de ti (tumbando la hierba) y desaparece. Pasa más con los raros
+    (1 de cada 10 los fáciles, casi la mitad los normales y raros) y la mitad de veces si le diste
+    mientras se comía una baya. Fuera del reto nunca huyen.
   - **Variocolor (shiny):** 1 de cada 100 Pokémon sale con sus colores raros (el arte variocolor oficial).
     Al verlo cerca por primera vez: aviso dorado "¡Un X VARIOCOLOR! Qué suerte", un corro grande de
     destellos y un sonido de campanitas; luego brilla a ratos. Se captura igual (solo es cosmético); su

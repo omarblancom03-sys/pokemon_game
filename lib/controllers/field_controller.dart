@@ -40,6 +40,9 @@ enum FieldNoticeKind {
 
   /// Una bola fallada se perdió (en el Reto Safari no se recogen).
   ballLost,
+
+  /// En el Reto Safari, el que se escapó de la bola huyó para siempre.
+  fled,
 }
 
 /// Un aviso breve del campo ("+2 Poké Ball", "¡Capturado!"...). Guarda los
@@ -129,13 +132,19 @@ class FieldController extends ChangeNotifier {
           critical: result.critical,
           shiny: wild.shiny,
         );
-      case PokemonBrokeFree(:final wild, :final ball, :final result):
+      case PokemonBrokeFree(
+        :final wild,
+        :final ball,
+        :final result,
+        :final fled,
+      ):
         _post(
           FieldNoticeKind.brokeFree,
           ball: ball,
           pokemon: wild.pokemon,
           shakes: result.shakes,
         );
+        if (fled) _post(FieldNoticeKind.fled, pokemon: wild.pokemon);
       case BerriesPickedUp(:final count):
         _trainer.addBerries(count);
         // Las bayas de una sacudida se recogen una tras otra: se suman en

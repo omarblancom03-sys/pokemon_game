@@ -125,7 +125,8 @@ combates (tus capturas = tu equipo), nunca compite con ellos. Nada de lo de aqu�
       las falladas se pierden; bayas propias sí; resumen al terminar)
   - [x] Puntuación solo en el Safari: base por rareza (capture_rate) × bonus que ya existen
         (100·√(255/ratio): 100 a 922; × sigilo/espalda, baya y aro; la crítica no suma; marcador y resumen)
-  - [ ] Solo en el Safari: probabilidad de que huyan al fallar (mayor si es raro)
+  - [x] Solo en el Safari: probabilidad de que huyan al fallar (mayor si es raro)
+        (al escaparse de la bola: 10 % a 50 % según el ratio; la mitad si comía; corre lejos y desaparece)
   - [ ] Pantalla final con resumen y récord; premio en bolas y bayas
 - [x] Shinies (sprites.front_shiny, 1/100, destello al aparecer; solo cosmético)
       (arte oficial variocolor; aviso, destello grande y sonido al verlo; brilla a ratos; la carta lo dice)

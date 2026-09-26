@@ -74,10 +74,12 @@ class World3DSim {
     int maxFieldItems = 6,
     CaptureCalculator? calculator,
     this.grassEncounters = false,
+    math.Random? fleeRandom,
   }) : input = input ?? MovementInput(),
        cameraInput = cameraInput ?? CameraInput(),
        camera = camera ?? OrbitCamera(),
-       _random = random ?? math.Random() {
+       _random = random ?? math.Random(),
+       _fleeRandom = fleeRandom ?? math.Random(23) {
     ballSystem = BallSystem(
       layout: layout,
       tileSize: config.tileSize,
@@ -650,6 +652,66 @@ class World3DSim {
     fieldItems.enabled = true;
   }
 
+  /// Probabilidad de que, en el Reto Safari, un Pokémon que se escapa de
+  /// la bola HUYA para siempre: más si es raro. 10 % los más fáciles
+  /// (ratio 255), ~43 % uno normal (45) y 50 % un legendario (3). Si le
+  /// diste mientras comía una baya, la mitad: la baya lo entretiene (como
+  /// el cebo de la Zona Safari de los juegos).
+  static double safariFleeChance(int captureRate, {bool eating = false}) {
+    final rarity = 1 - captureRate.clamp(1, 255) / 255;
+    final chance = 0.1 + 0.4 * rarity;
+    return eating ? chance / 2 : chance;
+  }
+
+  /// Dado de la huida, con su propio azar (como el variocolor): no cambia
+  /// dónde aparecen ni cómo se comportan los demás.
+  final math.Random _fleeRandom;
+
+  /// Si en este tiempo (s) no se ha alejado lo bastante (acorralado), el
+  /// que huye desaparece igual, en una nubecilla.
+  static const leaveSeconds = 6.0;
+
+  /// En el Safari, el que se escapa de la bola puede huir: el aviso lo
+  /// dice ([PokemonBrokeFree.fled]) y empieza a irse.
+  PokemonBrokeFree _maybeFlee(PokemonBrokeFree event) {
+    final w = event.wild;
+    if (!safariActive || w.isLeaving) return event;
+    final chance = safariFleeChance(
+      w.captureRate,
+      eating: event.hit?.eating ?? false,
+    );
+    if (_fleeRandom.nextDouble() >= chance) return event;
+    w
+      ..leavingFor = 0
+      ..alertTime = math.max(w.alertTime, leaveSeconds);
+    return PokemonBrokeFree(
+      w,
+      event.ball,
+      event.result,
+      hit: event.hit,
+      fled: true,
+    );
+  }
+
+  /// Se va para siempre: tras el "pop" de la bola corre lejos de ti
+  /// (tumbando la hierba alta) y desaparece al alejarse o, si se atasca, a
+  /// los [leaveSeconds] en una nubecilla. No se para a comer ni a mirar.
+  void _leave(WildPokemon w, double dt) {
+    final t = w.leavingFor! + dt;
+    w.leavingFor = t;
+    final before = w.position;
+    var far = false;
+    if (w.releasedFor == null) far = behavior.runAway(w, player.position, dt);
+    w.velocity = dt > 0 ? (w.position - before) / dt : Vector3.zero();
+    if (w.velocity.length > trampleSpeed && isTallGrass(w.position)) {
+      trampled.trample(w.position, w.velocity);
+    }
+    if (far || t > leaveSeconds) {
+      if (!far) dust.burst(w.position, strength: 0.6);
+      removeWild(w.id);
+    }
+  }
+
   void _updateSafari(double dt) {
     final left = _safariTimeLeft;
     if (left == null) return;
@@ -742,12 +804,16 @@ class World3DSim {
       wild: wild,
       drop: _dropBall,
       remove: (w) => removeWild(w.id),
-      // En el Safari, una bola fallada se pierde (y el aviso lo dice).
-      emit: (event) => _emit(
-        event is BallMissed && safariActive
-            ? BallMissed(event.ball, lost: true)
-            : event,
-      ),
+      // En el Safari, una bola fallada se pierde y el que se escapa
+      // puede huir (el aviso lo dice).
+      emit: (event) => _emit(switch (event) {
+        BallMissed(:final ball) when safariActive => BallMissed(
+          ball,
+          lost: true,
+        ),
+        PokemonBrokeFree() => _maybeFlee(event),
+        _ => event,
+      }),
       impact: _startleAround,
       bounce: (at, speed) {
         if (speed > 2) dust.burst(at, strength: speed / 10);
@@ -969,6 +1035,10 @@ class World3DSim {
       _updateHidden(w, dt);
       return;
     }
+    if (w.isLeaving) {
+      _leave(w, dt);
+      return;
+    }
     final noticed = behavior.perceive(
       w,
       player: player.position,
@@ -1170,7 +1240,7 @@ class World3DSim {
   bool _checkContacts() {
     final p = player.position;
     for (final w in wild) {
-      if (w.engaged || !w.isFree || w.hidden) continue;
+      if (w.engaged || !w.isFree || w.hidden || w.isLeaving) continue;
       if (w.position.distanceTo(p) >= w.contactRadius) continue;
       if (w.temperament == Temperament.aggressive && w.isAlert) {
         w.engaged = true;

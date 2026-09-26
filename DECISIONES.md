@@ -435,3 +435,15 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
   nuevas. La captura crítica NO suma (es azar, no habilidad) ni el tipo de bola (en el reto todas
   son Poké Balls). Para puntuar, `PokemonCaught` lleva ahora `hit` y `quality` del tiro (opcionales:
   los demás oyentes no cambian). Se ve en el marcador ("Capturas: N · P pts") y en el resumen.
+- **2026-09-26 — En el Safari huyen** (TODO 8.14). Solo al ESCAPARSE de la bola (no al fallar el
+  tiro: fallar ya cuesta la bola y el Pokémon se asusta). Probabilidad `0,1 + 0,4·(1 − ratio/255)`:
+  10 % (ratio 255), ~43 % (45), ~50 % (3). Lineal con tope del 50 %: un raro que huye la mitad de
+  las veces ya es tenso; más frustraría. Si la bola le dio MIENTRAS COMÍA, la mitad (el cebo de la
+  Zona Safari clásica): así las bayas también sirven en el reto para asegurar a los raros. Lo decide
+  la SIMULACIÓN (sabe si hay reto) con su propio azar (`fleeRandom`, inyectable en tests, como el
+  variocolor) envolviendo el evento como hace con `BallMissed(lost:)`: `PokemonBrokeFree(fled:)`.
+  El que huye (`WildPokemon.leavingFor`) espera al "pop" de la bola, corre a 4,4 m/s lejos del
+  jugador sea cual sea su carácter (un agresivo NO carga: huir es huir), no mira bayas ni dispara
+  encuentros, tumba la hierba al cruzarla y desaparece a 24 m o, si se atasca, a los 6 s en una
+  nubecilla de polvo. Se le puede seguir lanzando bolas mientras corre (atraparlo al vuelo es un
+  tiro de mérito). Aviso aparte "¡El X salvaje huyó!" (el de "se ha escapado" sigue saliendo).

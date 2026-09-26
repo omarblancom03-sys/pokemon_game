@@ -147,6 +147,17 @@ class WildBehavior {
       ..target = null;
   }
 
+  /// Corre lejos de [player] a toda prisa, sea cual sea su carácter (se va
+  /// para siempre). Si está justo encima, hacia donde mira. Devuelve true
+  /// cuando ya está tan lejos que debe desaparecer.
+  bool runAway(WildPokemon w, Vector3 player, double dt) {
+    final away = w.position - player
+      ..y = 0;
+    final d = away.length;
+    _move(w, d < 1e-3 ? w.facingDirection : away, WildPokemon.fleeSpeed, dt);
+    return d > fleeDespawnDistance;
+  }
+
   /// Mueve a [w] según su estado y carácter. Devuelve true si se ha
   /// alejado tanto huyendo que debe desaparecer.
   bool act(WildPokemon w, Vector3 player, double dt) {

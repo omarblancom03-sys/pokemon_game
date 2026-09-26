@@ -220,7 +220,11 @@ class SafariIntroDialog extends StatelessWidget {
       (Icons.timer_outlined, '10 minutos para capturar todo lo que puedas.'),
       (Icons.catching_pokemon, '25 Poké Balls del reto: tu bolsa no se toca.'),
       (Icons.block, 'No hay bolas en el suelo y las que falles se pierden.'),
-      (Icons.spa, 'Tus bayas sí sirven para distraerlos.'),
+      (
+        Icons.directions_run,
+        'Si se escapan de la bola pueden huir (más los raros).',
+      ),
+      (Icons.spa, 'Tus bayas sí sirven: los distraen y así huyen menos.'),
       (
         Icons.star_outline,
         'Puntos: los raros valen más; sigilo, baya y aro multiplican.',

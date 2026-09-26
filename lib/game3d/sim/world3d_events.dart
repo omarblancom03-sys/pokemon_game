@@ -46,13 +46,23 @@ class PokemonCaught extends World3DEvent {
   final ThrowQuality quality;
 }
 
-/// El Pokémon se escapó de la bola (la bola se pierde).
+/// El Pokémon se escapó de la bola (la bola se pierde). [hit] cuenta cómo
+/// fue el tiro. En el Reto Safari puede, además, HUIR para siempre
+/// ([fled]): sale corriendo y desaparece.
 class PokemonBrokeFree extends World3DEvent {
-  const PokemonBrokeFree(this.wild, this.ball, this.result);
+  const PokemonBrokeFree(
+    this.wild,
+    this.ball,
+    this.result, {
+    this.hit,
+    this.fled = false,
+  });
 
   final WildPokemon wild;
   final PokeBallType ball;
   final CaptureResult result;
+  final ({bool unaware, bool fromBehind, bool eating})? hit;
+  final bool fled;
 }
 
 /// El jugador sacudió un arbusto; soltó [berries] bayas (0 = no le

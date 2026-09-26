@@ -510,7 +510,7 @@ class BallSystem {
         ..releasedFor = 0
         ..awareness = 1
         ..alertTime = escapeAlertSeconds;
-      emit(PokemonBrokeFree(w, ball.ball, result));
+      emit(PokemonBrokeFree(w, ball.ball, result, hit: ball.hit));
     }
   }
 

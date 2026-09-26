@@ -113,6 +113,13 @@ class WildPokemon {
   /// come apenas se entera de nada: no ve y casi no oye.
   double? eatingFor;
 
+  /// Segundos que lleva YÉNDOSE para siempre (null = no se va): en el Reto
+  /// Safari, tras escaparse de una bola, puede huir. Corre lejos de ti y
+  /// desaparece (ver World3DSim).
+  double? leavingFor;
+
+  bool get isLeaving => leavingFor != null;
+
   /// Metros por segundo al deambular, huir y cargar.
   static const wanderSpeed = 1.3;
   static const fleeSpeed = 4.4;

@@ -190,4 +190,16 @@ void main() {
     final spawn = (await f.pickWildSpawn())!;
     expect(spawn.captureRate, FieldController.fallbackCaptureRate);
   });
+
+  test('in the Safari, one that flees gets its own notice', () {
+    final field = newField(TrainerController())
+      ..onWorldEvent(
+        PokemonBrokeFree(wild(4), PokeBallType.poke, escaped, fled: true),
+      );
+    expect(field.notices.map((n) => n.kind), [
+      FieldNoticeKind.brokeFree,
+      FieldNoticeKind.fled,
+    ]);
+    expect(field.notices.last.pokemon!.id, 4);
+  });
 }
