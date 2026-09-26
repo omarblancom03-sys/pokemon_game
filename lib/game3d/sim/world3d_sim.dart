@@ -14,6 +14,7 @@ import 'birds.dart';
 import 'butterflies.dart';
 import 'clouds.dart';
 import 'camera_input.dart';
+import 'capture_camera.dart';
 import 'dust.dart';
 import 'field_items.dart';
 import 'footprints.dart';
@@ -199,9 +200,19 @@ class World3DSim {
   /// 0 de pie … 1 agachado, suavizado (para la postura).
   double crouchAmount = 0;
 
-  /// El jugador está apuntando (botón derecho / tecla): la cámara se pone
-  /// al hombro, el cuerpo mira adonde apunta la cámara y no se corre.
+  /// El jugador quiere apuntar (botón derecho / tecla): la cámara se pone
+  /// al hombro, el cuerpo mira adonde apunta la cámara y no se corre. Lo
+  /// que cuenta es [isAiming] (la cámara de captura lo deja en suspenso).
   bool aiming = false;
+  bool _aimWas = false;
+
+  /// ¿Está apuntando de verdad? No mientras la cámara de captura enseña
+  /// una bola: si se sigue manteniendo, al terminar se vuelve a apuntar;
+  /// volver a pulsar apuntar suelta la cámara.
+  bool get isAiming => aiming && !captureCam.engaged;
+
+  /// La cámara que encuadra la bola al golpear (ver CaptureCamera).
+  final CaptureCamera captureCam = CaptureCamera();
 
   /// Pokémon al que se lanzaría ahora mismo (null = tiro a ojo).
   WildPokemon? lockedTarget;
@@ -445,14 +456,14 @@ class World3DSim {
   /// lanzada hasta que sale de la mano. null si lleva una baya.
   PokeBallType? get heldBall {
     if (_throwTime != null) return _released ? null : _throwBall;
-    return aiming && !berryReady ? readyBall : null;
+    return isAiming && !berryReady ? readyBall : null;
   }
 
   /// ¿Se ve una baya en la mano? (al apuntar con ella o al lanzarla, hasta
   /// que sale de la mano).
   bool get heldBerry {
     if (_throwTime != null) return _throwingBerry && !_released;
-    return aiming && berryReady;
+    return isAiming && berryReady;
   }
 
   /// ¿Hay algo en la mano para lanzar?
@@ -491,6 +502,7 @@ class World3DSim {
 
   bool _startThrow(PokeBallType? ball) {
     if (!canThrow) return false;
+    captureCam.release(); // lanzar otra cosa: manda el jugador
     _throwTime = 0;
     _throwBall = ball;
     _throwingBerry = ball == null;
@@ -563,7 +575,7 @@ class World3DSim {
   /// dibuja al apuntar). Vacía si no se está apuntando. Una baya no choca
   /// con los Pokémon: el arco acaba en el suelo o en un obstáculo.
   List<Vector3> get aimPreview {
-    if (!aiming || !canThrow || !_itemReady) return const [];
+    if (!isAiming || !canThrow || !_itemReady) return const [];
     final hand = _hand;
     if (berryReady) {
       return ballSystem.predict(hand, _berryVelocity(hand, lockedTarget));
@@ -737,8 +749,21 @@ class World3DSim {
   void update(double dt) {
     time += dt;
     if (_paused) aiming = false;
-    _updateCamera(dt);
-    camera.updateAim(dt, aiming: aiming);
+    final turned = _updateCamera(dt);
+    final freshAim = aiming && !_aimWas;
+    _aimWas = aiming;
+    captureCam.update(
+      dt,
+      balls: ballSystem.balls,
+      player: player.position,
+      interrupted: turned || freshAim || input.direction.length2 > 0.01,
+    );
+    camera
+      ..focus = captureCam.focus
+      ..focusPoint = captureCam.point
+      // Si se sigue apuntando, la cámara no se aleja del hombro mientras
+      // enseña la bola (iría hacia atrás y luego hacia delante).
+      ..updateAim(dt, aiming: aiming);
     lockedTarget = _paused
         ? null
         : findLockTarget(
@@ -749,7 +774,7 @@ class World3DSim {
     // El aro solo corre apuntando a alguien con una bola lista.
     throwRing.update(
       dt,
-      target: aiming && canThrow && readyBall != null && !berryReady
+      target: isAiming && canThrow && readyBall != null && !berryReady
           ? lockedTarget?.id
           : null,
     );
@@ -760,14 +785,14 @@ class World3DSim {
     // el cuerpo mira al objetivo aunque camine de lado.
     final dir = input.direction; // x: derecha, y: abajo (convención 2D)
     final wish = camera.right * dir.x + camera.forward * -dir.y;
-    final running = cameraInput.running && input.enabled && !aiming;
+    final running = cameraInput.running && input.enabled && !isAiming;
     if (running && wish.length2 > 0.01) crouching = false;
     player.update(
       dt,
       wish,
       running: running,
       crouching: crouching,
-      face: aiming || _throwTime != null ? _aimDirection : null,
+      face: isAiming || _throwTime != null ? _aimDirection : null,
     );
     crouchAmount += ((crouching ? 1 : 0) - crouchAmount) * math.min(1, dt * 10);
     camera.avoidObstacles(player.position, ballSystem.heightAt, dt);
@@ -829,7 +854,9 @@ class World3DSim {
     if (grassEncounters) _checkGrassSteps(moved);
   }
 
-  void _updateCamera(double dt) {
+  /// Gira y acerca la cámara según la entrada. Devuelve true si el
+  /// jugador la giró (arrastrando o con Q/E).
+  bool _updateCamera(double dt) {
     final (dragX, dragY) = cameraInput.takeDrag();
     camera
       ..rotate(
@@ -838,6 +865,7 @@ class World3DSim {
       )
       ..zoom(cameraInput.takeZoom())
       ..updateRecenter(dt);
+    return dragX != 0 || dragY != 0 || cameraInput.turnAxis != 0;
   }
 
   /// Lo que levantan los pies. Fuera de la hierba alta, polvo al correr

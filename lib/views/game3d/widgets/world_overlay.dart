@@ -108,7 +108,8 @@ class _WorldPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     if (size.isEmpty) return;
-    final aim = sim.camera.aim;
+    // Mientras la cámara de captura enseña la bola no se apunta: sin mira.
+    final aim = sim.captureCam.engaged ? 0.0 : sim.camera.aim;
     final center = size.center(Offset.zero);
     if (aim > 0.05) _paintCrosshair(canvas, center, aim);
     _paintStealth(canvas, size);

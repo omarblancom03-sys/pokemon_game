@@ -92,8 +92,37 @@ class OrbitCamera {
   double pitchLift = 0;
 
   /// Inclinación con la que se coloca de verdad la cámara. [pitch] es la
-  /// que eligió el jugador (y la que usa el tiro "a ojo").
-  double get effectivePitch => pitch + pitchLift;
+  /// que eligió el jugador (y la que usa el tiro "a ojo"). Con el encuadre
+  /// de captura se va hacia [focusPitch].
+  double get effectivePitch {
+    final base = _basePitch;
+    final s = _focusBlend;
+    return s == 0 ? base : base + (focusPitch - base) * s;
+  }
+
+  /// Inclinación siguiendo al jugador (sin el encuadre de captura).
+  double get _basePitch => pitch + pitchLift;
+
+  /// ENCUADRE DE CAPTURA (ver CaptureCamera): 0 = sigue al jugador; 1 =
+  /// mira de cerca a [focusPoint] (la bola que se sacude). Se mezclan el
+  /// punto que se mira, la distancia y la inclinación, así la cámara viaja
+  /// en un arco suave sin cambiar de giro (adelante sigue siendo adelante).
+  double focus = 0;
+  Vector3 focusPoint = Vector3.zero();
+
+  /// Distancia (m) e inclinación del encuadre de captura: cerca y algo
+  /// desde arriba, para que la hierba alta no tape la bola.
+  static const focusDistance = 2.6;
+  static const focusPitch = 0.5;
+
+  /// Distancia libre del encuadre (si algo estorba detrás de la bola).
+  double? _focusClear;
+
+  /// [focus] suavizado (arranca y llega despacio).
+  double get _focusBlend {
+    final f = focus.clamp(0.0, 1.0);
+    return f * f * (3 - 2 * f);
+  }
 
   /// Distancia mínima al jugador aunque algo estorbe (más cerca se
   /// metería dentro de su cabeza).
@@ -120,7 +149,10 @@ class OrbitCamera {
     double dt,
   ) {
     final desired = distance * (1 - 0.5 * aim);
-    final target = targetFor(playerFeet);
+    final target = _playerTarget(playerFeet);
+    _focusClear = focus > 0
+        ? _clearance(focusPoint, focusPitch, focusDistance, heightAt)
+        : null;
 
     // 1. ¿Hace falta subir? Se prueba de la inclinación elegida hacia arriba
     // y se queda la primera que deja sitio (o la que más deja).
@@ -143,7 +175,7 @@ class OrbitCamera {
     pitchLift += (liftGoal - pitchLift) * math.min(1, dt * rate);
 
     // 2. Distancia libre con la inclinación real.
-    final allowed = _clearance(target, effectivePitch, desired, heightAt);
+    final allowed = _clearance(target, _basePitch, desired, heightAt);
     final current = obstructedDistance ?? desired;
     final next = allowed < current
         ? allowed
@@ -179,15 +211,29 @@ class OrbitCamera {
     aim += (goal - aim) * math.min(1, dt * 10);
   }
 
-  /// Distancia real teniendo en cuenta el modo apuntar y los obstáculos.
-  double get effectiveDistance => math.min(
-    distance * (1 - 0.5 * aim),
-    obstructedDistance ?? double.infinity,
-  );
+  /// Distancia real teniendo en cuenta el modo apuntar, los obstáculos y
+  /// el encuadre de captura.
+  double get effectiveDistance {
+    final base = math.min(
+      distance * (1 - 0.5 * aim),
+      obstructedDistance ?? double.infinity,
+    );
+    final s = _focusBlend;
+    if (s == 0) return base;
+    final close = math.min(focusDistance, _focusClear ?? focusDistance);
+    return base + (close - base) * s;
+  }
 
   /// Punto que mira la cámara, a partir de los pies del jugador. Al apuntar
-  /// se desplaza sobre el hombro derecho para no tapar la mira.
-  Vector3 targetFor(Vector3 playerFeet) =>
+  /// se desplaza sobre el hombro derecho para no tapar la mira; con el
+  /// encuadre de captura, hacia [focusPoint].
+  Vector3 targetFor(Vector3 playerFeet) {
+    final base = _playerTarget(playerFeet);
+    final s = _focusBlend;
+    return s == 0 ? base : base + (focusPoint - base).scaled(s);
+  }
+
+  Vector3 _playerTarget(Vector3 playerFeet) =>
       playerFeet +
       Vector3(0, targetHeight + 0.15 * aim, 0) +
       right * (0.65 * aim);

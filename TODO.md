@@ -133,5 +133,24 @@ combates (tus capturas = tu equipo), nunca compite con ellos. Nada de lo de aqu�
 - [ ] Pokédex con huecos en "Mis capturas": siluetas de las especies del mapa (7/20)
 - [ ] Misiones cortas opcionales (3 activas, panel plegable, sin tiempo): enseñan sigilo, espalda,
       hierba y bayas; premio en Super/Ultra Balls
+## 8.15 Captura y exploración: sensación (añadido 2026-09-26)
+Foco pedido por el usuario: lanzar (animación, trayectoria, impacto, sacudidas, resultado) y andar por
+el campo (movimiento, cámara, hierba alta, encuentros, escenario). Va antes que lo que queda de 8.14.
+- [x] Cámara de captura: al golpear, la cámara se acerca y encuadra la bola durante las sacudidas y
+      el resultado; vuelve sola. Moverse, girar la cámara o volver a apuntar la suelta
+      (a 2,6 m de la bola en ~1 s; tiros a menos de 2,5 m no se acercan; si se mantiene apuntar, al
+      terminar vuelve al hombro)
+- [ ] Impacto con peso: micro-pausa al golpear (hit-stop), onda/destello en el punto del golpe
+- [ ] Sacudidas con tensión: cada sacudida más larga y ladeada; pausa antes del resultado
+- [ ] Resultado: al capturar, la bola vuela a la mochila; al escaparse, la bola se parte con destellos
+- [ ] La hierba alta se aparta alrededor de la bola que se sacude (se ve la bola en la hierba)
+- [ ] Pokémon que te miran pueden esquivar la bola de un salto (según carácter): el sigilo importa más
+- [ ] Rodar para esquivar (tecla X o botón): escapar de una carga sin combate
+- [ ] Cámara que respira: al correr se aleja un poco, agachado se acerca y baja
+- [ ] Pasos que suenan según el suelo (camino, césped, crujido en la hierba alta)
+- [ ] Pokémon dormidos (Zzz): se acercan sin despertar si vas con sigilo; bonus al capturarlos
+- [ ] Manadas: algunos aparecen en grupo; si uno te descubre, avisa a los demás
+- [ ] Árboles que se mecen con el viento y hojas que caen de los otoñales
+
 ## Mejoras continuas
 - [ ] (se irán añadiendo)

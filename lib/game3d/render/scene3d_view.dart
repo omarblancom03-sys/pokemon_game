@@ -196,7 +196,7 @@ class _Scene3DViewState extends State<Scene3DView> {
         walkSpeed: _sim.config.walkSpeed,
         runSpeed: _sim.config.runSpeed,
         crouch: _sim.crouchAmount,
-        aiming: _sim.camera.aim > 0.5,
+        aiming: _sim.isAiming && _sim.camera.aim > 0.5,
         throwProgress: _sim.throwProgress,
       ),
       heldBall: _sim.heldBall,

@@ -66,6 +66,12 @@
     alcanzan empieza el encuentro (combate, de otro equipo). Agáchate con C para ir despacio y en
     silencio; dentro de la hierba alta casi no te ven ("Escondido en la hierba").
   - El encuentro usa por ahora el diálogo provisional (Atrapar / Huir). El combate lo hace otro equipo.
+  - **Cámara de captura:** cuando la bola le da a un Pokémon, la cámara va sola a verla de cerca
+    (en un segundo, sin dar tirones): se ve cómo lo absorbe, cómo cae, cada sacudida con el botón
+    rojo y el "¡clic!" con estrellas (o cómo se escapa). Al terminar vuelve detrás del jugador (o al
+    hombro, si sigues manteniendo apuntar). Si te mueves, giras la cámara, vuelves a pulsar apuntar
+    o lanzas otra cosa, te devuelve el control al instante. En tiros muy cercanos no hace falta y
+    no se mueve.
   - **Captura crítica:** cuantas más especies distintas captures, más a menudo (hasta un 25 %) la bola
     brilla en dorado y se decide en una sola sacudida (mucho más fácil).
   - **¿Ya lo tienes?** Sobre los Pokémon cercanos cuya especie ya capturaste sale una Poké Ball

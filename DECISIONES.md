@@ -447,3 +447,25 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
   encuentros, tumba la hierba al cruzarla y desaparece a 24 m o, si se atasca, a los 6 s en una
   nubecilla de polvo. Se le puede seguir lanzando bolas mientras corre (atraparlo al vuelo es un
   tiro de mérito). Aviso aparte "¡El X salvaje huyó!" (el de "se ha escapado" sigue saliendo).
+- **2026-09-26 — Prioridad: 8.15 antes que lo que queda de 8.14.** El usuario pidió centrarse en la
+  mecánica de lanzar (animación, trayectoria, impacto, sacudidas, resultado) y en explorar el campo.
+  Lo pendiente de 8.14 (botón Combatir —espera al otro equipo—, pantalla final del Safari con récord,
+  Pokédex con huecos, misiones) no toca eso, así que se abre 8.15 con mejoras de esas dos áreas y se
+  hace primero. En una vista previa (tiro a ~8 m) se vio el problema principal: las sacudidas y el
+  resultado pasan lejos y la bola se ve diminuta; de ahí la primera tarea (cámara de captura).
+- **2026-09-26 — Cámara de captura** (TODO 8.15; `sim/capture_camera.dart`, Dart puro). Decide QUÉ
+  mirar (la bola que más recientemente golpeó, desde el golpe hasta 1,1 s tras el "¡clic!" o 0,5 s
+  tras escaparse) y CUÁNTO (`weight` suavizado: entra a 3,2/s, sale a 2,4/s). `OrbitCamera` mezcla
+  con `focus` los tres parámetros de la órbita (punto que mira, distancia e inclinación) en vez de
+  dos posiciones: el ojo viaja en arco, el giro no cambia (adelante sigue siendo adelante para
+  WASD) y todo lo que proyecta la cámara (marcas, bonus) sigue cuadrando solo. Encuadre a 2,6 m y
+  0,5 rad: a 3,4 m la bola (radio 0,12) apenas ocupaba 25 px en la vista previa. El factor de
+  alcance (0 a < 2,5 m, 1 a ≥ 4,5 m de la bola al jugador) evita meter el ojo en la cabeza del
+  jugador o detrás de él en tiros cortos (ahí la bola ya se ve). Si algo alto queda detrás de la
+  bola, el encuadre se acerca (misma prueba de obstáculos que la cámara normal).
+  **El jugador manda:** moverse, girar la cámara, volver a PULSAR apuntar o lanzar otra cosa la
+  sueltan para esa bola; otra bola que golpee la vuelve a llamar. Mantener apuntar desde antes del
+  golpe NO la suelta (es lo normal al lanzar): apuntar queda en suspenso (`isAiming`: sin mira, sin
+  arco, sin aro) y, al terminar, se vuelve a apuntar. La mezcla del hombro (`camera.aim`) sigue la
+  tecla, no `isAiming`: si no, al golpear la cámara se alejaba del hombro y luego volvía hacia la
+  bola (se vio en la vista previa).
