@@ -520,3 +520,17 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
   `Random()` sin semilla; los tests inyectan el suyo (`fleeRandom`, `dodgeRandom`) o fijan la
   probabilidad a 0/1. Los azares de DECORADO (polvo, briznas, pájaros…) siguen con semilla: da
   igual que se repitan y así las vistas previas son comparables.
+- **2026-09-26 — Voltereta y aturdidos** (TODO 8.15). Tecla **X** (libre) y un botón pequeño junto
+  a agacharse. 3,2 m en 0,5 s: sale a 8,5 m/s y frena a la mitad (así se nota el impulso y enlaza
+  con andar), por el mismo choque que andar (`PlayerBody.dash`). Hacia donde empujas o, quieto,
+  hacia donde miras. Espera de 0,35 s entre volteretas (sin ella se encadenan y es más rápida que
+  correr). Te levanta, hace ruido (sigilo "ruidoso") y no deja apuntar ni lanzar.
+  **Para qué sirve:** escapar de una carga sin combate. Correr (7,5 m/s) ya dejaba atrás a un
+  agresivo (3,6 m/s), así que la voltereta tenía que dar algo más: el que te embiste a < 3,5 m
+  cuando ruedas va a por donde ESTABAS (recto, +2 m, a 5 m/s) y queda ATURDIDO 2,5 s (quieto, sin
+  percibir nada, `alertTime = 0`): cuenta como "no te vio" (×1,5) y, como se pasó de largo, suele
+  quedar de espaldas (×2). Riesgo y premio: hay que dejar que se acerque. Rodando, un contacto con un
+  agresivo lo aturde en vez de empezar el combate. Al volver en sí sigue mosqueado (sospecha 0,9).
+  Animación: una vuelta entera hacia delante alrededor del centro del cuerpo (0,65 m), hecho una
+  bola y levantándose 0,45 m a mitad para no hundirse en el suelo. Sonidos: "¡zas!" al rodar,
+  "uiuiui" al aturdirse; aviso morado y tres estrellitas girando sobre su cabeza.

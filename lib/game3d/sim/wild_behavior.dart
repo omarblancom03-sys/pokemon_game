@@ -178,6 +178,24 @@ class WildBehavior {
     return d > fleeDespawnDistance;
   }
 
+  /// Corre en línea recta hacia [point] a [speed] (sin rodear nada: va
+  /// lanzado). Devuelve true al llegar o si algo le corta el paso.
+  bool dashTo(WildPokemon w, Vector3 point, double speed, double dt) {
+    final to = point - w.position
+      ..y = 0;
+    final d = to.length;
+    if (d < 0.15) return true;
+    final step = to.normalized()..scale(math.min(d, speed * dt));
+    final next = w.position + step;
+    if (!isWalkable(next)) return true;
+    w
+      ..position = next
+      ..distanceMoved += step.length
+      ..facing = math.atan2(to.x, to.z)
+      ..target = next + step;
+    return false;
+  }
+
   /// Mueve a [w] según su estado y carácter. Devuelve true si se ha
   /// alejado tanto huyendo que debe desaparecer.
   bool act(WildPokemon w, Vector3 player, double dt) {

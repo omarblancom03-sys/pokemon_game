@@ -265,6 +265,10 @@ class _Game3DScreenState extends State<Game3DScreen> {
       if (down) _toggleCrouch();
       return KeyEventResult.handled;
     }
+    if (key == LogicalKeyboardKey.keyX) {
+      if (down) _sim.roll();
+      return KeyEventResult.handled;
+    }
     if (key == LogicalKeyboardKey.keyV) {
       if (down) _sim.recenterCamera();
       return KeyEventResult.handled;
@@ -411,6 +415,7 @@ class _Game3DScreenState extends State<Game3DScreen> {
                   crouching: _sim.crouching,
                   onRecenter: _sim.recenterCamera,
                   onCrouch: _toggleCrouch,
+                  onRoll: () => _sim.roll(),
                   onAim: () {
                     setState(() => _aimButton = !_aimButton);
                     _syncAim();
@@ -512,6 +517,7 @@ class _ThrowButtons extends StatelessWidget {
     required this.crouching,
     required this.onRecenter,
     required this.onCrouch,
+    required this.onRoll,
     required this.onAim,
     required this.onThrow,
   });
@@ -524,6 +530,7 @@ class _ThrowButtons extends StatelessWidget {
   final bool crouching;
   final VoidCallback onRecenter;
   final VoidCallback onCrouch;
+  final VoidCallback onRoll;
   final VoidCallback onAim;
   final VoidCallback onThrow;
 
@@ -550,6 +557,16 @@ class _ThrowButtons extends StatelessWidget {
           foregroundColor: crouching ? Colors.black : Colors.white,
           onPressed: onCrouch,
           child: const Icon(Icons.accessibility_new),
+        ),
+        const SizedBox(width: 8),
+        FloatingActionButton.small(
+          key: const Key('game3d_roll'),
+          heroTag: null,
+          tooltip: 'Rodar (X)',
+          backgroundColor: Colors.black54,
+          foregroundColor: Colors.white,
+          onPressed: onRoll,
+          child: const Icon(Icons.sports_gymnastics),
         ),
         const SizedBox(width: 8),
         FloatingActionButton.small(

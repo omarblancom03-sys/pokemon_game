@@ -151,7 +151,9 @@ el campo (movimiento, cámara, hierba alta, encuentros, escenario). Va antes que
 - [x] Pokémon que te miran pueden esquivar la bola de un salto (según carácter): el sigilo importa más
       (con "?" o "!" y mirando la bola: asustadizos 40 %, curiosos 20 %, agresivos nunca; el aro lo
       reduce y un "¡Excelente!" no se esquiva; salto lateral de 1,6 m en 0,3 s; aviso y sonido)
-- [ ] Rodar para esquivar (tecla X o botón): escapar de una carga sin combate
+- [x] Rodar para esquivar (tecla X o botón): escapar de una carga sin combate
+      (3,2 m en 0,5 s; el que te embiste a < 3,5 m se pasa de largo y queda aturdido 2,5 s: cuenta
+      como "no te vio"; rodando nadie te alcanza; ruido y polvo/briznas)
 - [ ] Cámara que respira: al correr se aleja un poco, agachado se acerca y baja
 - [ ] Pasos que suenan según el suelo (camino, césped, crujido en la hierba alta)
 - [ ] Pokémon dormidos (Zzz): se acercan sin despertar si vas con sigilo; bonus al capturarlos

@@ -82,6 +82,20 @@ class PlayerBody {
     }
   }
 
+  /// Movimiento FORZADO (una voltereta): va a [speed] m/s hacia [dir]
+  /// (unitario, en el suelo), chocando igual que al andar, y se gira
+  /// deprisa hacia allí.
+  void dash(double dt, Vector3 dir, double speed) {
+    _velocity.setValues(dir.x * speed, 0, dir.z * speed);
+    _moveAxis(_velocity.x * dt, 0);
+    _moveAxis(0, _velocity.z * dt);
+    facing = _turnTowards(
+      facing,
+      math.atan2(dir.x, dir.z),
+      config.turnSpeed * 2 * dt,
+    );
+  }
+
   /// Mueve por un solo eje; si choca, se anula la velocidad en ese eje.
   /// Separar ejes es lo que permite "deslizarse" pegado a una pared.
   void _moveAxis(double dx, double dz) {

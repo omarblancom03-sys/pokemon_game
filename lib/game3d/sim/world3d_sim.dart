@@ -211,7 +211,7 @@ class World3DSim {
   /// ¿Está apuntando de verdad? No mientras la cámara de captura enseña
   /// una bola: si se sigue manteniendo, al terminar se vuelve a apuntar;
   /// volver a pulsar apuntar suelta la cámara.
-  bool get isAiming => aiming && !captureCam.engaged;
+  bool get isAiming => aiming && !captureCam.engaged && !isRolling;
 
   /// La cámara que encuadra la bola al golpear (ver CaptureCamera).
   final CaptureCamera captureCam = CaptureCamera();
@@ -407,6 +407,135 @@ class World3DSim {
   /// Vuelve a poner la cámara detrás del jugador (girando con suavidad).
   void recenterCamera() => camera.recenterBehind(player.facing);
 
+  // --- Voltereta ----------------------------------------------------------
+
+  /// Lo que dura una voltereta (s), cuánto avanza (m) y la espera hasta
+  /// poder dar otra.
+  static const rollTime = 0.5;
+  static const rollDistance = 3.2;
+  static const rollCooldown = 0.35;
+
+  /// Un Pokémon que te embiste a menos de esto (m) cuando ruedas se pasa
+  /// de largo: sigue recto hasta [overshootPast] m más allá de donde
+  /// estabas y queda aturdido.
+  static const rollDodgeRange = 3.5;
+  static const overshootPast = 2.0;
+
+  double? _rollTime;
+  final Vector3 _rollDir = Vector3(0, 0, 1);
+  double _rollWait = 0;
+
+  bool get isRolling => _rollTime != null;
+
+  /// 0..1 mientras rueda (para la postura); null si no.
+  double? get rollProgress =>
+      _rollTime == null ? null : math.min(1, _rollTime! / rollTime);
+
+  /// Rapidez al empezar: frena hasta la mitad al final, y así recorre
+  /// [rollDistance] en [rollTime].
+  static double get _rollSpeed => rollDistance / (rollTime * 0.75);
+
+  /// VOLTERETA (tecla X o botón): un impulso rápido hacia donde te mueves
+  /// (o hacia donde miras, si estás quieto). Te levanta si ibas agachado y
+  /// hace ruido. Un Pokémon que te embiste y está cerca se pasa de largo y
+  /// queda aturdido; mientras ruedas, ninguno te alcanza. Devuelve false
+  /// si ahora no se puede (en pausa, lanzando, rodando o recién rodado).
+  bool roll() {
+    if (_paused || isRolling || _rollWait > 0 || _throwTime != null) {
+      return false;
+    }
+    final dir = input.direction;
+    final wish = camera.right * dir.x + camera.forward * -dir.y;
+    if (wish.length2 > 0.01) {
+      _rollDir.setFrom(wish..normalize());
+    } else {
+      final f = player.facing;
+      _rollDir.setValues(math.sin(f), 0, math.cos(f));
+    }
+    _rollTime = 0;
+    crouching = false;
+    captureCam.release();
+    // Los que te embisten de cerca van a por donde ESTABAS.
+    final here = player.position;
+    for (final w in wild) {
+      if (!w.isFree || w.hidden || !w.isAlert || w.engaged) continue;
+      if (w.temperament != Temperament.aggressive) continue;
+      if (w.isDazed || w.overshootTo != null) continue;
+      final to = here - w.position
+        ..y = 0;
+      final d = to.length;
+      if (d > rollDodgeRange || d < 1e-3) continue;
+      w
+        ..overshootTo = w.position + to.normalized() * (d + overshootPast)
+        ..target = null;
+    }
+    // Al tirarse al suelo levanta polvo (o briznas en la hierba alta).
+    final feet = player.position;
+    if (isTallGrass(feet)) {
+      blades.footstep(feet, _rollDir * _rollSpeed, running: true);
+    } else {
+      dust.burst(feet, strength: 0.45);
+    }
+    _emit(const PlayerRolled());
+    return true;
+  }
+
+  /// Avanza la voltereta (en vez de andar).
+  void _updateRoll(double dt) {
+    final t = _rollTime! + dt;
+    final s = math.min(1.0, t / rollTime);
+    player.dash(dt, _rollDir, _rollSpeed * (1 - 0.5 * s));
+    if (t >= rollTime) {
+      _rollTime = null;
+      _rollWait = rollCooldown;
+    } else {
+      _rollTime = t;
+    }
+  }
+
+  /// Se pasó de largo: corre recto hasta [WildPokemon.overshootTo] (sin
+  /// alcanzar a nadie) y, al llegar, queda aturdido.
+  void _overshoot(WildPokemon w, double dt) {
+    final before = w.position;
+    final done = behavior.dashTo(
+      w,
+      w.overshootTo!,
+      WildPokemon.overshootSpeed,
+      dt,
+    );
+    w.velocity = dt > 0 ? (w.position - before) / dt : Vector3.zero();
+    if (w.velocity.length > trampleSpeed && isTallGrass(w.position)) {
+      trampled.trample(w.position, w.velocity);
+    }
+    if (done) _startDaze(w);
+  }
+
+  /// Aturdido: quieto, sin enterarse de nada (cuenta como que no te ha
+  /// visto) durante [WildPokemon.dazeSeconds]. Al volver en sí sigue
+  /// mosqueado: si te ve, te descubre enseguida.
+  void _startDaze(WildPokemon w) {
+    w
+      ..overshootTo = null
+      ..dazedFor = 0
+      ..alertTime = 0
+      ..awareness = 0
+      ..target = null
+      ..velocity = Vector3.zero();
+    _dropBait(w);
+    _emit(PokemonDazed(w));
+  }
+
+  void _daze(WildPokemon w, double dt) {
+    final t = w.dazedFor! + dt;
+    if (t < WildPokemon.dazeSeconds) {
+      w.dazedFor = t;
+      return;
+    }
+    w
+      ..dazedFor = null
+      ..awareness = 0.9;
+  }
+
   /// Leer el cartel de delante o cerrar el abierto. Devuelve si cambió.
   bool toggleSign() {
     if (_paused || (openSign == null && readableSign == null)) return false;
@@ -463,7 +592,7 @@ class World3DSim {
       _throwTime == null ? null : _throwTime! / throwDuration;
 
   /// ¿Se puede lanzar ahora? (una bola cada vez que termina el gesto).
-  bool get canThrow => !_paused && _throwTime == null;
+  bool get canThrow => !_paused && _throwTime == null && !isRolling;
 
   /// Bola que se ve en la mano: al apuntar, la elegida; al lanzar, la
   /// lanzada hasta que sale de la mano. null si lleva una baya.
@@ -897,13 +1026,18 @@ class World3DSim {
     final wish = camera.right * dir.x + camera.forward * -dir.y;
     final running = cameraInput.running && input.enabled && !isAiming;
     if (running && wish.length2 > 0.01) crouching = false;
-    player.update(
-      dt,
-      wish,
-      running: running,
-      crouching: crouching,
-      face: isAiming || _throwTime != null ? _aimDirection : null,
-    );
+    _rollWait = math.max(0, _rollWait - dt);
+    if (isRolling) {
+      _updateRoll(dt);
+    } else {
+      player.update(
+        dt,
+        wish,
+        running: running,
+        crouching: crouching,
+        face: isAiming || _throwTime != null ? _aimDirection : null,
+      );
+    }
     crouchAmount += ((crouching ? 1 : 0) - crouchAmount) * math.min(1, dt * 10);
     camera.avoidObstacles(player.position, ballSystem.heightAt, dt);
     signReader.update(player.position);
@@ -1142,6 +1276,7 @@ class World3DSim {
 
   /// ¿Cuánto se deja notar el jugador? (agachado, corriendo, en la hierba)
   PlayerStealth get stealth {
+    if (isRolling) return PlayerStealth.noisy;
     if (crouching) {
       return isTallGrass(player.position)
           ? PlayerStealth.hidden
@@ -1185,6 +1320,14 @@ class World3DSim {
     }
     if (w.isDodging) {
       _dodge(w, dt);
+      return;
+    }
+    if (w.overshootTo != null) {
+      _overshoot(w, dt);
+      return;
+    }
+    if (w.isDazed) {
+      _daze(w, dt);
       return;
     }
     if (w.isLeaving) {
@@ -1393,8 +1536,14 @@ class World3DSim {
     final p = player.position;
     for (final w in wild) {
       if (w.engaged || !w.isFree || w.hidden || w.isLeaving) continue;
+      if (w.isDazed || w.overshootTo != null) continue;
       if (w.position.distanceTo(p) >= w.contactRadius) continue;
       if (w.temperament == Temperament.aggressive && w.isAlert) {
+        // Rodando no te alcanza: se pasa de largo y queda aturdido.
+        if (isRolling) {
+          _startDaze(w);
+          continue;
+        }
         w.engaged = true;
         onWildContact?.call(w);
         return true;

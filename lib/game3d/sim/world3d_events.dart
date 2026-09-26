@@ -73,6 +73,19 @@ class PokemonDodged extends World3DEvent {
   final WildPokemon wild;
 }
 
+/// El jugador dio una voltereta.
+class PlayerRolled extends World3DEvent {
+  const PlayerRolled();
+}
+
+/// Un Pokémon que te embestía se pasó de largo (rodaste a un lado) y quedó
+/// aturdido.
+class PokemonDazed extends World3DEvent {
+  const PokemonDazed(this.wild);
+
+  final WildPokemon wild;
+}
+
 /// El jugador sacudió un arbusto; soltó [berries] bayas (0 = no le
 /// quedaba ninguna).
 class BushShaken extends World3DEvent {

@@ -137,6 +137,20 @@ class WildPokemon {
     return 4 * s * (1 - s) * 0.45;
   }
 
+  /// Se PASA DE LARGO: embestía y rodaste a un lado; corre recto hasta este
+  /// punto (donde estabas, y algo más) y queda aturdido. null = no.
+  Vector3? overshootTo;
+
+  /// ATURDIDO tras pasarse de largo: segundos que lleva (null = no). No se
+  /// mueve ni se entera de nada: ¡la ocasión de lanzarle una bola!
+  double? dazedFor;
+
+  bool get isDazed => dazedFor != null;
+
+  /// Lo que dura el aturdimiento (s) y la rapidez al pasarse de largo.
+  static const dazeSeconds = 2.5;
+  static const overshootSpeed = 5.0;
+
   /// Segundos que lleva YÉNDOSE para siempre (null = no se va): en el Reto
   /// Safari, tras escaparse de una bola, puede huir. Corre lejos de ti y
   /// desaparece (ver World3DSim).

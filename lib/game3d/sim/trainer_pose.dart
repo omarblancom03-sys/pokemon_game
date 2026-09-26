@@ -12,6 +12,7 @@ class TrainerPose {
     this.lean = 0,
     this.crouch = 0,
     this.rightArm,
+    this.roll = 0,
   });
 
   /// Postura para alguien que ha andado [distanceWalked] metros y va a
@@ -24,7 +25,16 @@ class TrainerPose {
     double crouch = 0,
     bool aiming = false,
     double? throwProgress,
+    double? rollProgress,
   }) {
+    // Voltereta: hecho una bola (piernas y brazos recogidos) y girando.
+    if (rollProgress != null) {
+      return TrainerPose(
+        crouch: 1,
+        armSwing: 0.9,
+        roll: rollProgress.clamp(0.0, 1.0),
+      );
+    }
     // 0 quieto, 1 andando, hasta ~1.7 corriendo.
     final intensity = (speed / walkSpeed).clamp(0.0, runSpeed / walkSpeed);
     final phase = distanceWalked / strideLength * 2 * math.pi;
@@ -77,4 +87,18 @@ class TrainerPose {
 
   /// Ángulo fijo del brazo derecho (apuntar/lanzar); null = balanceo.
   final double? rightArm;
+
+  /// Voltereta: 0..1 (0 = no rueda).
+  final double roll;
+
+  /// Giro hacia delante de la voltereta (rad): una vuelta entera, despacio
+  /// al tirarse y al levantarse.
+  double get rollAngle => 2 * math.pi * roll * roll * (3 - 2 * roll);
+
+  /// Cuánto se levanta del suelo al rodar (m), para no hundirse en él.
+  double get rollLift => 0.45 * math.sin(math.pi * roll);
+
+  /// Altura (m) del punto sobre el que gira al rodar (el centro del cuerpo
+  /// hecho una bola).
+  static const rollPivot = 0.65;
 }

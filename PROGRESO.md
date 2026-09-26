@@ -33,6 +33,13 @@
   - **Hierba pisada:** un Pokémon que cruza la hierba alta corriendo (huyendo de ti o cargando) deja un
     pasillo de matas tumbadas hacia donde iba y aplastadas: se ve por dónde se fue. Siguen así unos
     10 s y luego se levantan poco a poco. Los que pasean no dejan rastro.
+  - **Voltereta** (X o el botón del gimnasta): una voltereta rápida de unos 3 m hacia donde te mueves
+    (o hacia donde miras). Levanta polvo o briznas, hace ruido y te levanta si ibas agachado; no se
+    puede apuntar ni lanzar mientras dura y hay que esperar un momento para dar otra. Si un Pokémon
+    te está embistiendo y lo tienes cerca, al rodar se pasa de largo y queda ATURDIDO unos segundos
+    ("¡X se pasó de largo! Está aturdido: ¡ahora!", estrellitas girando sobre su cabeza): quieto y
+    sin verte, de espaldas a ti. ¡Es el momento de lanzarle una bola por la espalda! Mientras ruedas,
+    ninguno te alcanza.
   - Mariposas de colores sobre las flores: se espantan si te acercas (agachado puedes verlas de cerca).
   - **Pájaros:** dos bandadas de gorriones picotean y dan saltitos en el campo abierto. Si te
     acercas salen volando todos a la vez (corriendo desde lejos; agachado te acercas mucho), cruzan

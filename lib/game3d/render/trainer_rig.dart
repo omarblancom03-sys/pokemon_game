@@ -80,9 +80,18 @@ class TrainerRig {
     root
       ..position = _engine(feet)
       ..rotation = vm.Quaternion.axisAngle(_y, -facing);
+    // Inclinación (y voltereta) hacia delante. Al rodar gira alrededor del
+    // centro del cuerpo, no de los pies, y se levanta un poco del suelo.
+    final tilt = vm.Quaternion.axisAngle(_x, -(pose.lean + pose.rollAngle));
+    var hips = vm.Vector3(0, pose.bob - 0.14 * pose.crouch, 0);
+    if (pose.roll > 0) {
+      final pivot = vm.Vector3(0, TrainerPose.rollPivot, 0);
+      hips =
+          hips + pivot - tilt.rotated(pivot) + vm.Vector3(0, pose.rollLift, 0);
+    }
     _hips
-      ..position = vm.Vector3(0, pose.bob - 0.14 * pose.crouch, 0)
-      ..rotation = vm.Quaternion.axisAngle(_x, -pose.lean);
+      ..position = hips
+      ..rotation = tilt;
     // Ángulo positivo en X lleva el pie hacia atrás: por eso el signo menos
     // para "hacia delante".
     // Agachado: una pierna adelantada y la otra atrás (medio arrodillado).

@@ -56,8 +56,10 @@ class SoundDirector {
         if (startled) _cry(wild);
       case ShinySpotted():
         sound.play(GameSound.shiny);
-      case PokemonDodged():
+      case PokemonDodged() || PlayerRolled():
         sound.play(GameSound.dodge);
+      case PokemonDazed():
+        sound.play(GameSound.dazed);
       case BallMissed() || PokemonEating() || SafariTimeUp():
         break;
     }

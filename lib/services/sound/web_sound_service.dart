@@ -86,6 +86,26 @@ class WebSoundService implements SoundService {
         case GameSound.dodge:
           _hiss(ctx, 2600, to: 700, q: 1.2, duration: 0.2, gain: 0.14);
           _tone(ctx, 'triangle', 420, to: 780, duration: 0.12, gain: 0.1);
+        case GameSound.dazed:
+          _tone(ctx, 'triangle', 1200, to: 500, duration: 0.18, gain: 0.12);
+          _tone(
+            ctx,
+            'triangle',
+            1000,
+            to: 420,
+            duration: 0.18,
+            at: 0.16,
+            gain: 0.1,
+          );
+          _tone(
+            ctx,
+            'triangle',
+            850,
+            to: 350,
+            duration: 0.24,
+            at: 0.32,
+            gain: 0.08,
+          );
         case GameSound.shiny:
           _sparkle(ctx);
           _sparkle(ctx, at: 0.22);

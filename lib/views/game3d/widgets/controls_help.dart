@@ -114,7 +114,7 @@ class _Panel extends StatelessWidget {
     ('Capturar', 'Clic der. / F apuntar · Clic / Espacio lanzar'),
     ('', 'R o 1-4 bola o baya · lanza con el aro pequeño'),
     ('Más', 'L leer / sacudir arbustos · P capturas · M mapa'),
-    ('', 'N sonido · H esta ayuda'),
+    ('', 'X rodar · N sonido · H esta ayuda'),
   ];
 
   @override

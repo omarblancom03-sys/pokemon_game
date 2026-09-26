@@ -128,6 +128,12 @@ class _WorldPainter extends CustomPainter {
 
     for (final w in sim.wild) {
       if (!w.isFree) continue;
+      // Aturdido: estrellitas que le dan vueltas sobre la cabeza.
+      if (w.isDazed) {
+        final head = onScreen(w.position..y = w.displayHeight + 0.2);
+        if (head != null) _paintDizzy(canvas, head);
+        continue;
+      }
       final marked = w.isAlert || w.isSuspicious;
       final baited = w.bait != null && !w.isAlert;
       if (!marked && !baited) continue;
@@ -258,6 +264,23 @@ class _WorldPainter extends CustomPainter {
       final a = i * 2 * math.pi / count + offset + t * 0.8;
       final at = center + Offset(math.cos(a), math.sin(a)) * radius;
       _paintStar(canvas, at, (big ? 10 : 7) * (1 - 0.3 * t), paint);
+    }
+  }
+
+  /// Tres estrellitas amarillas girando en corro (aturdido).
+  void _paintDizzy(Canvas canvas, Offset head) {
+    final paint = Paint()..color = const Color(0xFFFFEB3B);
+    final outline = Paint()
+      ..color = Colors.black54
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1;
+    for (var i = 0; i < 3; i++) {
+      final a = sim.time * 5 + i * 2 * math.pi / 3;
+      // Un corro "en perspectiva": más ancho que alto; delante, más grande.
+      final at = head + Offset(math.cos(a) * 22, math.sin(a) * 6);
+      final r = 8 + 2.5 * math.sin(a);
+      _paintStar(canvas, at, r, outline);
+      _paintStar(canvas, at, r, paint);
     }
   }
 
