@@ -219,6 +219,23 @@ void main() {
     });
   });
 
+  test('the camera breathes: back when running, close when crouching', () {
+    final (s, _, _) = world();
+    s
+      ..cameraInput.running = true
+      ..input.setKeyboardDirection(Vector2(0, -1));
+    step(s, 1.5);
+    expect(s.camera.stance, greaterThan(0.9));
+    s
+      ..cameraInput.running = false
+      ..input.setKeyboardDirection(Vector2.zero());
+    step(s, 2);
+    expect(s.camera.stance.abs(), lessThan(0.05));
+    s.crouching = true;
+    step(s, 2);
+    expect(s.camera.stance, lessThan(-0.95));
+  });
+
   test('the pose: a whole turn, off the ground in the middle', () {
     TrainerPose pose(double p) => TrainerPose.fromMotion(
       distanceWalked: 3,

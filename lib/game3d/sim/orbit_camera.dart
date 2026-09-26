@@ -103,6 +103,23 @@ class OrbitCamera {
   /// Inclinación siguiendo al jugador (sin el encuadre de captura).
   double get _basePitch => pitch + pitchLift;
 
+  /// POSTURA del jugador para la cámara (la pone la simulación, ya
+  /// suavizada): 1 corriendo, 0 andando o quieto, -1 agachado. Corriendo
+  /// se aleja un poco (sensación de velocidad); agachado se acerca y baja
+  /// (sensación de ir a ras de hierba).
+  double stance = 0;
+
+  /// Cuánto se aleja corriendo y se acerca agachado (fracción de la
+  /// distancia) y cuánto baja agachado el punto que mira (m).
+  static const runPullBack = 0.12;
+  static const crouchPullIn = 0.15;
+  static const crouchDrop = 0.35;
+
+  double get _stanceScale {
+    final s = stance.clamp(-1.0, 1.0);
+    return s >= 0 ? 1 + runPullBack * s : 1 + crouchPullIn * s;
+  }
+
   /// ENCUADRE DE CAPTURA (ver CaptureCamera): 0 = sigue al jugador; 1 =
   /// mira de cerca a [focusPoint] (la bola que se sacude). Se mezclan el
   /// punto que se mira, la distancia y la inclinación, así la cámara viaja
@@ -148,7 +165,7 @@ class OrbitCamera {
     double Function(double x, double z) heightAt,
     double dt,
   ) {
-    final desired = distance * (1 - 0.5 * aim);
+    final desired = distance * (1 - 0.5 * aim) * _stanceScale;
     final target = _playerTarget(playerFeet);
     _focusClear = focus > 0
         ? _clearance(focusPoint, focusPitch, focusDistance, heightAt)
@@ -215,7 +232,7 @@ class OrbitCamera {
   /// el encuadre de captura.
   double get effectiveDistance {
     final base = math.min(
-      distance * (1 - 0.5 * aim),
+      distance * (1 - 0.5 * aim) * _stanceScale,
       obstructedDistance ?? double.infinity,
     );
     final s = _focusBlend;
@@ -235,7 +252,11 @@ class OrbitCamera {
 
   Vector3 _playerTarget(Vector3 playerFeet) =>
       playerFeet +
-      Vector3(0, targetHeight + 0.15 * aim, 0) +
+      Vector3(
+        0,
+        targetHeight + 0.15 * aim - crouchDrop * math.max(0, -stance),
+        0,
+      ) +
       right * (0.65 * aim);
 
   /// Posición de la cámara (el "ojo") para un jugador en [playerFeet].

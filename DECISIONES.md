@@ -534,3 +534,9 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
   Animación: una vuelta entera hacia delante alrededor del centro del cuerpo (0,65 m), hecho una
   bola y levantándose 0,45 m a mitad para no hundirse en el suelo. Sonidos: "¡zas!" al rodar,
   "uiuiui" al aturdirse; aviso morado y tres estrellitas girando sobre su cabeza.
+- **2026-09-26 — La cámara respira con la postura** (TODO 8.15). `OrbitCamera.stance` (1 corriendo,
+  0 andando o quieto, −1 agachado) lo suaviza la simulación a 2,5/s (~0,4 s: rápido, sin marear).
+  Corriendo, la distancia ×1,12; agachado ×0,85 y el punto que mira 0,35 m más bajo. Se eligió la
+  DISTANCIA y no el campo de visión: el FOV fijo lo usan el motor y `project` (marcas, mira), y
+  cambiarlo obligaba a pasarlo por todos lados; alejarse da la misma sensación. Mientras ruedas no
+  cambia (la voltereta es muy corta y daría un tirón). Nada de balanceo al correr: marea.

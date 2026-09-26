@@ -154,7 +154,8 @@ el campo (movimiento, cámara, hierba alta, encuentros, escenario). Va antes que
 - [x] Rodar para esquivar (tecla X o botón): escapar de una carga sin combate
       (3,2 m en 0,5 s; el que te embiste a < 3,5 m se pasa de largo y queda aturdido 2,5 s: cuenta
       como "no te vio"; rodando nadie te alcanza; ruido y polvo/briznas)
-- [ ] Cámara que respira: al correr se aleja un poco, agachado se acerca y baja
+- [x] Cámara que respira: al correr se aleja un poco, agachado se acerca y baja
+      (+12 % corriendo; −15 % y 0,35 m más baja agachado; suave, ~0,4 s)
 - [ ] Pasos que suenan según el suelo (camino, césped, crujido en la hierba alta)
 - [ ] Pokémon dormidos (Zzz): se acercan sin despertar si vas con sigilo; bonus al capturarlos
 - [ ] Manadas: algunos aparecen en grupo; si uno te descubre, avisa a los demás

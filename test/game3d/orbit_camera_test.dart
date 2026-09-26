@@ -241,4 +241,30 @@ void main() {
       expect(camera.pitch, 0.9);
     });
   });
+
+  group('breathing with your stance', () {
+    test('running pulls it back a little', () {
+      final camera = OrbitCamera(distance: 8);
+      camera.stance = 1;
+      expect(
+        camera.effectiveDistance,
+        closeTo(8 * (1 + OrbitCamera.runPullBack), 1e-9),
+      );
+    });
+
+    test('crouching brings it closer and lower', () {
+      final camera = OrbitCamera(distance: 8);
+      final feet = Vector3.zero();
+      final standing = camera.targetFor(feet).y;
+      camera.stance = -1;
+      expect(
+        camera.effectiveDistance,
+        closeTo(8 * (1 - OrbitCamera.crouchPullIn), 1e-9),
+      );
+      expect(
+        camera.targetFor(feet).y,
+        closeTo(standing - OrbitCamera.crouchDrop, 1e-6),
+      );
+    });
+  });
 }

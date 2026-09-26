@@ -20,6 +20,8 @@
     que se van borrando: a los 30 s ya no están.
   - Cámara en tercera persona: arrastrar con el ratón para girar, rueda para zoom, Q/E para girar con
     teclado. V (o el botón de la cámara) la vuelve a poner detrás del jugador con un giro suave.
+    La cámara "respira" con tu postura: corriendo se aleja un poco (se nota la velocidad) y agachado
+    se acerca y baja (vas a ras de hierba).
     WASD/flechas mueven relativo a la cámara; Mayús corre. D-pad en pantalla. La cámara no
     atraviesa árboles ni casas: se acerca si algo estorba y, de espaldas a un árbol, mira desde arriba.
   - **Ayuda de controles** (arriba a la izquierda, bajo la bolsa): los controles por grupos (moverse,

@@ -1039,6 +1039,16 @@ class World3DSim {
       );
     }
     crouchAmount += ((crouching ? 1 : 0) - crouchAmount) * math.min(1, dt * 10);
+    // La cámara "respira" con la postura: corriendo se aleja, agachado se
+    // acerca y baja (despacio, para que no maree).
+    final stanceGoal = isRolling
+        ? camera.stance
+        : crouching
+        ? -1.0
+        : player.speed > config.walkSpeed * 1.15
+        ? 1.0
+        : 0.0;
+    camera.stance += (stanceGoal - camera.stance) * math.min(1, dt * 2.5);
     camera.avoidObstacles(player.position, ballSystem.heightAt, dt);
     signReader.update(player.position);
 
