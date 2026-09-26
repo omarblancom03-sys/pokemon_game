@@ -174,6 +174,46 @@ void main() {
     expect(sim.isPaused, isFalse);
   });
 
+  testWidgets('3D: a shiny capture shows "Variocolor" on its card and in the '
+      'panel', (tester) async {
+    final renderer = FakeSceneRenderer();
+    await tester.pumpWidget(
+      PokemonGameApp(
+        dependencies: AppDependencies.create(
+          repository: repository,
+          sceneRenderer: renderer,
+        ),
+      ),
+    );
+    await tester.tap(find.byKey(const Key('menu_play_3d')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    final sim = renderer.lastSim!;
+    final wild = WildPokemon(
+      id: 'w',
+      pokemon: fakePokemon(25),
+      position: Vector3.zero(),
+      shiny: true,
+    );
+    sim.onEvent!(ShinySpotted(wild));
+    await tester.pump();
+    expect(find.textContaining('VARIOCOLOR'), findsOneWidget);
+
+    const result = CaptureResult(chance: 0.5, shakes: 3, caught: true);
+    sim.onEvent!(PokemonCaught(wild, PokeBallType.poke, result));
+    await tester.pump();
+    expect(find.byKey(const Key('capture_card_shiny')), findsOneWidget);
+    await tester.pump(const Duration(seconds: 4));
+    await tester.pump();
+
+    await tester.tap(find.byKey(const Key('bag_captured')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.byKey(const Key('captured_shiny')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('captures_close')));
+    await tester.pump(const Duration(milliseconds: 300));
+  });
+
   testWidgets('3D: "Mis capturas" with nothing caught explains how', (
     tester,
   ) async {

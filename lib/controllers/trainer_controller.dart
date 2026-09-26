@@ -3,12 +3,17 @@ import 'package:flutter/foundation.dart';
 import '../models/poke_ball.dart';
 import '../models/pokemon.dart';
 
-/// Un Pokémon ya capturado y con qué bola se atrapó.
+/// Un Pokémon ya capturado, con qué bola se atrapó y si era variocolor.
 class CapturedPokemon {
-  const CapturedPokemon({required this.pokemon, required this.ball});
+  const CapturedPokemon({
+    required this.pokemon,
+    required this.ball,
+    this.shiny = false,
+  });
 
   final Pokemon pokemon;
   final PokeBallType ball;
+  final bool shiny;
 }
 
 /// CONTROLADOR del entrenador (a nivel de app): la BOLSA (Poké Balls y
@@ -143,8 +148,12 @@ class TrainerController extends ChangeNotifier {
     return true;
   }
 
-  void registerCapture(Pokemon pokemon, PokeBallType ball) {
-    _captured.add(CapturedPokemon(pokemon: pokemon, ball: ball));
+  void registerCapture(
+    Pokemon pokemon,
+    PokeBallType ball, {
+    bool shiny = false,
+  }) {
+    _captured.add(CapturedPokemon(pokemon: pokemon, ball: ball, shiny: shiny));
     notifyListeners();
   }
 }

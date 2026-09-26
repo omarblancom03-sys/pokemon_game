@@ -32,6 +32,9 @@ enum GameSound {
 
   /// Sacudir un arbusto.
   bushRustle,
+
+  /// Destellos: se ve un Pokémon variocolor.
+  shiny,
 }
 
 /// SONIDO (solo I/O): hace sonar lo que le piden. Qué sonido toca en cada

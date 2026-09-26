@@ -135,6 +135,20 @@ void main() {
     expect(sound.cries, [1, 4, 1]);
   });
 
+  test('a shiny in sight sparkles', () {
+    director.onWorldEvent(
+      ShinySpotted(
+        WildPokemon(
+          id: 's',
+          pokemon: fakePokemon(1),
+          position: Vector3.zero(),
+          shiny: true,
+        ),
+      ),
+    );
+    expect(sound.played, [GameSound.shiny]);
+  });
+
   test('cry URL and the silent service', () {
     expect(
       pokemonCryUrl(25),

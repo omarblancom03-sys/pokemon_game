@@ -9,9 +9,12 @@ import '../../common/pokemon_formatters.dart';
 ///
 /// No pide nada ni decide nada: es un widget "puro".
 class PokemonCard extends StatelessWidget {
-  const PokemonCard({super.key, required this.pokemon});
+  const PokemonCard({super.key, required this.pokemon, this.imageUrl});
 
   final Pokemon pokemon;
+
+  /// Dibujo a usar en vez del normal (el variocolor de una captura).
+  final String? imageUrl;
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +50,11 @@ class PokemonCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Expanded(
-                  child: _Artwork(pokemon: pokemon, glow: primary),
+                  child: _Artwork(
+                    pokemon: pokemon,
+                    glow: primary,
+                    url: imageUrl ?? pokemon.imageUrl,
+                  ),
                 ),
                 _NameBanner(name: displayName(pokemon.name), color: primary),
                 Padding(
@@ -72,14 +79,19 @@ class PokemonCard extends StatelessWidget {
 
 /// La ilustración, con resplandor detrás y el número arriba a la izquierda.
 class _Artwork extends StatelessWidget {
-  const _Artwork({required this.pokemon, required this.glow});
+  const _Artwork({
+    required this.pokemon,
+    required this.glow,
+    required this.url,
+  });
 
   final Pokemon pokemon;
   final Color glow;
+  final String? url;
 
   @override
   Widget build(BuildContext context) {
-    final url = pokemon.imageUrl;
+    final url = this.url;
     return Stack(
       fit: StackFit.expand,
       children: [

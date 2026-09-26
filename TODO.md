@@ -124,7 +124,8 @@ combates (tus capturas = tu equipo), nunca compite con ellos. Nada de lo de aqu�
   - [ ] Puntuación solo en el Safari: base por rareza (capture_rate) × bonus que ya existen
   - [ ] Solo en el Safari: probabilidad de que huyan al fallar (mayor si es raro)
   - [ ] Pantalla final con resumen y récord; premio en bolas y bayas
-- [ ] Shinies (sprites.front_shiny, 1/100, destello al aparecer; solo cosmético)
+- [x] Shinies (sprites.front_shiny, 1/100, destello al aparecer; solo cosmético)
+      (arte oficial variocolor; aviso, destello grande y sonido al verlo; brilla a ratos; la carta lo dice)
 - [ ] Pokédex con huecos en "Mis capturas": siluetas de las especies del mapa (7/20)
 - [ ] Misiones cortas opcionales (3 activas, panel plegable, sin tiempo): enseñan sigilo, espalda,
       hierba y bayas; premio en Super/Ultra Balls

@@ -83,6 +83,10 @@ class WebSoundService implements SoundService {
         case GameSound.bushRustle:
           _hiss(ctx, 700, to: 1600, q: 0.6, duration: 0.35, gain: 0.18);
           _hiss(ctx, 2500, duration: 0.25, at: 0.1, gain: 0.08);
+        case GameSound.shiny:
+          _sparkle(ctx);
+          _sparkle(ctx, at: 0.22);
+          _tone(ctx, 'triangle', 1568, to: 3136, duration: 0.5, gain: 0.08);
       }
     } on Object {
       // Un navegador raro: mejor sin sonido que romper el juego.

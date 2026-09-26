@@ -34,6 +34,9 @@ enum FieldNoticeKind {
 
   /// Un Pokémon se puso a comerse una baya.
   eating,
+
+  /// Se ve cerca un Pokémon variocolor.
+  shinySpotted,
 }
 
 /// Un aviso breve del campo ("+2 Poké Ball", "¡Capturado!"...). Guarda los
@@ -48,6 +51,7 @@ class FieldNotice {
     this.shakes = 0,
     this.isNew = false,
     this.critical = false,
+    this.shiny = false,
   });
 
   final int id;
@@ -64,6 +68,9 @@ class FieldNotice {
 
   /// Fue una captura crítica (una sola sacudida).
   final bool critical;
+
+  /// El Pokémon era variocolor.
+  final bool shiny;
 }
 
 /// CONTROLADOR de una partida en el campo 3D: recibe lo que pasa en el
@@ -107,13 +114,14 @@ class FieldController extends ChangeNotifier {
         _post(FieldNoticeKind.missed, ball: ball);
       case PokemonCaught(:final wild, :final ball, :final result):
         final isNew = !_trainer.hasCaught(wild.pokemon.id);
-        _trainer.registerCapture(wild.pokemon, ball);
+        _trainer.registerCapture(wild.pokemon, ball, shiny: wild.shiny);
         _post(
           FieldNoticeKind.caught,
           ball: ball,
           pokemon: wild.pokemon,
           isNew: isNew,
           critical: result.critical,
+          shiny: wild.shiny,
         );
       case PokemonBrokeFree(:final wild, :final ball, :final result):
         _post(
@@ -142,6 +150,8 @@ class FieldController extends ChangeNotifier {
           startled ? FieldNoticeKind.burstOut : FieldNoticeKind.peeked,
           pokemon: wild.pokemon,
         );
+      case ShinySpotted(:final wild):
+        _post(FieldNoticeKind.shinySpotted, pokemon: wild.pokemon, shiny: true);
       // Solo sonidos (ver SoundDirector): no cambian la bolsa ni avisan.
       case ItemThrown() || BallHit() || BallShook() || PokemonNoticed():
         break;
@@ -198,6 +208,7 @@ class FieldController extends ChangeNotifier {
     int shakes = 0,
     bool isNew = false,
     bool critical = false,
+    bool shiny = false,
   }) {
     _notices.add(
       FieldNotice(
@@ -209,6 +220,7 @@ class FieldController extends ChangeNotifier {
         shakes: shakes,
         isNew: isNew,
         critical: critical,
+        shiny: shiny,
       ),
     );
     if (_notices.length > maxNotices) _notices.removeAt(0);

@@ -29,6 +29,7 @@ String noticeText(FieldNotice n) {
       'Este arbusto no tiene bayas: le vuelven a crecer',
     FieldNoticeKind.noBerries => 'No te quedan bayas: sacude algún arbusto',
     FieldNoticeKind.eating => '¡$name se está comiendo la baya! Aprovecha',
+    FieldNoticeKind.shinySpotted => '¡Un $name VARIOCOLOR! Qué suerte',
   };
 }
 
@@ -338,6 +339,7 @@ class _NoticeChipState extends State<_NoticeChip> {
       FieldNoticeKind.peeked => const Color(0xFF00796B),
       FieldNoticeKind.berriesPickedUp => const Color(0xFFAD1457),
       FieldNoticeKind.eating => const Color(0xFF2E7D32),
+      FieldNoticeKind.shinySpotted => const Color(0xFFB8860B),
       FieldNoticeKind.emptyBush || FieldNoticeKind.noBerries => Colors.black87,
     };
     return TweenAnimationBuilder<double>(
@@ -365,6 +367,14 @@ class _NoticeChipState extends State<_NoticeChip> {
                   if (n.kind == FieldNoticeKind.berriesPickedUp ||
                       n.kind == FieldNoticeKind.eating) ...[
                     const BerryIcon(size: 18),
+                    const SizedBox(width: 8),
+                  ],
+                  if (n.kind == FieldNoticeKind.shinySpotted) ...[
+                    const Icon(
+                      Icons.auto_awesome,
+                      color: Colors.white,
+                      size: 18,
+                    ),
                     const SizedBox(width: 8),
                   ],
                   Text(

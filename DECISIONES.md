@@ -396,3 +396,16 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
   navegador exige un gesto previo: tocar "Jugar 3D" ya lo es). Comprobado en Chrome: un tiro con
   captura crea 19 osciladores (lanzar, golpe, 3 sacudidas, clic y fanfarria) y el grito se descarga
   y suena; sin errores en consola.
+- **2026-09-25 — Variocolor (shiny)** (TODO 8.14). Lo decide la simulación al hacer aparecer un
+  Pokémon (`World3DSim.shinyChance`, 1/100 como en los juegos modernos con suerte) con SU PROPIO
+  azar (`Random(19)`): es cosmético y no debe cambiar dónde aparecen ni cómo se comportan (un test lo
+  comprueba). El arte es el `official-artwork/shiny` de PokeAPI; la URL se deduce del número
+  (`models/pokemon_shiny.dart`, una extensión) para no tocar el modelo ni su JSON. Si no se puede
+  bajar, se usa el normal. `ShinySpotted` se emite UNA vez por Pokémon, cuando se ve (libre, no
+  escondido, a ≤ `markRange` = 22 m): aviso dorado, sonido de destellos y un corro grande de
+  estrellitas 1,2 s; después brilla a ratos (4 estrellitas cada 2,6 s, cada uno a su ritmo) en la
+  capa 2D. La captura guarda `shiny` (`CapturedPokemon`), la tarjeta dice "Variocolor" y "Mis
+  capturas" enseña su arte variocolor (`PokemonCard(imageUrl:)`). Vista previa: `preview_shiny.sh`.
+- **2026-09-25 — Lección (perl):** con `s|...|...|`, un `\|` dentro del patrón deja de ser literal y
+  pasa a ser la alternancia de la expresión regular: `a \|\| b` casó vacío al inicio del archivo y
+  metió el texto en la línea 1. Con `||` en el código, usar otro delimitador (`#`) o el editor.

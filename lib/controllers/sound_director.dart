@@ -9,6 +9,7 @@ import '../services/sound/sound_service.dart';
 ///    la de una crítica, más fuerte y con destellos), capturado ("¡clic!" y
 ///    fanfarria) o se escapa ("¡pop!" y su grito).
 ///  - Recoger bolas o bayas, sacudir un arbusto.
+///  - Un destello al ver un variocolor.
 ///  - El GRITO de la especie cuando un Pokémon te descubre ("!") o sale de
 ///    la hierba asustado. Para no saturar: el mismo Pokémon no vuelve a
 ///    gritar en [cryCooldown] s y entre dos gritos cualesquiera pasan al
@@ -53,6 +54,8 @@ class SoundDirector {
       case PokemonRevealed(:final wild, :final startled):
         // Si se asoma sin verte, no grita (no sabe que estás ahí).
         if (startled) _cry(wild);
+      case ShinySpotted():
+        sound.play(GameSound.shiny);
       case BallMissed() || PokemonEating():
         break;
     }

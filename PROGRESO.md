@@ -92,6 +92,10 @@
     Pokémon sale de un salto (y queda alerta). Si falla, rebota y rueda (también contra árboles y
     casas) y queda en el suelo brillando para recogerla. Por la espalda y sin ser visto es más fácil.
     Al golpear se ve el bonus conseguido: "¡No te vio! ×1,5" y/o "¡Por la espalda! ×2".
+  - **Variocolor (shiny):** 1 de cada 100 Pokémon sale con sus colores raros (el arte variocolor oficial).
+    Al verlo cerca por primera vez: aviso dorado "¡Un X VARIOCOLOR! Qué suerte", un corro grande de
+    destellos y un sonido de campanitas; luego brilla a ratos. Se captura igual (solo es cosmético); su
+    tarjeta dice "Variocolor" y en "Mis capturas" sale con su arte raro y una estrellita.
   - **Sonido** (en la web): "¡fiu!" al lanzar, un zumbido cuando la bola lo absorbe, un "toc" por cada
     sacudida (más fuerte y con destellos si es crítica), "¡clic!" y fanfarria al capturar o "¡pop!" si
     se escapa; también al recoger bolas o bayas y al sacudir arbustos. Los Pokémon GRITAN (su grito

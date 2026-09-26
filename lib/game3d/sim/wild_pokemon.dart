@@ -37,6 +37,7 @@ class WildPokemon {
     this.captureRate = 45,
     this.facing = 0,
     Temperament? temperament,
+    this.shiny = false,
   }) : _position = position.clone(),
        temperament = temperament ?? Temperament.forSpecies(pokemon.id);
 
@@ -46,6 +47,14 @@ class WildPokemon {
   /// Ratio de captura real de la especie (PokeAPI, 3..255).
   final int captureRate;
   final Temperament temperament;
+
+  /// VARIOCOLOR (shiny): colores raros. Solo cosmético: se captura igual.
+  final bool shiny;
+
+  /// Ya lo vio el jugador (se avisa una sola vez) y en qué segundo del
+  /// juego (para el destello grande de ese momento).
+  bool shinySpotted = false;
+  double? shinySpottedAt;
 
   Vector3 _position;
   Vector3 get position => _position.clone();

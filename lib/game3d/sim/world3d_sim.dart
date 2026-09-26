@@ -286,6 +286,13 @@ class World3DSim {
   /// (no se ve; solo se agita la hierba donde está).
   static const hiddenChance = 0.35;
 
+  /// Probabilidad de que un Pokémon aparezca VARIOCOLOR (como en los
+  /// juegos modernos con suerte: 1 de cada 100). Se puede cambiar (tests y
+  /// vista previa).
+  static const defaultShinyChance = 0.01;
+  double shinyChance = defaultShinyChance;
+  final math.Random _shinyRandom = math.Random(19);
+
   /// Si nadie encuentra a un escondido en este tiempo (s), se va.
   static const hiddenLifetime = 60.0;
 
@@ -689,6 +696,7 @@ class World3DSim {
     for (final w in wild.toList()) {
       _updateWild(w, dt);
     }
+    _spotShinies();
     trampled.update(dt);
     ballSystem.update(
       dt,
@@ -775,6 +783,19 @@ class World3DSim {
     }
   }
 
+  /// Avisa (una vez por Pokémon) de los variocolor que se ven cerca (a
+  /// [markRange] m como mucho, libres y no escondidos: uno escondido se ve
+  /// al salir de la hierba).
+  void _spotShinies() {
+    for (final w in visibleWildNearby) {
+      if (!w.shiny || w.shinySpotted) continue;
+      w
+        ..shinySpotted = true
+        ..shinySpottedAt = time;
+      _emit(ShinySpotted(w));
+    }
+  }
+
   /// Hasta qué distancia (m) la vista marca a los Pokémon que se ven (por
   /// ejemplo, con una Poké Ball si ya tienes su especie).
   static const markRange = 22.0;
@@ -815,6 +836,9 @@ class World3DSim {
                 pokemon.pokemon,
                 captureRate: pokemon.captureRate,
                 hidden: _random.nextDouble() < hiddenChance,
+                // Con su propio azar: es cosmético y no debe cambiar el
+                // resto de la partida.
+                shiny: _shinyRandom.nextDouble() < shinyChance,
               );
             }
           })
@@ -831,6 +855,7 @@ class World3DSim {
     Pokemon pokemon, {
     int captureRate = 45,
     bool hidden = false,
+    bool shiny = false,
   }) {
     final playerPos = player.position;
     final spots =
@@ -849,6 +874,7 @@ class World3DSim {
             captureRate: captureRate,
             position: spot,
             facing: _random.nextDouble() * 2 * math.pi,
+            shiny: shiny,
           )
           ..idleTime = _random.nextDouble() * 2
           ..hidden = hidden;

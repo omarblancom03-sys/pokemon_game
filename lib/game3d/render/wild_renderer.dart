@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_scene/scene.dart';
 import 'package:vector_math/vector_math.dart' as vm;
 
+import '../../models/pokemon_shiny.dart';
 import '../sim/throwing.dart';
 import '../sim/wild_pokemon.dart';
 
@@ -76,17 +77,25 @@ class WildRenderer {
         ..vertexColorWeight = 0,
     );
 
-    final url = w.pokemon.imageUrl;
-    if (url != null) {
-      unawaited(
-        _textureFor(url).then((texture) {
-          if (texture == null || !_visuals.containsKey(w.id)) return;
-          visual.material.baseColorTexture = texture;
-          visual.sprite.mesh = Mesh(_quad(), visual.material);
-        }),
-      );
-    }
+    unawaited(
+      _spriteTexture(w).then((texture) {
+        if (texture == null || !_visuals.containsKey(w.id)) return;
+        visual.material.baseColorTexture = texture;
+        visual.sprite.mesh = Mesh(_quad(), visual.material);
+      }),
+    );
     return visual;
+  }
+
+  /// El dibujo de [w]: el variocolor si lo es (si no se puede bajar, el
+  /// normal).
+  Future<Texture2D?> _spriteTexture(WildPokemon w) async {
+    if (w.shiny) {
+      final shiny = await _textureFor(w.pokemon.shinyImageUrl);
+      if (shiny != null) return shiny;
+    }
+    final url = w.pokemon.imageUrl;
+    return url == null ? null : _textureFor(url);
   }
 
   /// Una textura por URL (si dos Pokémon iguales aparecen, se comparte).

@@ -153,6 +153,10 @@ class _WorldPainter extends CustomPainter {
       final marked = w.isAlert || w.isSuspicious;
       _paintCaughtIcon(canvas, marked ? head + const Offset(22, 0) : head);
     }
+    // Variocolor: destellos a ratos (y uno grande al verlo por primera vez).
+    for (final w in sim.visibleWildNearby) {
+      if (w.shiny) _paintShinySparkles(canvas, w, onScreen);
+    }
 
     final target = sim.lockedTarget;
     if (target == null) return;
@@ -214,6 +218,64 @@ class _WorldPainter extends CustomPainter {
       )..layout();
       text.paint(canvas, mid + Offset(radius + 6, -text.height / 2));
     }
+  }
+
+  /// Cada cuánto (s) brilla un variocolor y cuánto dura cada destello.
+  static const _shinyPeriod = 2.6;
+  static const _sparkleSeconds = 0.8;
+
+  /// Duración del destello grande al ver un variocolor por primera vez.
+  static const _spottedSparkleSeconds = 1.2;
+
+  /// Estrellitas de cuatro puntas alrededor de un variocolor: cada
+  /// [_shinyPeriod] s un corro que se abre y se apaga; justo al verlo, uno
+  /// más grande y con más estrellas.
+  void _paintShinySparkles(
+    Canvas canvas,
+    WildPokemon w,
+    Offset? Function(Vector3 world) onScreen,
+  ) {
+    final center = onScreen(w.position..y = w.displayHeight * 0.55);
+    final top = onScreen(w.position..y = w.displayHeight);
+    if (center == null || top == null) return;
+    final spottedAt = w.shinySpottedAt;
+    final sinceSpotted = spottedAt == null ? null : sim.time - spottedAt;
+    final big = sinceSpotted != null && sinceSpotted < _spottedSparkleSeconds;
+    // Cada uno a su ritmo (no brillan todos a la vez).
+    final offset = (w.id.hashCode % 10) * 0.37;
+    final t = big
+        ? sinceSpotted / _spottedSparkleSeconds
+        : ((sim.time + offset) % _shinyPeriod) / _sparkleSeconds;
+    if (t > 1) return;
+    final alpha = math.sin(t * math.pi);
+    final reach = math.max(16.0, (center.dy - top.dy).abs() * 1.4);
+    final radius = reach * (0.55 + 0.6 * t) * (big ? 1.3 : 1);
+    final count = big ? 8 : 4;
+    final paint = Paint()
+      ..color = const Color(0xFFFFF59D).withValues(alpha: alpha);
+    for (var i = 0; i < count; i++) {
+      final a = i * 2 * math.pi / count + offset + t * 0.8;
+      final at = center + Offset(math.cos(a), math.sin(a)) * radius;
+      _paintStar(canvas, at, (big ? 10 : 7) * (1 - 0.3 * t), paint);
+    }
+  }
+
+  /// Estrella de cuatro puntas (un destello) de radio [r].
+  static void _paintStar(Canvas canvas, Offset at, double r, Paint paint) {
+    final k = r * 0.22;
+    canvas.drawPath(
+      Path()
+        ..moveTo(at.dx, at.dy - r)
+        ..lineTo(at.dx + k, at.dy - k)
+        ..lineTo(at.dx + r, at.dy)
+        ..lineTo(at.dx + k, at.dy + k)
+        ..lineTo(at.dx, at.dy + r)
+        ..lineTo(at.dx - k, at.dy + k)
+        ..lineTo(at.dx - r, at.dy)
+        ..lineTo(at.dx - k, at.dy - k)
+        ..close(),
+      paint,
+    );
   }
 
   /// Una Poké Ball pequeña: "esta especie ya la tienes".

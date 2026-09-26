@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../controllers/field_controller.dart';
 import '../../../controllers/trainer_controller.dart';
 import '../../../models/pokemon.dart';
+import '../../../models/pokemon_shiny.dart';
 import '../../../models/pokemon_type.dart';
 import '../../common/pokemon_formatters.dart';
 import '../../pokedex/widgets/pokemon_card.dart';
@@ -10,7 +11,8 @@ import 'field_hud.dart' show BallIcon;
 
 /// TARJETA "¡Capturado!": el premio de una captura. Enseña el arte oficial
 /// del Pokémon, su nombre, número y tipos, la bola con la que se atrapó y
-/// "¡Nuevo!" si es la primera vez que se captura esa especie.
+/// "¡Nuevo!" si es la primera vez que se captura esa especie. Si era
+/// variocolor, su arte variocolor y la marca "Variocolor".
 ///
 /// Solo pinta los datos del aviso ([FieldNotice]); no pide nada a nadie
 /// (la imagen la descarga el propio widget de imagen, como en la Pokédex).
@@ -52,7 +54,10 @@ class CaptureCard extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(6, 6, 12, 6),
           child: Row(
             children: [
-              _Art(pokemon: pokemon, glow: primary),
+              _Art(
+                url: notice.shiny ? pokemon.shinyImageUrl : pokemon.imageUrl,
+                glow: primary,
+              ),
               const SizedBox(width: 10),
               Expanded(
                 child: _Details(notice: notice, pokemon: pokemon),
@@ -66,14 +71,14 @@ class CaptureCard extends StatelessWidget {
 }
 
 class _Art extends StatelessWidget {
-  const _Art({required this.pokemon, required this.glow});
+  const _Art({required this.url, required this.glow});
 
-  final Pokemon pokemon;
+  final String? url;
   final Color glow;
 
   @override
   Widget build(BuildContext context) {
-    final url = pokemon.imageUrl;
+    final url = this.url;
     return Container(
       width: 84,
       height: 84,
@@ -162,9 +167,27 @@ class _Details extends StatelessWidget {
             ],
           ],
         ),
-        Text(
-          dexNumber(pokemon.id),
-          style: const TextStyle(color: Colors.white60, fontSize: 12),
+        Row(
+          children: [
+            Text(
+              dexNumber(pokemon.id),
+              style: const TextStyle(color: Colors.white60, fontSize: 12),
+            ),
+            if (notice.shiny) ...const [
+              SizedBox(width: 8),
+              Icon(Icons.auto_awesome, color: Colors.amberAccent, size: 13),
+              SizedBox(width: 3),
+              Text(
+                'Variocolor',
+                key: Key('capture_card_shiny'),
+                style: TextStyle(
+                  color: Colors.amberAccent,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ],
         ),
         const SizedBox(height: 4),
         Wrap(
@@ -268,13 +291,29 @@ class CapturesPanel extends StatelessWidget {
                       itemBuilder: (_, i) => Stack(
                         children: [
                           Positioned.fill(
-                            child: PokemonCard(pokemon: captured[i].pokemon),
+                            child: PokemonCard(
+                              pokemon: captured[i].pokemon,
+                              imageUrl: captured[i].shiny
+                                  ? captured[i].pokemon.shinyImageUrl
+                                  : null,
+                            ),
                           ),
                           Positioned(
                             top: 8,
                             right: 8,
                             child: BallIcon(captured[i].ball, size: 18),
                           ),
+                          if (captured[i].shiny)
+                            const Positioned(
+                              top: 30,
+                              right: 8,
+                              child: Icon(
+                                Icons.auto_awesome,
+                                key: Key('captured_shiny'),
+                                color: Colors.amberAccent,
+                                size: 18,
+                              ),
+                            ),
                         ],
                       ),
                     ),
