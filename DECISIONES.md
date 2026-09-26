@@ -349,3 +349,15 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
   se va). Huella simétrica (suela + tacón) para no tener que reflejar la malla en el pie izquierdo
   (reflejar invierte las caras). A 0,03 m del suelo, alfa máximo 0,7 y color tierra húmeda
   (0x7A5E38): con 0,55 y un tono más claro apenas se distinguían en la captura.
+- **2026-09-25 — Hierba pisada** (`sim/grass_trampling.dart`, Dart puro). La deja cualquier Pokémon
+  que cruza la hierba alta a más de 2,5 m/s: huyendo (4,4) o cargando (3,6); pasear (1,3), ir a por
+  una baya (2) o acercarse a curiosear (~2) no. El jugador tampoco: el rastro es PISTA de por dónde
+  se fue un Pokémon y no debe confundirse con el tuyo (tú ya dejas huellas en el camino). Se guarda
+  POR MATA (dirección, fuerza, edad en `Float64List`) con un índice de matas por casilla: pisar solo
+  mira las 9 casillas vecinas y el renderer lee un valor por mata, sin recorrer marcas. Radio 0,9 m;
+  del todo en el centro del paso (fuerza = min(1; 1,5·(1 − d/r))), menos en los bordes. Una pisada
+  solo cambia una mata si la tumba más de lo que ya estaba. La mata se inclina hacia donde iba
+  (0,85 rad, por `GrassField.tiltFor(bend:)`) y se APLASTA al 45 % de su altura: en la vista previa
+  solo inclinada apenas se distinguía de la hierba que mece el viento; aplastada se ve un pasillo.
+  10 s tumbada y 12 s levantándose. Vista previa: `preview_flee.sh` (`?flee`, `?trail`) en el
+  scratchpad.

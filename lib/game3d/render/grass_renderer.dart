@@ -4,6 +4,7 @@ import 'package:vector_math/vector_math.dart' as vm;
 import '../mesh/grass_mesh.dart';
 import '../mesh/mesh_builder.dart';
 import '../sim/grass_field.dart';
+import '../sim/grass_trampling.dart';
 
 /// Dibuja la hierba alta como UNA malla instanciada (una mata repetida
 /// cientos de veces en una sola llamada de dibujo) y, en cada fotograma,
@@ -31,21 +32,34 @@ class GrassRenderer {
 
   static final _up = vm.Vector3(0, 1, 0);
 
-  /// Recalcula la inclinación de todas las matas (y las que se agitan sobre
-  /// Pokémon escondidos).
+  /// Recalcula la inclinación de todas las matas (las que se agitan sobre
+  /// Pokémon escondidos y las que quedaron tumbadas en [trampled]).
   void update(
     double time,
     Iterable<vm.Vector3> pushers, {
     Iterable<vm.Vector3> rustlers = const [],
+    GrassTrampling? trampled,
   }) {
     final list = pushers.toList(growable: false);
     final shaking = rustlers.toList(growable: false);
     _instances.updateInstanceTransforms((transforms) {
       for (var i = 0; i < field.tufts.length; i++) {
         final t = field.tufts[i];
-        final tilt = GrassField.tiltFor(t, time, list, rustlers: shaking);
+        final tilt = GrassField.tiltFor(
+          t,
+          time,
+          list,
+          rustlers: shaking,
+          bend: trampled?.bendOf(i) ?? (x: 0, z: 0),
+        );
         transforms[i].setFrom(
-          _transform(t, tilt.angle, tilt.axisX, tilt.axisZ),
+          _transform(
+            t,
+            tilt.angle,
+            tilt.axisX,
+            tilt.axisZ,
+            height: trampled?.heightOf(i) ?? 1,
+          ),
         );
       }
     }, recomputeWinding: false);
@@ -54,12 +68,14 @@ class GrassRenderer {
   /// Transformación de una mata YA en el espacio del motor (Z invertida):
   /// el eje de inclinación también invierte su Z y los ángulos cambian de
   /// signo (un espejo invierte el sentido de giro).
+  /// [height] aplasta la mata (pisada) sin cambiar su anchura.
   static vm.Matrix4 _transform(
     GrassTuft t,
     double angle,
     double axisX,
-    double axisZ,
-  ) {
+    double axisZ, {
+    double height = 1,
+  }) {
     final tilt = angle == 0
         ? vm.Quaternion.identity()
         : vm.Quaternion.axisAngle(vm.Vector3(axisX, 0, -axisZ), -angle);
@@ -67,7 +83,7 @@ class GrassRenderer {
     return vm.Matrix4.compose(
       vm.Vector3(t.x, 0, -t.z),
       rotation,
-      vm.Vector3.all(t.scale),
+      vm.Vector3(t.scale, t.scale * height, t.scale),
     );
   }
 }

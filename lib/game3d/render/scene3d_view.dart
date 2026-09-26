@@ -208,7 +208,12 @@ class _Scene3DViewState extends State<Scene3DView> {
     // Un salto grande (pestaña en segundo plano) no debe teletransportar.
     _sim.update(math.min(dt, 0.1));
     _syncPlayer();
-    _grass.update(_sim.time, _sim.grassPushers, rustlers: _sim.grassRustlers);
+    _grass.update(
+      _sim.time,
+      _sim.grassPushers,
+      rustlers: _sim.grassRustlers,
+      trampled: _sim.trampled,
+    );
     _wild.update(_sim.wild, _sim.balls, _sim.camera.yaw, _sim.time);
     _items.update(_sim.fieldItems.items, _sim.time);
     _footprints.update(_sim.footprints.prints);

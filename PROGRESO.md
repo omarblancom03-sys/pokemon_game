@@ -30,6 +30,9 @@
   - Hierba alta 3D que se mece con el viento y se aparta al pasar. Al pisarla saltan briznas que dan
     vueltas y caen planeando: tres por pisada corriendo, una andando y ninguna agachado (se ve el
     ruido que haces).
+  - **Hierba pisada:** un Pokémon que cruza la hierba alta corriendo (huyendo de ti o cargando) deja un
+    pasillo de matas tumbadas hacia donde iba y aplastadas: se ve por dónde se fue. Siguen así unos
+    10 s y luego se levantan poco a poco. Los que pasean no dejan rastro.
   - Mariposas de colores sobre las flores: se espantan si te acercas (agachado puedes verlas de cerca).
   - **Pájaros:** dos bandadas de gorriones picotean y dan saltitos en el campo abierto. Si te
     acercas salen volando todos a la vez (corriendo desde lejos; agachado te acercas mucho), cruzan

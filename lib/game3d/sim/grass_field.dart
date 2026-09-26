@@ -29,6 +29,11 @@ class GrassTuft {
 /// Inclinación de una mata: eje horizontal (x, z) y ángulo en radianes.
 typedef GrassTilt = ({double axisX, double axisZ, double angle});
 
+/// Inclinación que deja una pisada en una mata (ver GrassTrampling): hacia
+/// dónde (en el suelo) queda tumbada la punta, ya multiplicada por el
+/// ángulo (rad).
+typedef GrassBend = ({double x, double z});
+
 /// LA HIERBA ALTA como datos: matas repartidas por las casillas `"` del
 /// mapa, y cuánto se inclina cada una por el viento y por quien la pisa.
 /// El renderer solo copia estas inclinaciones a la GPU.
@@ -88,17 +93,21 @@ class GrassField {
   }
 
   /// Inclinación de [tuft] en el instante [time], apartándose de cada
-  /// punto de [pushers] (el jugador, los Pokémon...) y sacudiéndose sobre
-  /// cada punto de [rustlers] (Pokémon escondidos).
+  /// punto de [pushers] (el jugador, los Pokémon...), sacudiéndose sobre
+  /// cada punto de [rustlers] (Pokémon escondidos) y tumbada según [bend]
+  /// si alguien la pisó corriendo.
   static GrassTilt tiltFor(
     GrassTuft tuft,
     double time,
     Iterable<Vector3> pushers, {
     Iterable<Vector3> rustlers = const [],
+    GrassBend bend = (x: 0, z: 0),
   }) {
+    // Pisada: eje = arriba × dirección (la punta queda hacia donde iba).
+    var vx = bend.z;
+    var vz = -bend.x;
     // El viento sopla hacia +X: gira alrededor del eje Z.
-    var vx = 0.0;
-    var vz = -windStrength * math.sin(time * 1.8 + tuft.phase);
+    vz -= windStrength * math.sin(time * 1.8 + tuft.phase);
 
     for (final p in pushers) {
       final dx = tuft.x - p.x;

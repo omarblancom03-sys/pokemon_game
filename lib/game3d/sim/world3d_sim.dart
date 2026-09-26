@@ -19,6 +19,7 @@ import 'field_items.dart';
 import 'footprints.dart';
 import 'grass_blades.dart';
 import 'grass_field.dart';
+import 'grass_trampling.dart';
 import 'orbit_camera.dart';
 import 'player_body.dart';
 import 'reach.dart';
@@ -35,6 +36,7 @@ export 'dust.dart' show DustPuff;
 export 'field_items.dart' show GroundItem;
 export 'footprints.dart' show Footprint, FootprintTrail;
 export 'grass_blades.dart' show GrassBlade;
+export 'grass_trampling.dart' show GrassTrampling;
 export 'signs.dart' show MapCell;
 export 'throwing.dart' show BallPhase, ThrownBall;
 export 'wild_behavior.dart' show PlayerStealth;
@@ -117,6 +119,12 @@ class World3DSim {
   final OrbitCamera camera;
   late final PlayerBody player;
   late final GrassField grass;
+
+  /// Rastro de hierba tumbada que dejan los Pokémon que pasan corriendo.
+  late final GrassTrampling trampled = GrassTrampling(
+    grass,
+    tileSize: config.tileSize,
+  );
 
   /// Poké Balls en el suelo para recoger.
   late final FieldItems fieldItems;
@@ -659,6 +667,7 @@ class World3DSim {
     for (final w in wild.toList()) {
       _updateWild(w, dt);
     }
+    trampled.update(dt);
     ballSystem.update(
       dt,
       wild: wild,
@@ -888,8 +897,17 @@ class World3DSim {
       fled = behavior.act(w, player.position, dt);
     }
     w.velocity = dt > 0 ? (w.position - before) / dt : Vector3.zero();
+    // Corriendo por la hierba alta (huyendo o cargando) la deja tumbada.
+    if (w.velocity.length > trampleSpeed && isTallGrass(w.position)) {
+      trampled.trample(w.position, w.velocity);
+    }
     if (fled) removeWild(w.id);
   }
+
+  /// A partir de esta rapidez (m/s) un Pokémon deja la hierba tumbada:
+  /// huyendo (4,4) o cargando (3,6), no paseando (1,3) ni yendo a por una
+  /// baya (2).
+  static const trampleSpeed = 2.5;
 
   // --- Bayas para distraer -----------------------------------------------
 

@@ -103,7 +103,9 @@ El combate lo hace OTRO equipo (se engancha por el contrato EncounterHandler). N
       a los Pokémon lejanos de la parte de arriba de la pantalla)
 - [x] Huellas del entrenador en la tierra del camino (se borran con el tiempo)
       (una por pisada; corriendo más marcadas, agachado apenas; nítidas 18 s y se borran en 12)
-- [ ] Pokémon que dejan rastro: la hierba pisada por donde pasó uno que huyó
+- [x] Pokémon que dejan rastro: la hierba pisada por donde pasó uno que huyó
+      (huyendo o cargando por la hierba alta: matas tumbadas hacia donde iba y aplastadas; 10 s y se
+      levantan en 12)
 
 ## 8.14 Diversión sin quitar protagonismo a los combates (añadido 2026-09-25)
 Principio: todo es OPCIONAL. El modo libre no tiene tiempo ni límites; capturar alimenta los
