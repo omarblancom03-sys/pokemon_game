@@ -13,6 +13,7 @@ import '../sim/throwing.dart';
 /// simulación (fase y tiempo de cada bola):
 ///  - en vuelo y rodando: gira sobre sí misma, con una estela brillante del
 ///    color de la bola;
+///  - al golpear: una onda que se abre y un fogonazo en el punto del golpe;
 ///  - al absorber: la tapa se abre y se cierra con un destello rojo;
 ///  - en el suelo: se sacude mirando a la cámara, con el botón encendido
 ///    en rojo en cada sacudida;
@@ -43,6 +44,15 @@ class BallRenderer {
       UnlitMaterial()
         ..alphaMode = AlphaMode.blend
         ..baseColorFactor = vm.Vector4(1, 1, 1, 0),
+    );
+    // Onda del impacto: un anillo blanco de radio 1 (el color y el alfa van
+    // en el material de cada bola).
+    final ring = buildRing(vm.Vector4(1, 1, 1, 1), inner: 0.78).toEngineSpace();
+    _impactRing = MeshGeometry.fromArrays(
+      positions: ring.positions,
+      normals: ring.normals,
+      colors: ring.colors,
+      indices: ring.indices,
     );
 
     // Trayectoria: muchas bolitas en UNA llamada de dibujo.
@@ -117,6 +127,7 @@ class BallRenderer {
   final Map<PokeBallType, Mesh> _bases = {};
   late final Mesh _star;
   late final Mesh _flash;
+  late final MeshGeometry _impactRing;
   late final Mesh _button;
   late final InstancedMesh _dots;
   late final InstancedMesh _trail;
@@ -208,6 +219,21 @@ class BallRenderer {
     final flash = Node(
       mesh: Mesh(_flash.primitives.first.geometry, flashMaterial),
     )..castsShadows = false;
+    // El impacto: onda y fogonazo (se colocan en el punto del golpe).
+    UnlitMaterial blend() => UnlitMaterial()
+      ..alphaMode = AlphaMode.blend
+      ..baseColorFactor = vm.Vector4(1, 1, 1, 0);
+    final ringMaterial = blend();
+    final burstMaterial = blend();
+    final ring = Node(mesh: Mesh(_impactRing, ringMaterial))
+      ..castsShadows = false;
+    final burst = Node(
+      mesh: Mesh(_flash.primitives.first.geometry, burstMaterial),
+    )..castsShadows = false;
+    final impact = Node()
+      ..visible = false
+      ..add(ring)
+      ..add(burst);
     final stars = [
       for (var i = 0; i < 5; i++)
         Node(mesh: _star.clone())
@@ -216,7 +242,8 @@ class BallRenderer {
     ];
     final node = Node(name: ball.id)
       ..add(orient)
-      ..add(flash);
+      ..add(flash)
+      ..add(impact);
     stars.forEach(node.add);
     root.add(node);
     return _BallVisual(
@@ -228,6 +255,11 @@ class BallRenderer {
       button: button,
       buttonMaterial: buttonMaterial,
       stars: stars,
+      impact: impact,
+      ring: ring,
+      ringMaterial: ringMaterial,
+      burst: burst,
+      burstMaterial: burstMaterial,
     );
   }
 
@@ -317,6 +349,36 @@ class BallRenderer {
         : vm.Vector4(4, 0.3, 0.25, glow);
     v.button.visible = glow > 0.01 || click > 0.01;
     _placeStars(v, ball);
+    _placeImpact(v, ball, cameraYaw, critical: critical);
+  }
+
+  /// El golpe: una onda que se abre mirando a la cámara y un fogonazo
+  /// breve, en el punto del golpe (la bola ya sube a absorberlo). Dorado
+  /// si la captura va a ser crítica.
+  void _placeImpact(
+    _BallVisual v,
+    ThrownBall ball,
+    double cameraYaw, {
+    required bool critical,
+  }) {
+    final p = ball.impactProgress;
+    final at = ball.hitPoint;
+    v.impact.visible = p != null && at != null;
+    if (p == null || at == null) return;
+    v.impact.position = _engine(at) - _engine(ball.position);
+    final c = critical ? vm.Vector3(3, 2.4, 0.5) : vm.Vector3(2.6, 2.5, 2.2);
+    final ease = 1 - (1 - p) * (1 - p);
+    v.ringMaterial.baseColorFactor = vm.Vector4(c.x, c.y, c.z, 0.85 * (1 - p));
+    v.ring
+      ..rotation =
+          _heading(cameraYaw) * vm.Quaternion.axisAngle(_x, math.pi / 2)
+      ..scale = vm.Vector3.all(0.2 + 1.3 * ease);
+    // El fogonazo dura la primera tercera parte.
+    final f = math.min(1.0, p * 3);
+    v.burstMaterial.baseColorFactor = vm.Vector4(c.x, c.y, c.z, 0.9 * (1 - f));
+    v.burst
+      ..visible = f < 1
+      ..scale = vm.Vector3.all(0.18 + 0.45 * f);
   }
 
   /// Cinco estrellas que salen disparadas en abanico y caen.
@@ -444,6 +506,11 @@ class _BallVisual {
     required this.button,
     required this.buttonMaterial,
     required this.stars,
+    required this.impact,
+    required this.ring,
+    required this.ringMaterial,
+    required this.burst,
+    required this.burstMaterial,
   });
 
   final Node node;
@@ -456,6 +523,13 @@ class _BallVisual {
   final Node button;
   final UnlitMaterial buttonMaterial;
   final List<Node> stars;
+
+  /// Onda y fogonazo del golpe.
+  final Node impact;
+  final Node ring;
+  final UnlitMaterial ringMaterial;
+  final Node burst;
+  final UnlitMaterial burstMaterial;
 
   /// Último rumbo conocido (para que no gire de golpe al pararse).
   double heading = 0;

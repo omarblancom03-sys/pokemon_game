@@ -214,6 +214,14 @@ class World3DSim {
   /// La cámara que encuadra la bola al golpear (ver CaptureCamera).
   final CaptureCamera captureCam = CaptureCamera();
 
+  /// MICRO-PAUSA al golpear (hit-stop): el mundo se congela un instante
+  /// para que el golpe "pese" (más en una captura crítica). La cámara y el
+  /// jugador siguen: no parece que se cuelgue. Segundos que quedan.
+  double get hitStop => _hitStop;
+  double _hitStop = 0;
+  static const hitStopSeconds = 0.07;
+  static const criticalHitStopSeconds = 0.14;
+
   /// Pokémon al que se lanzaría ahora mismo (null = tiro a ojo).
   WildPokemon? lockedTarget;
 
@@ -683,6 +691,16 @@ class World3DSim {
   /// que huye desaparece igual, en una nubecilla.
   static const leaveSeconds = 6.0;
 
+  /// Una bola golpea: empieza la micro-pausa (más larga si la captura va
+  /// a ser crítica: el resultado ya está decidido en el golpe).
+  BallHit _startHitStop(BallHit event) {
+    final critical = ballSystem.balls.any(
+      (b) => b.target == event.wild && (b.result?.critical ?? false),
+    );
+    _hitStop = critical ? criticalHitStopSeconds : hitStopSeconds;
+    return event;
+  }
+
   /// En el Safari, el que se escapa de la bola puede huir: el aviso lo
   /// dice ([PokemonBrokeFree.fled]) y empieza a irse.
   PokemonBrokeFree _maybeFlee(PokemonBrokeFree event) {
@@ -801,6 +819,10 @@ class World3DSim {
     final moved = player.distanceWalked - _lastDistance;
     _lastDistance = player.distanceWalked;
     if (_paused) return;
+    if (_hitStop > 0) {
+      _hitStop = math.max(0, _hitStop - dt);
+      return;
+    }
 
     _kickUp(dt, wish);
     clouds.update(dt);
@@ -829,9 +851,10 @@ class World3DSim {
       wild: wild,
       drop: _dropBall,
       remove: (w) => removeWild(w.id),
-      // En el Safari, una bola fallada se pierde y el que se escapa
-      // puede huir (el aviso lo dice).
+      // Un golpe congela el mundo un instante. En el Safari, una bola
+      // fallada se pierde y el que se escapa puede huir (el aviso lo dice).
       emit: (event) => _emit(switch (event) {
+        BallHit() => _startHitStop(event),
         BallMissed(:final ball) when safariActive => BallMissed(
           ball,
           lost: true,

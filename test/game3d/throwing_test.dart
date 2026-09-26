@@ -326,7 +326,8 @@ void main() {
       expect(ball.hit, (unaware: true, fromBehind: true, eating: false));
       expect(ball.sinceHit, closeTo(0, 0.02));
       step(s, 0.5);
-      expect(ball.sinceHit, closeTo(0.5, 0.03));
+      // (Menos la micro-pausa del golpe: el mundo se congela un instante.)
+      expect(ball.sinceHit, closeTo(0.5 - World3DSim.hitStopSeconds, 0.03));
       step(s, 5.5);
       expect(
         events.whereType<PokemonCaught>().single.result.chance,
@@ -344,7 +345,7 @@ void main() {
       expect(s.lockedTarget, front);
       s.throwBall(PokeBallType.poke);
       step(s, 0.6);
-      expect(s.balls.single.hit, (
+      expect(s.balls.last.hit, (
         unaware: false,
         fromBehind: false,
         eating: false,

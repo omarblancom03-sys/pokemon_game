@@ -121,6 +121,20 @@ class ThrownBall {
   /// [age] en el momento del golpe.
   double? hitAge;
 
+  /// Dónde golpeó (para la onda del impacto). null si aún no ha golpeado.
+  Vector3? hitPoint;
+
+  /// Lo que dura la onda del impacto (s).
+  static const impactTime = 0.35;
+
+  /// 0..1 mientras se ve la onda del impacto; null antes del golpe y
+  /// después de [impactTime].
+  double? get impactProgress {
+    final s = sinceHit;
+    if (s == null || s > impactTime) return null;
+    return s / impactTime;
+  }
+
   /// Segundos desde el golpe (null si no ha golpeado).
   double? get sinceHit => hitAge == null ? null : age - hitAge!;
 
@@ -455,6 +469,7 @@ class BallSystem {
       ..target = w
       ..hit = (unaware: unaware, fromBehind: fromBehind, eating: eating)
       ..hitAge = ball.age
+      ..hitPoint = ball.position.clone()
       ..result = calculator.roll(
         captureRate: w.captureRate,
         ball: ball.ball,

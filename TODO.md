@@ -140,7 +140,8 @@ el campo (movimiento, cámara, hierba alta, encuentros, escenario). Va antes que
       el resultado; vuelve sola. Moverse, girar la cámara o volver a apuntar la suelta
       (a 2,6 m de la bola en ~1 s; tiros a menos de 2,5 m no se acercan; si se mantiene apuntar, al
       terminar vuelve al hombro)
-- [ ] Impacto con peso: micro-pausa al golpear (hit-stop), onda/destello en el punto del golpe
+- [x] Impacto con peso: micro-pausa al golpear (hit-stop), onda/destello en el punto del golpe
+      (0,07 s; 0,14 s si va a ser crítica; onda que mira a la cámara 0,35 s, dorada si es crítica)
 - [ ] Sacudidas con tensión: cada sacudida más larga y ladeada; pausa antes del resultado
 - [ ] Resultado: al capturar, la bola vuela a la mochila; al escaparse, la bola se parte con destellos
 - [ ] La hierba alta se aparta alrededor de la bola que se sacude (se ve la bola en la hierba)

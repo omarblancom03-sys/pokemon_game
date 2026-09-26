@@ -66,6 +66,9 @@
     alcanzan empieza el encuentro (combate, de otro equipo). Agáchate con C para ir despacio y en
     silencio; dentro de la hierba alta casi no te ven ("Escondido en la hierba").
   - El encuentro usa por ahora el diálogo provisional (Atrapar / Huir). El combate lo hace otro equipo.
+  - **El golpe pesa:** cuando la bola le da, el mundo se congela un instante (el doble si la captura
+    va a ser crítica) y en el punto del golpe salta un fogonazo y una onda blanca que se abre (dorada
+    si es crítica).
   - **Cámara de captura:** cuando la bola le da a un Pokémon, la cámara va sola a verla de cerca
     (en un segundo, sin dar tirones): se ve cómo lo absorbe, cómo cae, cada sacudida con el botón
     rojo y el "¡clic!" con estrellas (o cómo se escapa). Al terminar vuelve detrás del jugador (o al

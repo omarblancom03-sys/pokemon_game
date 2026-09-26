@@ -1,7 +1,8 @@
 // PRUEBAS de los EVENTOS de lanzar (los que usan los sonidos): la mano
 // suelta la bola o la baya (ItemThrown), la bola golpea (BallHit, una vez y
 // con la calidad del tiro), cada sacudida se cuenta (BallShook 1, 2, 3) antes
-// del resultado, y un Pokémon que te descubre lo avisa (PokemonNoticed).
+// del resultado, y un Pokémon que te descubre lo avisa (PokemonNoticed). El
+// golpe congela el mundo un instante (más si es crítico) y marca dónde fue.
 
 import 'dart:math';
 
@@ -130,5 +131,48 @@ void main() {
     step(s, 2);
     expect(w.isAlert, isTrue);
     expect(events.whereType<PokemonNoticed>().map((e) => e.wild), [w]);
+  });
+
+  /// Lanza y avanza justo hasta el golpe.
+  ThrownBall throwUntilHit(World3DSim s, List<World3DEvent> events) {
+    step(s, 0.1);
+    s.throwBall(PokeBallType.poke);
+    for (var i = 0; i < 300 && events.whereType<BallHit>().isEmpty; i++) {
+      s.update(1 / 60);
+    }
+    expect(events.whereType<BallHit>(), hasLength(1));
+    return s.balls.single;
+  }
+
+  test('a hit freezes the world for a blink; the impact starts there', () {
+    final (s, w, events) = world();
+    final ball = throwUntilHit(s, events);
+    final at = ball.hitPoint!;
+    final flat = Vector3(at.x, 0, at.z)..sub(w.position..y = 0);
+    expect(flat.length, lessThan(w.hitRadius + 0.3));
+    expect(ball.impactProgress, closeTo(0, 0.1));
+    expect(s.hitStop, World3DSim.hitStopSeconds);
+
+    // Congelado: la bola no avanza (la cámara sí).
+    final t = ball.phaseTime;
+    s
+      ..update(0.03)
+      ..update(0.03);
+    expect(ball.phaseTime, t);
+    s
+      ..update(0.03)
+      ..update(0.03);
+    expect(ball.phaseTime, greaterThan(t));
+    expect(s.hitStop, 0);
+    // La onda se ve un momento y se acaba.
+    step(s, ThrownBall.impactTime + 0.05);
+    expect(ball.impactProgress, isNull);
+  });
+
+  test('a critical hit freezes it a bit longer', () {
+    final (s, _, events) = world();
+    s.ballSystem.criticalChance = 1;
+    throwUntilHit(s, events);
+    expect(s.hitStop, World3DSim.criticalHitStopSeconds);
   });
 }

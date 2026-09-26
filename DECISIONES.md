@@ -469,3 +469,12 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
   arco, sin aro) y, al terminar, se vuelve a apuntar. La mezcla del hombro (`camera.aim`) sigue la
   tecla, no `isAiming`: si no, al golpear la cámara se alejaba del hombro y luego volvía hacia la
   bola (se vio en la vista previa).
+- **2026-09-26 — Impacto con peso** (TODO 8.15). MICRO-PAUSA (hit-stop, como en los juegos de
+  acción): al emitirse `BallHit` la simulación deja de avanzar el MUNDO 0,07 s (bolas, Pokémon,
+  decorados); la cámara, el jugador y el gesto de lanzar siguen, así no parece un tirón del
+  navegador. 0,14 s si la captura va a ser crítica (el resultado ya está decidido en el golpe): se
+  nota que ese golpe es especial antes de ver el brillo dorado. Más de ~0,15 s ya parece un fallo.
+  La ONDA: un anillo que mira a la cámara, de 0,2 a 1,5 m en 0,35 s con salida suave, y un
+  fogonazo del primer tercio; en el PUNTO DEL GOLPE (`ThrownBall.hitPoint`), no en la bola, que ya
+  sube a absorberlo. El tiempo lo da `ThrownBall.impactProgress` (probado sin GPU). Durante la
+  micro-pausa la onda se queda en su primer fotograma: justo el "fogonazo congelado" del hit-stop.
