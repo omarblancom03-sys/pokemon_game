@@ -944,12 +944,16 @@ class World3DSim {
     _runTime = running && !stopping ? _runTime + dt : 0;
   }
 
-  /// Todos los que apartan la hierba al pasar: jugador y Pokémon (los que
-  /// están dentro de una bola, no ni los escondidos: esos la agitan).
+  /// Todos los que apartan la hierba: jugador, Pokémon (los que están
+  /// dentro de una bola, no; ni los escondidos: esos la agitan) y la bola
+  /// que se sacude en el suelo (así se ve entre la hierba alta).
   Iterable<Vector3> get grassPushers sync* {
     yield player.position;
     for (final w in wild) {
       if (w.isFree && !w.hidden) yield w.position;
+    }
+    for (final b in ballSystem.balls) {
+      if (b.pressesGrass) yield b.position;
     }
   }
 

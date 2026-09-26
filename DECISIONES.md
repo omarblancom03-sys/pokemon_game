@@ -496,3 +496,8 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
   SE ESCAPA: la bola se PARTE (la tapa se abre de golpe y sale volando hacia arriba y atrás, la
   base se vuelca) y saltan 7 chispas. El fogonazo blanco se redujo (1,3 m y 0,75 de opacidad →
   0,9 m, 0,55 y 0,3 s): en la vista previa tapaba la rotura entera.
+- **2026-09-26 — La bola aparta la hierba** (TODO 8.15). La bola que ha capturado (cayendo por
+  debajo de 0,6 m, sacudiéndose, rompiéndose o con las estrellas) entra en `grassPushers` como el
+  jugador y los Pokémon, con el MISMO radio (1,2 m): en la vista previa, con la cámara de captura a
+  2,6 m, un radio pequeño dejaba matas delante de la bola. Volando o rodando tras fallar no aparta
+  nada (pasa de largo y el "claro" parpadearía). Deja de hacerlo al volver a la mochila.

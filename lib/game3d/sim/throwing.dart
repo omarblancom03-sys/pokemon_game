@@ -295,6 +295,16 @@ class ThrownBall {
     _ => 1,
   };
 
+  /// ¿Aparta la hierba alta? Cuando cae (ya cerca del suelo), mientras se
+  /// sacude y hasta que vuelve a la mochila o se rompe: así la bola se ve
+  /// entre la hierba. Volando o rodando tras fallar, no (pasa de largo).
+  bool get pressesGrass => switch (phase) {
+    BallPhase.falling => position.y < 0.6,
+    BallPhase.shaking || BallPhase.escaped => true,
+    BallPhase.caught => returnProgress == null,
+    BallPhase.flying || BallPhase.absorbing || BallPhase.missed => false,
+  };
+
   /// ¿Está quieta en el suelo?
   bool get isResting =>
       phase == BallPhase.shaking ||

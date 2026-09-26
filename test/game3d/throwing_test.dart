@@ -493,6 +493,28 @@ void main() {
     expect(ball.shakesStarted, 2);
   });
 
+  test('the ball on the ground pushes the tall grass aside', () {
+    final ball = ThrownBall(
+      id: 'b',
+      ball: PokeBallType.poke,
+      position: Vector3(0, 3, 0),
+      velocity: Vector3.zero(),
+    )..result = const CaptureResult(chance: 0.5, shakes: 1, caught: true);
+    expect(ball.pressesGrass, isFalse, reason: 'flying');
+    ball.setPhase(BallPhase.falling);
+    expect(ball.pressesGrass, isFalse, reason: 'still high');
+    ball.position = Vector3(0, ballRadius, 0);
+    expect(ball.pressesGrass, isTrue);
+    ball.setPhase(BallPhase.shaking);
+    expect(ball.pressesGrass, isTrue);
+    ball.setPhase(BallPhase.caught);
+    expect(ball.pressesGrass, isTrue, reason: 'the stars');
+    ball.phaseTime = ThrownBall.returnStart + 0.1;
+    expect(ball.pressesGrass, isFalse, reason: 'back to the backpack');
+    ball.setPhase(BallPhase.missed);
+    expect(ball.pressesGrass, isFalse, reason: 'rolls past');
+  });
+
   test('once caught, the ball flies back in an arc to the backpack', () {
     final ball =
         ThrownBall(
