@@ -67,7 +67,12 @@
     la primera de su especie). Pulsa P (o toca "Capturados") para ver todas tus cartas.
   - **Minimapa** (arriba a la derecha): gira con la cámara (arriba = adelante), "N" = norte. Puntos
     rojos = Poké Balls en el suelo; Pokémon en blanco (tranquilo), amarillo (sospecha), naranja (te vio)
-    o rojo latiendo (viene a por ti).
+    o rojo latiendo (viene a por ti). Tocarlo abre el mapa grande.
+  - **Mapa grande** (tecla M o tocar el minimapa): todo el mundo con el norte arriba. Flecha amarilla =
+    tú (y un cono claro hacia donde mira la cámara), carteles, arbustos con el número de bayas que les
+    quedan (aro gris si están vacíos), Poké Balls y bayas del suelo. Los Pokémon solo salen dentro del
+    círculo de lo que alcanzas a ver (como en el minimapa; los escondidos nunca). El mundo se congela
+    mientras está abierto; M o la X lo cierran.
   - **Poké Balls en el campo:** puñados de Poké/Super/Ultra Balls flotando con un haz de luz (se ven de
     lejos). Se recogen al pasar por encima; reaparecen en otro sitio a los 12 s. Bolsa arriba a la
     izquierda (toca una bola para elegirla) con el número de capturados; avisos arriba en el centro.

@@ -363,6 +363,43 @@ void main() {
     await tester.pump(const Duration(seconds: 3));
   });
 
+  testWidgets('3D: M (or tapping the minimap) opens the map and freezes the '
+      'world', (tester) async {
+    final renderer = FakeSceneRenderer();
+    await tester.pumpWidget(
+      PokemonGameApp(
+        dependencies: AppDependencies.create(
+          repository: repository,
+          sceneRenderer: renderer,
+        ),
+      ),
+    );
+    await tester.tap(find.byKey(const Key('menu_play_3d')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    final sim = renderer.lastSim!;
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.keyM);
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.byKey(const Key('big_map')), findsOneWidget);
+    expect(find.text('Arbustos con bayas'), findsOneWidget);
+    expect(sim.isPaused, isTrue);
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.keyM);
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.byKey(const Key('big_map')), findsNothing);
+    expect(sim.isPaused, isFalse);
+
+    await tester.tap(find.byKey(const Key('game3d_minimap')));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.byKey(const Key('big_map')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('big_map_close')));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.byKey(const Key('big_map')), findsNothing);
+    expect(sim.isPaused, isFalse);
+    await tester.pump(const Duration(seconds: 3));
+  });
+
   testWidgets('3D: aiming at a species you have (or not) paints fine', (
     tester,
   ) async {

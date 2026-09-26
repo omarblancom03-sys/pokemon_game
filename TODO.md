@@ -95,7 +95,8 @@ El combate lo hace OTRO equipo (se engancha por el contrato EncounterHandler). N
 - [x] Bayas para distraer: el Pokémon va a comérsela y, mientras come, no te ve (bonus "¡Está comiendo!")
       (la baya cae POR DETRÁS del fijado: se da la vuelta para comer; huele bayas a 10 m, no las que
       están junto a ti; ×1,5 que se suma al sigilo; bocadillo con la baya y mordiscos)
-- [ ] Mapa grande (M): todo el mundo con carteles, bolas del suelo, arbustos con bayas y dónde estás
+- [x] Mapa grande (M): todo el mundo con carteles, bolas del suelo, arbustos con bayas y dónde estás
+      (M o tocar el minimapa; norte arriba; congela el mundo; Pokémon solo en el círculo cercano)
 
 ## 8.13 Exploración: detalles (añadido 2026-09-25)
 - [ ] Ayuda de controles plegable (H): se ve al entrar y luego queda en una pestaña pequeña (ahora tapa

@@ -324,3 +324,12 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
   la mano, Pokémon 8 m delante y de espaldas).
 - **2026-09-25 — TODO 8.14 lo añadió el usuario** (diversión sin quitar protagonismo a los
   combates: todo opcional, nada da niveles). Se respeta ese principio en lo que se haga de ahí.
+- **2026-09-25 — Mapa grande** (tecla **M** o tocar el minimapa). Lo que se marca lo decide
+  `sim/map_overview.dart` (`MapOverview.of(sim)`, Dart puro y con tests); la vista
+  (`widgets/big_map.dart`) solo pinta. Norte arriba (el minimapa ya gira con la cámara; aquí se
+  quiere un mapa fijo para orientarse). Lo FIJO o que brilla de lejos sale en todo el mapa (carteles,
+  arbustos con sus bayas, Poké Balls y bayas del suelo); los Pokémon SOLO dentro del radio del
+  minimapa (26 m) y nunca los escondidos: el mapa es para orientarse, no para encontrar Pokémon sin
+  buscarlos. Congela el mundo como "Mis capturas" (un solo `_openPanel` para los dos) y, como está
+  congelado, se pinta una sola vez. El dibujo del suelo (`recordMapTiles`) y los colores
+  (`MapColors`) pasan a `widgets/map_tiles.dart`, compartidos por el minimapa y el mapa grande.

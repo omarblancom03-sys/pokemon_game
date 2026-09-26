@@ -21,6 +21,7 @@ import '../../models/poke_ball.dart';
 import '../game/widgets/d_pad.dart';
 import '../game/widgets/encounter_overlay.dart';
 import 'widgets/action_panel.dart';
+import 'widgets/big_map.dart';
 import 'widgets/capture_card.dart';
 import 'widgets/field_hud.dart';
 import 'widgets/minimap.dart';
@@ -55,8 +56,8 @@ class _Game3DScreenState extends State<Game3DScreen> {
   bool _aimKey = false;
   bool _aimButton = false;
 
-  // El panel "Mis capturas" está abierto (el mundo, congelado).
-  bool _capturesOpen = false;
+  // Hay un panel abierto ("Mis capturas" o el mapa): el mundo, congelado.
+  bool _panelOpen = false;
 
   // Para distinguir un clic (lanzar) de un arrastre (girar la cámara).
   int _buttons = 0;
@@ -87,7 +88,7 @@ class _Game3DScreenState extends State<Game3DScreen> {
     if (kIsWeb) unawaited(BrowserContextMenu.disableContextMenu());
   }
 
-  void _syncPause() => _sim.setPaused(_controller.isPaused || _capturesOpen);
+  void _syncPause() => _sim.setPaused(_controller.isPaused || _panelOpen);
 
   /// Lo que la simulación necesita del entrenador: lo que lleva en la mano
   /// (la bola, con la que se calcula la probabilidad, o una baya) y la
@@ -113,22 +114,26 @@ class _Game3DScreenState extends State<Game3DScreen> {
   /// Agacharse / levantarse (sigilo).
   void _toggleCrouch() => setState(() => _sim.crouching = !_sim.crouching);
 
-  /// Abre "Mis capturas". El mundo se congela mientras está abierto (y se
-  /// sueltan las teclas: el panel se queda con el teclado).
-  Future<void> _showCaptures() async {
-    if (_capturesOpen) return;
-    _capturesOpen = true;
+  /// Abre "Mis capturas".
+  Future<void> _showCaptures() =>
+      _openPanel((_) => CapturesPanel(trainer: _trainer));
+
+  /// Abre el mapa grande.
+  Future<void> _showMap() => _openPanel((_) => BigMapPanel(sim: _sim));
+
+  /// Abre un panel encima del juego. El mundo se congela mientras está
+  /// abierto (y se sueltan las teclas: el panel se queda con el teclado).
+  Future<void> _openPanel(WidgetBuilder builder) async {
+    if (_panelOpen) return;
+    _panelOpen = true;
     _aimKey = false;
     _aimMouse = false;
     _syncAim();
     _sim
       ..setPaused(true)
       ..cameraInput.clear();
-    await showDialog<void>(
-      context: context,
-      builder: (_) => CapturesPanel(trainer: _trainer),
-    );
-    _capturesOpen = false;
+    await showDialog<void>(context: context, builder: builder);
+    _panelOpen = false;
     if (mounted) _syncPause();
   }
 
@@ -184,6 +189,10 @@ class _Game3DScreenState extends State<Game3DScreen> {
     }
     if (key == LogicalKeyboardKey.keyP) {
       if (down) unawaited(_showCaptures());
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.keyM) {
+      if (down) unawaited(_showMap());
       return KeyEventResult.handled;
     }
     if (key == LogicalKeyboardKey.keyR) {
@@ -320,7 +329,11 @@ class _Game3DScreenState extends State<Game3DScreen> {
             Positioned(
               right: 16,
               top: 16,
-              child: Minimap(key: const Key('game3d_minimap'), sim: _sim),
+              child: Minimap(
+                key: const Key('game3d_minimap'),
+                sim: _sim,
+                onTap: () => unawaited(_showMap()),
+              ),
             ),
             Positioned(
               left: 16,
@@ -455,7 +468,7 @@ class _Hint extends StatelessWidget {
           'Rueda zoom\n'
           'Clic der. / F apuntar · Clic / Espacio lanzar · R / 1-4 bola o baya\n'
           'C agacharse: en la hierba alta no te ven · Correr hace ruido · '
-          'P tus capturas · L leer carteles y sacudir arbustos (bayas)',
+          'P tus capturas · M mapa · L leer carteles y sacudir arbustos (bayas)',
           style: TextStyle(color: Colors.white),
         ),
       ),
