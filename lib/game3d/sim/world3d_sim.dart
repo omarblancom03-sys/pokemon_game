@@ -24,6 +24,7 @@ import 'orbit_camera.dart';
 import 'player_body.dart';
 import 'reach.dart';
 import 'signs.dart';
+import 'throw_ring.dart';
 import 'throwing.dart';
 import 'trainer_pose.dart';
 import 'wild_behavior.dart';
@@ -38,6 +39,7 @@ export 'footprints.dart' show Footprint, FootprintTrail;
 export 'grass_blades.dart' show GrassBlade;
 export 'grass_trampling.dart' show GrassTrampling;
 export 'signs.dart' show MapCell;
+export 'throw_ring.dart' show ThrowRing;
 export 'throwing.dart' show BallPhase, ThrownBall;
 export 'wild_behavior.dart' show PlayerStealth;
 export 'world3d_events.dart';
@@ -202,6 +204,10 @@ class World3DSim {
   /// Pokémon al que se lanzaría ahora mismo (null = tiro a ojo).
   WildPokemon? lockedTarget;
 
+  /// El aro que se encoge al apuntar a [lockedTarget]: lanzar cuando es
+  /// pequeño da un tiro mejor (ver ThrowQuality).
+  final ThrowRing throwRing = ThrowRing();
+
   /// Bola elegida en la bolsa (la pone la pantalla); null = bolsa vacía.
   PokeBallType? readyBall = PokeBallType.poke;
 
@@ -246,6 +252,7 @@ class World3DSim {
   // baya) y objetivo.
   double? _throwTime;
   PokeBallType? _throwBall;
+  ThrowQuality _throwQuality = ThrowQuality.none;
   bool _throwingBerry = false;
   WildPokemon? _throwTarget;
   bool _released = false;
@@ -479,6 +486,8 @@ class World3DSim {
     _throwBall = ball;
     _throwingBerry = ball == null;
     _throwTarget = lockedTarget;
+    // La calidad es la del aro al PULSAR (lo que el jugador cronometra).
+    _throwQuality = ball == null ? ThrowQuality.none : throwRing.quality;
     _released = false;
     return true;
   }
@@ -569,7 +578,12 @@ class World3DSim {
       if (ball == null) {
         berries.throwBerry(hand, _berryVelocity(hand, _throwTarget));
       } else {
-        ballSystem.launch(ball, hand, _releaseVelocity(hand, _throwTarget));
+        ballSystem.launch(
+          ball,
+          hand,
+          _releaseVelocity(hand, _throwTarget),
+          quality: _throwQuality,
+        );
       }
     }
     if (now >= throwDuration) {
@@ -624,6 +638,13 @@ class World3DSim {
             forward: camera.forward,
             wild: wild,
           );
+    // El aro solo corre apuntando a alguien con una bola lista.
+    throwRing.update(
+      dt,
+      target: aiming && canThrow && readyBall != null && !berryReady
+          ? lockedTarget?.id
+          : null,
+    );
     _updateThrow(dt);
 
     // Jugador: la dirección pulsada es RELATIVA A LA CÁMARA

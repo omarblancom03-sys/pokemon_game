@@ -2,15 +2,19 @@ import 'dart:math' as math;
 
 import '../../models/capture_result.dart';
 import '../../models/poke_ball.dart';
+import '../../models/throw_quality.dart';
 
 export '../../models/capture_result.dart';
+export '../../models/throw_quality.dart';
 
 /// LÓGICA DE CAPTURA (sin combate, estilo Leyendas Arceus): no hay PS que
 /// bajar, así que la probabilidad depende de
 ///  - el ratio de captura REAL de la especie (PokeAPI, 3..255),
 ///  - el tipo de Poké Ball,
 ///  - el sigilo: si el Pokémon no te ha visto ×1,5, y por la espalda ×2,
-///  - y si se está comiendo una baya ×1,5 (distraído; se suma al sigilo).
+///  - si se está comiendo una baya ×1,5 (distraído; se suma al sigilo),
+///  - y la calidad del tiro (el aro que se encoge al apuntar): ×1,2, ×1,5
+///    o ×2 (ver ThrowQuality; también se suma).
 ///
 /// Las sacudidas imitan a los juegos: se hacen 4 comprobaciones, cada una
 /// con probabilidad `p^(1/4)` (así las 4 juntas dan exactamente `p`). Se
@@ -35,6 +39,7 @@ class CaptureCalculator {
     required bool unaware,
     required bool fromBehind,
     bool eating = false,
+    ThrowQuality quality = ThrowQuality.none,
   }) {
     final stealth = !unaware
         ? 1.0
@@ -43,7 +48,10 @@ class CaptureCalculator {
         : unawareBonus;
     final food = eating ? eatingBonus : 1.0;
     final rate = captureRate.clamp(1, 255) / 255;
-    return (rate * ball.multiplier * stealth * food).clamp(0.0, 1.0);
+    return (rate * ball.multiplier * stealth * food * quality.bonus).clamp(
+      0.0,
+      1.0,
+    );
   }
 
   /// Probabilidad de CAPTURA CRÍTICA según cuántas especies distintas ha
@@ -63,6 +71,7 @@ class CaptureCalculator {
     required bool unaware,
     required bool fromBehind,
     bool eating = false,
+    ThrowQuality quality = ThrowQuality.none,
     double criticalChance = 0,
   }) {
     final p = chance(
@@ -71,6 +80,7 @@ class CaptureCalculator {
       unaware: unaware,
       fromBehind: fromBehind,
       eating: eating,
+      quality: quality,
     );
     final perCheck = math.pow(p, 0.25).toDouble();
     // Sin posibilidad de crítico no se tira ese dado (no gasta azar).

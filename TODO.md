@@ -116,7 +116,8 @@ combates (tus capturas = tu equipo), nunca compite con ellos. Nada de lo de aqu�
 - [ ] Botón "Combatir" siempre visible en el HUD 3D (y en pausa) → hook del otro equipo
 - [ ] Sonido: gritos de PokeAPI (campo cries) al alertarse, "fiu" al lanzar, clic por sacudida,
       fanfarria al capturar
-- [ ] Anillo que se encoge al apuntar: "¡Bien!/¡Genial!/¡Excelente!" ×1,2/×1,5/×2 (en ambos modos)
+- [x] Anillo que se encoge al apuntar: "¡Bien!/¡Genial!/¡Excelente!" ×1,2/×1,5/×2 (en ambos modos)
+      (aro dentro de la mira, 1,6 s por vuelta; cuenta el tamaño al PULSAR; se suma a los demás bonus)
 - [ ] Reto Safari (opcional): se empieza en un puesto del mapa o con un botón; 10 min, 25 bolas
       propias sin reaparición; "Abandonar reto" en cualquier momento sin penalización
   - [ ] Puntuación solo en el Safari: base por rareza (capture_rate) × bonus que ya existen

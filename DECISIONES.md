@@ -361,3 +361,15 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
   solo inclinada apenas se distinguía de la hierba que mece el viento; aplastada se ve un pasillo.
   10 s tumbada y 12 s levantándose. Vista previa: `preview_flee.sh` (`?flee`, `?trail`) en el
   scratchpad.
+- **2026-09-25 — El aro que se encoge al apuntar** (TODO 8.14; como en Pokémon GO). `ThrowQuality`
+  (modelo: ×1 / ×1,2 / ×1,5 / ×2) y `ThrowRing` (sim, Dart puro). El aro corre SOLO apuntando a un
+  Pokémon fijado con una bola en la mano (con baya o sin bolas no hay aro: una baya no captura). Va
+  de 1 (el anillo de la mira) a 0,12 a ritmo constante en 1,6 s y vuelve a empezar de golpe;
+  cambiar de objetivo o dejar de apuntar lo reinicia. Umbrales: < 0,75 "¡Bien!", < 0,5 "¡Genial!",
+  < 0,25 "¡Excelente!" (~0,45 s, ~0,45 s y ~0,24 s: el excelente es el difícil). La calidad es la
+  del momento de PULSAR lanzar (lo que el jugador cronometra), no la de soltar la bola (0,2 s después)
+  y viaja en la bola (`ThrownBall.quality`, campo aparte: el registro `hit` no cambia de forma). Si
+  la bola le da a CUALQUIER Pokémon, multiplica la probabilidad y se suma a sigilo y baya. El % de la
+  mira NO incluye el aro (es la base para decidir si merece la pena; el aro es cosa del pulso) y el
+  color del aro dice qué tiro saldría: blanco, azul, violeta, dorado. "En ambos modos" = el libre y
+  el futuro Reto Safari: no hay nada que cambiar cuando exista.

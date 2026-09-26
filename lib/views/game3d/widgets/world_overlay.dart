@@ -24,7 +24,10 @@ import '../../common/pokemon_formatters.dart';
 ///    baya del suelo (late con cada mordisco mientras se la comen).
 ///  - AL GOLPEAR: sobre el Pokémon, qué bonus ha tenido el tiro ("¡No te
 ///    vio!", "¡Por la espalda!", "¡Está comiendo!"), que sube y se
-///    desvanece. Si es una captura crítica, también lo dice.
+///    desvanece. Si es una captura crítica, también lo dice, y la calidad
+///    del tiro ("¡Excelente! ×2").
+///  - EL ARO: dentro del anillo del fijado, un aro que se encoge (su color
+///    dice qué tiro saldría si lanzas ya).
 ///
 /// Se repinta en cada fotograma leyendo el estado de la simulación; no
 /// cambia nada de ella.
@@ -85,6 +88,22 @@ class _WorldPainter extends CustomPainter {
     Colors.lightGreenAccent,
     ((chance - 0.33) / 0.5).clamp(0.0, 1.0),
   )!;
+
+  /// Color del aro que se encoge según el tiro que daría: blanco (nada),
+  /// azul (¡Bien!), violeta (¡Genial!) y dorado (¡Excelente!).
+  static Color throwColor(ThrowQuality quality) => switch (quality) {
+    ThrowQuality.none => Colors.white70,
+    ThrowQuality.nice => const Color(0xFF80D8FF),
+    ThrowQuality.great => const Color(0xFFB388FF),
+    ThrowQuality.excellent => const Color(0xFFFFD54F),
+  };
+
+  static String throwLabel(ThrowQuality quality) => switch (quality) {
+    ThrowQuality.none => '',
+    ThrowQuality.nice => '¡Bien!',
+    ThrowQuality.great => '¡Genial!',
+    ThrowQuality.excellent => '¡Excelente!',
+  };
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -164,6 +183,19 @@ class _WorldPainter extends CustomPainter {
         math.pi / 3,
         false,
         ring,
+      );
+    }
+    // El aro que se encoge: lanzar cuando es pequeño da un tiro mejor.
+    final throwRing = sim.throwRing;
+    if (throwRing.target == target.id) {
+      final quality = throwRing.quality;
+      canvas.drawCircle(
+        mid,
+        radius * throwRing.size,
+        Paint()
+          ..color = throwColor(quality)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = quality == ThrowQuality.excellent ? 4 : 2.5,
       );
     }
     _paintLockName(canvas, mid, radius, target);
@@ -310,6 +342,11 @@ class _WorldPainter extends CustomPainter {
     final lines = [
       if (ball.result?.critical ?? false)
         ('¡Captura crítica!', const Color(0xFFFFD54F)),
+      if (ball.quality != ThrowQuality.none)
+        (
+          '${throwLabel(ball.quality)} ×${_factor(ball.quality.bonus)}',
+          throwColor(ball.quality),
+        ),
       if (hit.unaware)
         (
           '¡No te vio! ×${_factor(CaptureCalculator.unawareBonus)}',

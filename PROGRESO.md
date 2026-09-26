@@ -92,6 +92,11 @@
     Pokémon sale de un salto (y queda alerta). Si falla, rebota y rueda (también contra árboles y
     casas) y queda en el suelo brillando para recogerla. Por la espalda y sin ser visto es más fácil.
     Al golpear se ve el bonus conseguido: "¡No te vio! ×1,5" y/o "¡Por la espalda! ×2".
+  - **El aro que se encoge:** al apuntar a un Pokémon con una bola, dentro del anillo del % hay un aro
+    que se encoge (en 1,6 s) y vuelve a empezar. Lanza cuando esté pequeño: blanco = sin bonus, azul =
+    "¡Bien!" ×1,2, violeta = "¡Genial!" ×1,5 y dorado (el más pequeño, dura un suspiro) = "¡Excelente!"
+    ×2. Cuenta el momento en que PULSAS lanzar y se suma al sigilo y a la baya. Si la bola da, se ve
+    sobre el Pokémon junto a los demás bonus. Lanzar sin apuntar no tiene aro.
 
 ## Cómo probar la captura
 1. Jugar 3D → ve hacia el prado de hierba alta (arriba a la derecha al empezar).

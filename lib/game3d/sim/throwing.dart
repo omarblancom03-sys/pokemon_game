@@ -85,11 +85,16 @@ class ThrownBall {
     required this.ball,
     required Vector3 position,
     required Vector3 velocity,
+    this.quality = ThrowQuality.none,
   }) : position = position.clone(),
        velocity = velocity.clone();
 
   final String id;
   final PokeBallType ball;
+
+  /// Calidad del tiro (el aro al lanzar): si le da, multiplica la
+  /// probabilidad y se enseña ("¡Excelente! ×2").
+  final ThrowQuality quality;
   Vector3 position;
   Vector3 velocity;
 
@@ -255,13 +260,20 @@ class BallSystem {
   /// Tras escaparse, el Pokémon queda alerta estos segundos.
   static const escapeAlertSeconds = 4.0;
 
-  /// Lanza una bola desde [from] con velocidad [velocity].
-  ThrownBall launch(PokeBallType ball, Vector3 from, Vector3 velocity) {
+  /// Lanza una bola desde [from] con velocidad [velocity] y la
+  /// calidad del tiro [quality].
+  ThrownBall launch(
+    PokeBallType ball,
+    Vector3 from,
+    Vector3 velocity, {
+    ThrowQuality quality = ThrowQuality.none,
+  }) {
     final thrown = ThrownBall(
       id: 'ball-${_count++}',
       ball: ball,
       position: from,
       velocity: velocity,
+      quality: quality,
     );
     _balls.add(thrown);
     return thrown;
@@ -445,6 +457,7 @@ class BallSystem {
         unaware: unaware,
         fromBehind: fromBehind,
         eating: eating,
+        quality: ball.quality,
         criticalChance: criticalChance,
       )
       ..velocity = flat * -1.2 + Vector3(0, 4.2, 0)
