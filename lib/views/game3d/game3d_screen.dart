@@ -23,6 +23,7 @@ import '../game/widgets/encounter_overlay.dart';
 import 'widgets/action_panel.dart';
 import 'widgets/big_map.dart';
 import 'widgets/capture_card.dart';
+import 'widgets/controls_help.dart';
 import 'widgets/field_hud.dart';
 import 'widgets/minimap.dart';
 import 'widgets/world_overlay.dart';
@@ -58,6 +59,9 @@ class _Game3DScreenState extends State<Game3DScreen> {
 
   // Hay un panel abierto ("Mis capturas" o el mapa): el mundo, congelado.
   bool _panelOpen = false;
+
+  // La ayuda de controles está abierta (se pliega sola al rato; H la cambia).
+  final _helpOpen = ValueNotifier<bool>(true);
 
   // Para distinguir un clic (lanzar) de un arrastre (girar la cámara).
   int _buttons = 0;
@@ -155,6 +159,7 @@ class _Game3DScreenState extends State<Game3DScreen> {
     _trainer.removeListener(_syncTrainer);
     unawaited(_consumedSub.cancel());
     _sim.dispose();
+    _helpOpen.dispose();
     if (kIsWeb) unawaited(BrowserContextMenu.enableContextMenu());
     super.dispose();
   }
@@ -193,6 +198,10 @@ class _Game3DScreenState extends State<Game3DScreen> {
     }
     if (key == LogicalKeyboardKey.keyM) {
       if (down) unawaited(_showMap());
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.keyH) {
+      if (down) _helpOpen.value = !_helpOpen.value;
       return KeyEventResult.handled;
     }
     if (key == LogicalKeyboardKey.keyR) {
@@ -349,7 +358,7 @@ class _Game3DScreenState extends State<Game3DScreen> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  const _Hint(),
+                  ControlsHelp(open: _helpOpen),
                 ],
               ),
             ),
@@ -446,32 +455,6 @@ class _ThrowButtons extends StatelessWidget {
           child: berry ? const BerryIcon(size: 44) : BallIcon(ball, size: 44),
         ),
       ],
-    );
-  }
-}
-
-/// Pista de controles en una esquina.
-class _Hint extends StatelessWidget {
-  const _Hint();
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: Colors.black54,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: const Padding(
-        padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        child: Text(
-          'WASD mover · Mayús correr · Arrastrar / Q-E cámara · V detrás · '
-          'Rueda zoom\n'
-          'Clic der. / F apuntar · Clic / Espacio lanzar · R / 1-4 bola o baya\n'
-          'C agacharse: en la hierba alta no te ven · Correr hace ruido · '
-          'P tus capturas · M mapa · L leer carteles y sacudir arbustos (bayas)',
-          style: TextStyle(color: Colors.white),
-        ),
-      ),
     );
   }
 }

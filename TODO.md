@@ -99,7 +99,7 @@ El combate lo hace OTRO equipo (se engancha por el contrato EncounterHandler). N
       (M o tocar el minimapa; norte arriba; congela el mundo; Pokémon solo en el círculo cercano)
 
 ## 8.13 Exploración: detalles (añadido 2026-09-25)
-- [ ] Ayuda de controles plegable (H): se ve al entrar y luego queda en una pestaña pequeña (ahora tapa
+- [x] Ayuda de controles plegable (H): se ve al entrar y luego queda en una pestaña pequeña (ahora tapa
       a los Pokémon lejanos de la parte de arriba de la pantalla)
 - [ ] Huellas del entrenador en la tierra del camino (se borran con el tiempo)
 - [ ] Pokémon que dejan rastro: la hierba pisada por donde pasó uno que huyó

@@ -333,3 +333,10 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
   buscarlos. Congela el mundo como "Mis capturas" (un solo `_openPanel` para los dos) y, como está
   congelado, se pinta una sola vez. El dibujo del suelo (`recordMapTiles`) y los colores
   (`MapColors`) pasan a `widgets/map_tiles.dart`, compartidos por el minimapa y el mapa grande.
+- **2026-09-25 — Ayuda de controles plegable** (`widgets/controls_help.dart`). Abierta al entrar,
+  agrupada (Moverse / Cámara / Capturar / Más + un consejo de sigilo) para que ocupe ~440 px de
+  ancho en vez de la línea de ~840 px que tapaba el cielo y los Pokémon lejanos. Se pliega SOLA a
+  los 20 s (tiempo de leerla una vez) en la pestaña "H · Controles"; **H** o tocarla la cambian. Si el
+  jugador la toca antes, deja de plegarse sola (manda él). Si está abierta lo guarda un
+  `ValueNotifier<bool>` de la pantalla (la tecla H se maneja allí con las demás); el temporizador
+  vive en el widget.

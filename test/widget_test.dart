@@ -400,6 +400,65 @@ void main() {
     await tester.pump(const Duration(seconds: 3));
   });
 
+  testWidgets('3D: the controls help folds itself away; H and tapping '
+      'toggle it', (tester) async {
+    await tester.pumpWidget(
+      PokemonGameApp(
+        dependencies: AppDependencies.create(
+          repository: repository,
+          sceneRenderer: FakeSceneRenderer(),
+        ),
+      ),
+    );
+    await tester.tap(find.byKey(const Key('menu_play_3d')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    final help = find.byKey(const Key('game3d_help'));
+    final tab = find.byKey(const Key('game3d_help_tab'));
+    expect(help, findsOneWidget);
+    expect(tab, findsNothing);
+
+    // Al rato se pliega sola.
+    await tester.pump(const Duration(seconds: 21));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(help, findsNothing);
+    expect(tab, findsOneWidget);
+
+    await tester.tap(tab);
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(help, findsOneWidget);
+    await tester.sendKeyEvent(LogicalKeyboardKey.keyH);
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(help, findsNothing);
+    await tester.sendKeyEvent(LogicalKeyboardKey.keyH);
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(help, findsOneWidget);
+    await tester.tap(find.byKey(const Key('game3d_help_close')));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tab, findsOneWidget);
+  });
+
+  testWidgets('3D: once you toggle the help, it no longer folds by '
+      'itself', (tester) async {
+    await tester.pumpWidget(
+      PokemonGameApp(
+        dependencies: AppDependencies.create(
+          repository: repository,
+          sceneRenderer: FakeSceneRenderer(),
+        ),
+      ),
+    );
+    await tester.tap(find.byKey(const Key('menu_play_3d')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.sendKeyEvent(LogicalKeyboardKey.keyH);
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.sendKeyEvent(LogicalKeyboardKey.keyH);
+    await tester.pump(const Duration(seconds: 25));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.byKey(const Key('game3d_help')), findsOneWidget);
+  });
+
   testWidgets('3D: aiming at a species you have (or not) paints fine', (
     tester,
   ) async {
