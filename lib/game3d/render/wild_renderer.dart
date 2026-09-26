@@ -134,7 +134,7 @@ class WildRenderer {
         ? 1.0
         : math.sin(t * math.pi * 0.75) / math.sin(math.pi * 0.75);
     var tint = vm.Vector4(1, 1, 1, 1);
-    var offset = vm.Vector3(0, w.hopHeight, 0);
+    var offset = vm.Vector3(0, w.hopHeight + w.dodgeJump, 0);
 
     // Dentro de una bola: rojo, encogiéndose hacia ella; luego invisible.
     if (!w.isFree) {

@@ -113,6 +113,30 @@ class WildPokemon {
   /// come apenas se entera de nada: no ve y casi no oye.
   double? eatingFor;
 
+  /// ESQUIVA: segundos desde que empezó a apartarse de una bola de un
+  /// salto lateral (null = no esquiva). Va de [dodgeFrom] a [dodgeTo] en
+  /// [dodgeTime].
+  double? dodgingFor;
+  Vector3 dodgeFrom = Vector3.zero();
+  Vector3 dodgeTo = Vector3.zero();
+
+  /// Bola por la que ya decidió si esquivar (se decide una vez por bola).
+  String? dodgeCheckedBall;
+
+  bool get isDodging => dodgingFor != null;
+
+  /// Lo que dura el salto de la esquiva (s) y cuánto se aparta (m).
+  static const dodgeTime = 0.3;
+  static const dodgeDistance = 1.6;
+
+  /// Altura extra del salto de la esquiva (0 si no esquiva).
+  double get dodgeJump {
+    final t = dodgingFor;
+    if (t == null || t >= dodgeTime) return 0;
+    final s = t / dodgeTime;
+    return 4 * s * (1 - s) * 0.45;
+  }
+
   /// Segundos que lleva YÉNDOSE para siempre (null = no se va): en el Reto
   /// Safari, tras escaparse de una bola, puede huir. Corre lejos de ti y
   /// desaparece (ver World3DSim).

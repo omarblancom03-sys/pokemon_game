@@ -77,6 +77,11 @@
     parte: la tapa sale volando, la base se vuelca, un fogonazo corto y saltan chispas.
   - **La bola en la hierba:** la bola que se sacude aparta la hierba alta a su alrededor (queda en
     un claro de matas tumbadas hacia fuera), así se ve bien aunque caiga en mitad del prado.
+  - **Esquivan:** un Pokémon que te está vigilando ("?" o "!") y ve venir la bola de frente puede
+    apartarse de un salto a un lado ("¡X esquivó la bola! Te vio venir"): los asustadizos a menudo, los
+    curiosos a veces, los agresivos nunca (embisten). Con el aro cuesta más esquivarla y un tiro
+    "¡Excelente!" no se puede esquivar. De espaldas, comiendo o sin haberte visto, nunca: otra razón
+    para acercarse con sigilo. El cartel del prado lo avisa.
   - **Cámara de captura:** cuando la bola le da a un Pokémon, la cámara va sola a verla de cerca
     (en un segundo, sin dar tirones): se ve cómo lo absorbe, cómo cae, cada sacudida con el botón
     rojo y el "¡clic!" con estrellas (o cómo se escapa). Al terminar vuelve detrás del jugador (o al

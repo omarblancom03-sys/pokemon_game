@@ -43,6 +43,9 @@ enum FieldNoticeKind {
 
   /// En el Reto Safari, el que se escapó de la bola huyó para siempre.
   fled,
+
+  /// Un Pokémon alerta vio venir la bola y la esquivó.
+  dodged,
 }
 
 /// Un aviso breve del campo ("+2 Poké Ball", "¡Capturado!"...). Guarda los
@@ -165,6 +168,8 @@ class FieldController extends ChangeNotifier {
           startled ? FieldNoticeKind.burstOut : FieldNoticeKind.peeked,
           pokemon: wild.pokemon,
         );
+      case PokemonDodged(:final wild):
+        _post(FieldNoticeKind.dodged, pokemon: wild.pokemon);
       case ShinySpotted(:final wild):
         _post(FieldNoticeKind.shinySpotted, pokemon: wild.pokemon, shiny: true);
       case SafariTimeUp():

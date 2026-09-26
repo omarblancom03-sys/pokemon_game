@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:vector_math/vector_math.dart';
 
+import '../../models/throw_quality.dart';
 import 'wild_pokemon.dart';
 
 /// Cuánto se deja notar el jugador ahora mismo (lo calcula la simulación
@@ -145,6 +146,25 @@ class WildBehavior {
       ..awareness = 1
       ..alertTime = math.max(w.alertTime, alertSeconds)
       ..target = null;
+  }
+
+  /// Probabilidad de ESQUIVAR una bola que ve venir (solo si te vigila y
+  /// la mira): los asustadizos son ágiles; los curiosos, algo; los
+  /// agresivos nunca (embisten). Un buen tiro (el aro) es más difícil de
+  /// esquivar y uno "¡Excelente!", imposible.
+  static double dodgeChance(Temperament temperament, ThrowQuality quality) {
+    final base = switch (temperament) {
+      Temperament.skittish => 0.4,
+      Temperament.curious => 0.2,
+      Temperament.aggressive => 0.0,
+    };
+    final aim = switch (quality) {
+      ThrowQuality.none => 1.0,
+      ThrowQuality.nice => 0.7,
+      ThrowQuality.great => 0.4,
+      ThrowQuality.excellent => 0.0,
+    };
+    return base * aim;
   }
 
   /// Corre lejos de [player] a toda prisa, sea cual sea su carácter (se va

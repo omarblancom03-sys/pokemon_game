@@ -47,7 +47,8 @@ void main() {
     'TTTTTTTTTTTTTTTTTTTTTTTT',
   ]);
 
-  /// Mundo sin bolas en el suelo; la cámara mira hacia +X.
+  /// Mundo sin bolas en el suelo; la cámara mira hacia +X. Aquí nadie
+  /// esquiva (eso se prueba en dodge_test.dart).
   World3DSim world({
     MapLayout? layout,
     double roll = 0,
@@ -57,6 +58,7 @@ void main() {
       layout: layout ?? open,
       maxFieldItems: 0,
       calculator: CaptureCalculator(random: _FixedRandom(roll)),
+      dodgeRandom: _FixedRandom(0.999),
       onEvent: events?.add,
     );
     s.camera.yaw = -pi / 2; // forward = +X

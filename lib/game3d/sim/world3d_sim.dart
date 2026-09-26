@@ -76,11 +76,13 @@ class World3DSim {
     CaptureCalculator? calculator,
     this.grassEncounters = false,
     math.Random? fleeRandom,
+    math.Random? dodgeRandom,
   }) : input = input ?? MovementInput(),
        cameraInput = cameraInput ?? CameraInput(),
        camera = camera ?? OrbitCamera(),
        _random = random ?? math.Random(),
-       _fleeRandom = fleeRandom ?? math.Random(23) {
+       _fleeRandom = fleeRandom ?? math.Random(),
+       _dodgeRandom = dodgeRandom ?? math.Random() {
     ballSystem = BallSystem(
       layout: layout,
       tileSize: config.tileSize,
@@ -312,7 +314,10 @@ class World3DSim {
   /// vista previa).
   static const defaultShinyChance = 0.01;
   double shinyChance = defaultShinyChance;
-  final math.Random _shinyRandom = math.Random(19);
+
+  /// Sin semilla: con una fija, cada partida repetiría qué Pokémon salen
+  /// variocolor.
+  final math.Random _shinyRandom = math.Random();
 
   /// Si nadie encuentra a un escondido en este tiempo (s), se va.
   static const hiddenLifetime = 60.0;
@@ -693,12 +698,90 @@ class World3DSim {
   }
 
   /// Dado de la huida, con su propio azar (como el variocolor): no cambia
-  /// dónde aparecen ni cómo se comportan los demás.
+  /// dónde aparecen ni cómo se comportan los demás. Sin semilla (cada
+  /// partida, distinto); los tests inyectan el suyo.
   final math.Random _fleeRandom;
 
   /// Si en este tiempo (s) no se ha alejado lo bastante (acorralado), el
   /// que huye desaparece igual, en una nubecilla.
   static const leaveSeconds = 6.0;
+
+  // --- Esquivar -----------------------------------------------------------
+
+  /// Con cuánta antelación (s) ve venir la bola un Pokémon: si le va a
+  /// llegar antes, decide si se aparta.
+  static const dodgeWarning = 0.4;
+
+  /// Dado de la esquiva, con su propio azar y sin semilla (inyectable en
+  /// los tests).
+  final math.Random _dodgeRandom;
+
+  /// Un Pokémon que te tiene vigilado (alerta "!" o con sospecha "?") y ve
+  /// venir una bola hacia él (la mira de frente y le llegará en menos de
+  /// [dodgeWarning] s) puede apartarse de un salto (ver
+  /// WildBehavior.dodgeChance). Se decide una vez por bola. Los que huyen
+  /// van de espaldas: no la ven.
+  void _checkDodges() {
+    for (final b in ballSystem.balls) {
+      if (b.phase != BallPhase.flying) continue;
+      final dir = Vector3(b.velocity.x, 0, b.velocity.z);
+      final speed = dir.length;
+      if (speed < 1) continue;
+      dir.scale(1 / speed);
+      for (final w in wild) {
+        if (!w.isFree || w.hidden || w.isEating) continue;
+        if (!w.isAlert && !w.isSuspicious) continue;
+        if (w.isDodging || w.isLeaving || w.dodgeCheckedBall == b.id) continue;
+        final to = w.position - b.position
+          ..y = 0;
+        final along = to.dot(dir);
+        if (along <= 0 || along / speed > dodgeWarning) continue;
+        // ¿Va hacia él? (el lado del camino de la bola en que queda)
+        final aside = to - dir * along;
+        if (aside.length > w.hitRadius + ballRadius + 0.3) continue;
+        // ¿La ve venir? Tiene que estar mirando hacia la bola.
+        if (w.facingDirection.dot(-dir) < 0.34) continue;
+        w.dodgeCheckedBall = b.id;
+        final chance = WildBehavior.dodgeChance(w.temperament, b.quality);
+        if (chance <= 0 || _dodgeRandom.nextDouble() >= chance) continue;
+        _startDodge(w, dir, aside);
+      }
+    }
+  }
+
+  /// Salta de lado, lejos del camino de la bola (al otro lado si ese no se
+  /// puede pisar). Si no cabe por ningún lado, se queda.
+  void _startDodge(WildPokemon w, Vector3 dir, Vector3 aside) {
+    final side = Vector3(-dir.z, 0, dir.x);
+    // Hacia el lado en que ya está (así se aleja del camino de la bola).
+    final first = aside.dot(side) >= 0 ? 1.0 : -1.0;
+    for (final sign in [first, -first]) {
+      final to = w.position + side * (sign * WildPokemon.dodgeDistance);
+      final c = cellAt(to);
+      if (!layout.isWalkable(c.col, c.row)) continue;
+      w
+        ..dodgeFrom = w.position
+        ..dodgeTo = to
+        ..dodgingFor = 0
+        ..target = null
+        ..alertTime = math.max(w.alertTime, WildBehavior.alertSeconds);
+      _dropBait(w);
+      _emit(PokemonDodged(w));
+      return;
+    }
+  }
+
+  /// El salto de la esquiva: rápido al principio (se aparta ya) y suave al
+  /// caer. Mientras, no hace nada más.
+  void _dodge(WildPokemon w, double dt) {
+    final t = w.dodgingFor! + dt;
+    final s = math.min(1.0, t / WildPokemon.dodgeTime);
+    final ease = 1 - (1 - s) * (1 - s);
+    final before = w.position;
+    w.position = w.dodgeFrom + (w.dodgeTo - w.dodgeFrom) * ease;
+    w.velocity = dt > 0 ? (w.position - before) / dt : Vector3.zero();
+    w.dodgingFor = t >= WildPokemon.dodgeTime ? null : t;
+  }
 
   /// Una bola golpea: empieza la micro-pausa (más larga si la captura va
   /// a ser crítica: el resultado ya está decidido en el golpe).
@@ -855,6 +938,7 @@ class World3DSim {
     }
     _spotShinies();
     trampled.update(dt);
+    _checkDodges();
     ballSystem.update(
       dt,
       wild: wild,
@@ -1097,6 +1181,10 @@ class World3DSim {
     }
     if (w.hidden) {
       _updateHidden(w, dt);
+      return;
+    }
+    if (w.isDodging) {
+      _dodge(w, dt);
       return;
     }
     if (w.isLeaving) {

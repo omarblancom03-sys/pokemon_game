@@ -501,3 +501,22 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
   jugador y los Pokémon, con el MISMO radio (1,2 m): en la vista previa, con la cámara de captura a
   2,6 m, un radio pequeño dejaba matas delante de la bola. Volando o rodando tras fallar no aparta
   nada (pasa de largo y el "claro" parpadearía). Deja de hacerlo al volver a la mochila.
+- **2026-09-26 — Esquivar la bola** (TODO 8.15). Solo un Pokémon que te VIGILA ("!" alerta o "?"
+  sospecha) y MIRA la bola (su frente a menos de ~70° de ella) cuando le llegaría en < 0,4 s; se
+  decide una vez por bola y Pokémon. Probabilidad por carácter: asustadizo 40 %, curioso 20 %,
+  agresivo 0 (embiste: esquivar sería raro y ya es el más peligroso); por el aro: ×0,7 "¡Bien!",
+  ×0,4 "¡Genial!", ×0 "¡Excelente!" (premia la habilidad del aro sin dar un bonus nuevo).
+  Consecuencia que se vio al probar: un asustadizo alerta HUYE de espaldas, así que en la práctica
+  esquivan los curiosos que te miran y los que están con "?" (antes de salir corriendo). Salto
+  lateral de 1,6 m en 0,3 s (rápido al principio: en la mitad del tiempo ya lleva > 60 %, más que
+  el radio de golpe) hacia el lado en que ya estaba respecto al camino de la bola (o al otro si no
+  se puede pisar; si no cabe, no esquiva), con un saltito de 0,45 m. Durante el salto no hace nada
+  más; al caer sigue alerta. Evento `PokemonDodged` → aviso "¡X esquivó la bola! Te vio venir" y un
+  "¡zas!" sintetizado. El cartel del prado lo cuenta.
+- **2026-09-26 — Dados de juego sin semilla.** La vista previa de la esquiva salió igual en tres
+  partidas seguidas: el dado tenía semilla fija (`Random(31)`), así que cada partida repetía la
+  misma secuencia. Lo mismo pasaba con la huida del Safari (`Random(23)`) y con el variocolor
+  (`Random(19)`: el mismo n.º de aparición salía siempre variocolor). Ahora los tres usan
+  `Random()` sin semilla; los tests inyectan el suyo (`fleeRandom`, `dodgeRandom`) o fijan la
+  probabilidad a 0/1. Los azares de DECORADO (polvo, briznas, pájaros…) siguen con semilla: da
+  igual que se repitan y así las vistas previas son comparables.

@@ -35,6 +35,9 @@ enum GameSound {
 
   /// Destellos: se ve un Pokémon variocolor.
   shiny,
+
+  /// "¡Zas!": un Pokémon esquiva la bola de un salto.
+  dodge,
 }
 
 /// SONIDO (solo I/O): hace sonar lo que le piden. Qué sonido toca en cada

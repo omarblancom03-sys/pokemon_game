@@ -148,7 +148,9 @@ el campo (movimiento, cámara, hierba alta, encuentros, escenario). Va antes que
       (vuelta en arco de 0,6 s tras las estrellas; al escaparse la tapa sale volando, 7 chispas)
 - [x] La hierba alta se aparta alrededor de la bola que se sacude (se ve la bola en la hierba)
       (al caer cerca del suelo, sacudiéndose y hasta volver a la mochila o romperse)
-- [ ] Pokémon que te miran pueden esquivar la bola de un salto (según carácter): el sigilo importa más
+- [x] Pokémon que te miran pueden esquivar la bola de un salto (según carácter): el sigilo importa más
+      (con "?" o "!" y mirando la bola: asustadizos 40 %, curiosos 20 %, agresivos nunca; el aro lo
+      reduce y un "¡Excelente!" no se esquiva; salto lateral de 1,6 m en 0,3 s; aviso y sonido)
 - [ ] Rodar para esquivar (tecla X o botón): escapar de una carga sin combate
 - [ ] Cámara que respira: al correr se aleja un poco, agachado se acerca y baja
 - [ ] Pasos que suenan según el suelo (camino, césped, crujido en la hierba alta)

@@ -65,6 +65,14 @@ class PokemonBrokeFree extends World3DEvent {
   final bool fled;
 }
 
+/// Un Pokémon alerta vio venir la bola y se apartó de un salto: la bola
+/// sigue de largo.
+class PokemonDodged extends World3DEvent {
+  const PokemonDodged(this.wild);
+
+  final WildPokemon wild;
+}
+
 /// El jugador sacudió un arbusto; soltó [berries] bayas (0 = no le
 /// quedaba ninguna).
 class BushShaken extends World3DEvent {

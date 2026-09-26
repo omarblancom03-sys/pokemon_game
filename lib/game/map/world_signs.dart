@@ -21,7 +21,8 @@ const Map<({int col, int row}), SignText> worldSigns = {
     'Prado de hierba alta',
     '¡Cuidado: Pokémon salvajes!\n'
         'Agáchate (C) y acércate por la espalda: si no te ven, la Poké Ball '
-        'atrapa mejor (×1,5 sin ser visto, ×2 por la espalda).',
+        'atrapa mejor (×1,5 sin ser visto, ×2 por la espalda). Si te miran, '
+        '¡pueden esquivarla de un salto!',
   ),
   (col: 14, row: 15): SignText(
     'Consejo del entrenador',

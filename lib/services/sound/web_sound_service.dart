@@ -83,6 +83,9 @@ class WebSoundService implements SoundService {
         case GameSound.bushRustle:
           _hiss(ctx, 700, to: 1600, q: 0.6, duration: 0.35, gain: 0.18);
           _hiss(ctx, 2500, duration: 0.25, at: 0.1, gain: 0.08);
+        case GameSound.dodge:
+          _hiss(ctx, 2600, to: 700, q: 1.2, duration: 0.2, gain: 0.14);
+          _tone(ctx, 'triangle', 420, to: 780, duration: 0.12, gain: 0.1);
         case GameSound.shiny:
           _sparkle(ctx);
           _sparkle(ctx, at: 0.22);
