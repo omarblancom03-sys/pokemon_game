@@ -1,8 +1,11 @@
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 
 import '../game3d/sim/world3d_events.dart';
 import '../models/poke_ball.dart';
 import '../models/pokemon.dart';
+import 'capture/capture_calculator.dart';
 
 /// En qué punto está el reto.
 enum SafariPhase {
@@ -18,6 +21,22 @@ enum SafariPhase {
 
 /// Por qué terminó el reto.
 enum SafariEnd { timeUp, outOfBalls, abandoned }
+
+/// Una captura del reto y lo que vale: [base] por lo raro que es, por
+/// [bonus] (cómo fue el tiro).
+class SafariCatch {
+  const SafariCatch({
+    required this.pokemon,
+    required this.base,
+    required this.bonus,
+  });
+
+  final Pokemon pokemon;
+  final int base;
+  final double bonus;
+
+  int get points => (base * bonus).round();
+}
 
 /// CONTROLADOR del RETO SAFARI (opcional; se crea por partida). Durante
 /// [duration] segundos se juega con [ballCount] Poké Balls PROPIAS del
@@ -44,7 +63,7 @@ class SafariController extends ChangeNotifier {
   int _ballsLeft = 0;
   int _thrown = 0;
   int _resolved = 0;
-  final List<Pokemon> _catches = [];
+  final List<SafariCatch> _catches = [];
 
   SafariPhase get phase => _phase;
   bool get isRunning => _phase == SafariPhase.running;
@@ -55,7 +74,33 @@ class SafariController extends ChangeNotifier {
   int get ballsLeft => _ballsLeft;
 
   /// Lo capturado en este reto, en orden.
-  List<Pokemon> get catches => List.unmodifiable(_catches);
+  List<SafariCatch> get catches => List.unmodifiable(_catches);
+
+  /// Puntos del reto: la suma de lo que vale cada captura.
+  int get score => _catches.fold(0, (sum, c) => sum + c.points);
+
+  /// Puntos por RAREZA según el ratio de captura (3..255): 100 los más
+  /// fáciles (255); un ratio de 45, 238; un legendario (3), 922. La raíz
+  /// suaviza: los raros valen más, sin que uno solo lo decida todo.
+  static int basePoints(int captureRate) =>
+      (100 * math.sqrt(255 / captureRate.clamp(1, 255))).round();
+
+  /// Multiplicador por cómo fue el tiro: los MISMOS bonus que facilitan la
+  /// captura (sin ser visto ×1,5 o por la espalda ×2, comiendo ×1,5 y el
+  /// aro ×1,2 a ×2). La captura crítica no suma: es suerte, no puntería.
+  static double bonusFor(
+    ({bool unaware, bool fromBehind, bool eating})? hit,
+    ThrowQuality quality,
+  ) {
+    var bonus = quality.bonus;
+    if (hit != null && hit.unaware) {
+      bonus *= hit.fromBehind
+          ? CaptureCalculator.backStrikeBonus
+          : CaptureCalculator.unawareBonus;
+    }
+    if (hit != null && hit.eating) bonus *= CaptureCalculator.eatingBonus;
+    return bonus;
+  }
 
   /// Empieza un reto nuevo (si no hay uno en marcha).
   void start() {
@@ -95,8 +140,14 @@ class SafariController extends ChangeNotifier {
   void onWorldEvent(World3DEvent event) {
     if (!isRunning) return;
     switch (event) {
-      case PokemonCaught(:final wild):
-        _catches.add(wild.pokemon);
+      case PokemonCaught(:final wild, :final hit, :final quality):
+        _catches.add(
+          SafariCatch(
+            pokemon: wild.pokemon,
+            base: basePoints(wild.captureRate),
+            bonus: bonusFor(hit, quality),
+          ),
+        );
         _resolve();
       case PokemonBrokeFree() || BallMissed():
         _resolve();

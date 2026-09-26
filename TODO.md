@@ -123,7 +123,8 @@ combates (tus capturas = tu equipo), nunca compite con ellos. Nada de lo de aqu�
       propias sin reaparición; "Abandonar reto" en cualquier momento sin penalización
       (botón "Reto Safari" bajo el altavoz; reloj que se para con la pausa; sin bolas en el suelo;
       las falladas se pierden; bayas propias sí; resumen al terminar)
-  - [ ] Puntuación solo en el Safari: base por rareza (capture_rate) × bonus que ya existen
+  - [x] Puntuación solo en el Safari: base por rareza (capture_rate) × bonus que ya existen
+        (100·√(255/ratio): 100 a 922; × sigilo/espalda, baya y aro; la crítica no suma; marcador y resumen)
   - [ ] Solo en el Safari: probabilidad de que huyan al fallar (mayor si es raro)
   - [ ] Pantalla final con resumen y récord; premio en bolas y bayas
 - [x] Shinies (sprites.front_shiny, 1/100, destello al aparecer; solo cosmético)

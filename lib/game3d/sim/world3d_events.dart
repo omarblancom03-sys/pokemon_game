@@ -27,13 +27,23 @@ class BallMissed extends World3DEvent {
   final bool lost;
 }
 
-/// ¡Capturado! [wild] ya no está en el mundo.
+/// ¡Capturado! [wild] ya no está en el mundo. [hit] y [quality] cuentan
+/// cómo fue el tiro (sin ser visto, por la espalda, comiendo; el aro): la
+/// puntuación del Reto Safari los premia.
 class PokemonCaught extends World3DEvent {
-  const PokemonCaught(this.wild, this.ball, this.result);
+  const PokemonCaught(
+    this.wild,
+    this.ball,
+    this.result, {
+    this.hit,
+    this.quality = ThrowQuality.none,
+  });
 
   final WildPokemon wild;
   final PokeBallType ball;
   final CaptureResult result;
+  final ({bool unaware, bool fromBehind, bool eating})? hit;
+  final ThrowQuality quality;
 }
 
 /// El Pokémon se escapó de la bola (la bola se pierde).

@@ -494,7 +494,15 @@ class BallSystem {
     if (result.caught) {
       ball.setPhase(BallPhase.caught);
       remove(w);
-      emit(PokemonCaught(w, ball.ball, result));
+      emit(
+        PokemonCaught(
+          w,
+          ball.ball,
+          result,
+          hit: ball.hit,
+          quality: ball.quality,
+        ),
+      );
     } else {
       ball.setPhase(BallPhase.escaped);
       w

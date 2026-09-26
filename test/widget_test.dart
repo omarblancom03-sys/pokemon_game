@@ -280,11 +280,34 @@ void main() {
     await tester.pump();
     expect(find.text('9:30'), findsOneWidget);
 
+    // Esa bola captura (rareza 255 = 100 puntos, por la espalda ×2).
+    sim.onEvent!(
+      PokemonCaught(
+        WildPokemon(
+          id: 's',
+          pokemon: fakePokemon(8),
+          position: Vector3.zero(),
+          captureRate: 255,
+        ),
+        PokeBallType.poke,
+        const CaptureResult(chance: 1, shakes: 3, caught: true),
+        hit: (unaware: true, fromBehind: true, eating: false),
+      ),
+    );
+    await tester.pump();
+    expect(inside('safari_hud', 'Capturas: 1 · 200 pts'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 4));
+
     // Abandonar: resumen y vuelta al modo libre, con la bolsa intacta.
     await tester.tap(find.byKey(const Key('safari_abandon')));
     await tester.pump(const Duration(milliseconds: 300));
     expect(find.byKey(const Key('safari_summary')), findsOneWidget);
     expect(find.text('Reto abandonado'), findsOneWidget);
+    expect(
+      tester.widget<Text>(find.byKey(const Key('safari_score'))).data,
+      '200',
+    );
+    expect(find.text('100 ×2'), findsOneWidget);
     expect(sim.safariActive, isFalse);
     await tester.tap(find.byKey(const Key('safari_close')));
     await tester.pump(const Duration(milliseconds: 300));

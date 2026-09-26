@@ -167,7 +167,8 @@ class _SafariHudState extends State<SafariHud>
                   onTap: trainer.selectBerry,
                 ),
                 Text(
-                  'Capturas: ${safari.catches.length}',
+                  'Capturas: ${safari.catches.length} · ${safari.score} pts',
+                  key: const Key('safari_tally'),
                   style: const TextStyle(color: Colors.white70, fontSize: 12),
                 ),
                 const SizedBox(width: 6),
@@ -220,6 +221,10 @@ class SafariIntroDialog extends StatelessWidget {
       (Icons.catching_pokemon, '25 Poké Balls del reto: tu bolsa no se toca.'),
       (Icons.block, 'No hay bolas en el suelo y las que falles se pierden.'),
       (Icons.spa, 'Tus bayas sí sirven para distraerlos.'),
+      (
+        Icons.star_outline,
+        'Puntos: los raros valen más; sigilo, baya y aro multiplican.',
+      ),
       (
         Icons.flag_outlined,
         'Puedes abandonar cuando quieras: lo capturado es tuyo.',
@@ -303,18 +308,32 @@ class SafariSummaryDialog extends StatelessWidget {
           ),
           if (catches.isNotEmpty) ...[
             const SizedBox(height: 8),
-            Wrap(
-              spacing: 6,
-              runSpacing: 6,
+            // Cada captura: puntos por rareza × bonus del tiro.
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 220),
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [for (final c in catches) _CatchRow(c)],
+                ),
+              ),
+            ),
+            const Divider(color: Colors.white24),
+            Row(
               children: [
-                for (final p in catches)
-                  Chip(
-                    backgroundColor: const Color(0xFF4A3520),
-                    label: Text(
-                      displayName(p.name),
-                      style: const TextStyle(color: Colors.white),
-                    ),
+                const Text(
+                  'Puntos',
+                  style: TextStyle(color: Colors.white70, fontSize: 15),
+                ),
+                const Spacer(),
+                Text(
+                  '${safari.score}',
+                  key: const Key('safari_score'),
+                  style: const TextStyle(
+                    color: Color(0xFFE8C88C),
+                    fontWeight: FontWeight.w900,
+                    fontSize: 22,
                   ),
+                ),
               ],
             ),
           ],
@@ -329,4 +348,54 @@ class SafariSummaryDialog extends StatelessWidget {
       ],
     );
   }
+}
+
+/// "×1,5": un multiplicador con coma decimal (sin decimales si es entero).
+String bonusLabel(double bonus) {
+  final rounded = (bonus * 100).round() / 100;
+  final text = rounded == rounded.roundToDouble()
+      ? rounded.toInt().toString()
+      : rounded.toString().replaceAll('.', ',');
+  return '×$text';
+}
+
+/// Una captura en el resumen: nombre, "rareza × bonus" y los puntos.
+class _CatchRow extends StatelessWidget {
+  const _CatchRow(this.entry);
+
+  final SafariCatch entry;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 2),
+    child: Row(
+      children: [
+        Expanded(
+          child: Text(
+            displayName(entry.pokemon.name),
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(color: Colors.white),
+          ),
+        ),
+        Text(
+          entry.bonus == 1
+              ? '${entry.base}'
+              : '${entry.base} ${bonusLabel(entry.bonus)}',
+          style: const TextStyle(color: Colors.white54, fontSize: 12),
+        ),
+        const SizedBox(width: 10),
+        SizedBox(
+          width: 52,
+          child: Text(
+            '+${entry.points}',
+            textAlign: TextAlign.right,
+            style: const TextStyle(
+              color: Colors.lightGreenAccent,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
 }

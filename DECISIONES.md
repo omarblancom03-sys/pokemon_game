@@ -426,3 +426,12 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
 - **2026-09-25 — Ayuda más corta:** con el aro y el sonido la ayuda crecía y, en una ventana de
   800×600, tapaba el aviso de acción de abajo (lo detectó un test de widget). Las líneas se acortan
   para no partirse (6 filas) y el botón del Safari va a la derecha, no bajo la bolsa.
+- **2026-09-26 — Puntuación del Reto Safari** (TODO 8.14). Solo existe en el reto (el modo libre no
+  puntúa nada). Cada captura vale `base × bonus`. Base por RAREZA con el ratio de captura real:
+  `100·√(255/ratio)` → 100 (ratio 255), 238 (45, el más común en los juegos), 922 (3, legendarios).
+  Lineal (255/ratio) haría que un legendario valga 85 fáciles y decida él solo el reto; la raíz lo
+  deja en ~9. El bonus son los MISMOS multiplicadores que ya facilitan la captura (sin ser visto
+  ×1,5 o espalda ×2, comiendo ×1,5, el aro ×1,2–×2): premiar lo que el juego ya enseña, sin reglas
+  nuevas. La captura crítica NO suma (es azar, no habilidad) ni el tipo de bola (en el reto todas
+  son Poké Balls). Para puntuar, `PokemonCaught` lleva ahora `hit` y `quality` del tiro (opcionales:
+  los demás oyentes no cambian). Se ve en el marcador ("Capturas: N · P pts") y en el resumen.

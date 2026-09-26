@@ -99,6 +99,10 @@
     bolas y bayas (tócalas para llevarlas en la mano), capturas y "Abandonar". Termina al acabarse el
     tiempo, al resolverse la última bola o al abandonar (sin perder nada): sale un resumen con lo
     capturado y vuelves al modo libre con todo como estaba.
+    **Puntos (solo en el reto):** cada captura vale por lo rara que es (100 un Pokémon fácil, ~240 uno
+    normal, hasta ~920 un legendario) multiplicado por cómo fue el tiro: sin ser visto ×1,5 o por la
+    espalda ×2, comiendo ×1,5 y el aro ×1,2/×1,5/×2. El marcador enseña "Capturas: N · P pts" y el
+    resumen, cada captura con su cuenta ("238 ×3 … +714") y el total.
   - **Variocolor (shiny):** 1 de cada 100 Pokémon sale con sus colores raros (el arte variocolor oficial).
     Al verlo cerca por primera vez: aviso dorado "¡Un X VARIOCOLOR! Qué suerte", un corro grande de
     destellos y un sonido de campanitas; luego brilla a ratos. Se captura igual (solo es cosmético); su
