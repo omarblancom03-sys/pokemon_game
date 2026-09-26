@@ -1,5 +1,6 @@
 import '../../models/capture_result.dart';
 import '../../models/poke_ball.dart';
+import '../../models/throw_quality.dart';
 import 'wild_pokemon.dart';
 
 /// Lo que la simulación 3D cuenta hacia fuera (a la pantalla, que lo pasa
@@ -72,6 +73,40 @@ class PokemonRevealed extends World3DEvent {
 /// distraído: no te ve y es más fácil de capturar).
 class PokemonEating extends World3DEvent {
   const PokemonEating(this.wild);
+
+  final WildPokemon wild;
+}
+
+/// El jugador lanzó algo: la mano soltó una Poké Ball ([ball]) o una baya
+/// ([ball] null).
+class ItemThrown extends World3DEvent {
+  const ItemThrown(this.ball);
+
+  final PokeBallType? ball;
+}
+
+/// Una Poké Ball le dio a [wild]: empieza a absorberlo.
+class BallHit extends World3DEvent {
+  const BallHit(this.wild, this.quality);
+
+  final WildPokemon wild;
+
+  /// Calidad del tiro (el aro al lanzar).
+  final ThrowQuality quality;
+}
+
+/// La bola con un Pokémon dentro se sacudió: la sacudida número [count]
+/// (1, 2 o 3). [critical]: es la única y fuerte de una captura crítica.
+class BallShook extends World3DEvent {
+  const BallShook(this.count, {required this.critical});
+
+  final int count;
+  final bool critical;
+}
+
+/// Un Pokémon acaba de descubrir al jugador ("!").
+class PokemonNoticed extends World3DEvent {
+  const PokemonNoticed(this.wild);
 
   final WildPokemon wild;
 }

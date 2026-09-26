@@ -585,6 +585,7 @@ class World3DSim {
           quality: _throwQuality,
         );
       }
+      _emit(ItemThrown(ball));
     }
     if (now >= throwDuration) {
       _throwTime = null;
@@ -898,13 +899,14 @@ class World3DSim {
       _updateHidden(w, dt);
       return;
     }
-    behavior.perceive(
+    final noticed = behavior.perceive(
       w,
       player: player.position,
       stealth: stealth,
       moving: player.isMoving,
       dt: dt,
     );
+    if (noticed) _emit(PokemonNoticed(w));
     // Si te descubre (o la baya ya no está), se olvida de ella.
     final bait = w.bait;
     if (bait != null && (w.isAlert || !berries.contains(bait))) _dropBait(w);

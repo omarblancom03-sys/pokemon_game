@@ -373,3 +373,26 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
   mira NO incluye el aro (es la base para decidir si merece la pena; el aro es cosa del pulso) y el
   color del aro dice qué tiro saldría: blanco, azul, violeta, dorado. "En ambos modos" = el libre y
   el futuro Reto Safari: no hay nada que cambiar cuando exista.
+- **2026-09-25 — Sonido sintetizado con Web Audio** (TODO 8.14). Sin archivos de sonido: todos los
+  efectos se generan en el navegador con osciladores y ruido filtrado (estilo chiptune, a juego con
+  el low-poly): nada que descargar, ni licencias, ni una dependencia de audio nueva. Se usa
+  `package:web` (ya venía como dependencia transitiva; se declara directa, `^1.1.1`). Alternativa
+  descartada: `audioplayers` + archivos CC0 (plugin nuevo, assets, y el Windows tampoco se puede
+  compilar aquí). Los GRITOS son los .ogg reales de PokeAPI (`cries.latest`); la URL se deduce del
+  número de especie (`pokemonCryUrl`) para no tocar el modelo `Pokemon`.
+- **2026-09-25 — Arquitectura del sonido.** `services/sound/`: interfaz `SoundService` (solo I/O:
+  `play(GameSound)`, `playCry(id)`, `muted`), `WebSoundService` (web) y `SilentSoundService`
+  (Windows y tests), elegidos con import condicional (`dart.library.js_interop`). QUÉ suena y
+  CUÁNDO lo decide `controllers/sound_director.dart` (Dart puro, con tests) a partir de los eventos
+  de la simulación. Para eso la simulación cuenta cuatro cosas nuevas: `ItemThrown` (la mano suelta
+  bola o baya), `BallHit`, `BallShook` (n.º de sacudida, crítica o no) y `PokemonNoticed` ("!").
+  El `FieldController` las ignora (no cambian la bolsa ni avisan).
+- **2026-09-25 — Gritos sin saturar:** al descubrirte ("!"), al salir asustado de la hierba (no al
+  asomarse: no sabe que estás) y al escaparse de la bola (este siempre, como en los juegos). El
+  mismo Pokémon no repite antes de 10 s y entre dos gritos cualesquiera pasa al menos 1,2 s. Al
+  capturar no grita: suena la fanfarria.
+- **2026-09-25 — Silenciar:** tecla **N** y un botón con altavoz bajo el minimapa. El estado vive en
+  el servicio (no se guarda entre sesiones). El contexto de audio se crea con el primer sonido (el
+  navegador exige un gesto previo: tocar "Jugar 3D" ya lo es). Comprobado en Chrome: un tiro con
+  captura crea 19 osciladores (lanzar, golpe, 3 sacudidas, clic y fanfarria) y el grito se descarga
+  y suena; sin errores en consola.

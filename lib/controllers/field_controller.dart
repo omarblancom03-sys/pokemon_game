@@ -142,6 +142,9 @@ class FieldController extends ChangeNotifier {
           startled ? FieldNoticeKind.burstOut : FieldNoticeKind.peeked,
           pokemon: wild.pokemon,
         );
+      // Solo sonidos (ver SoundDirector): no cambian la bolsa ni avisan.
+      case ItemThrown() || BallHit() || BallShook() || PokemonNoticed():
+        break;
     }
   }
 

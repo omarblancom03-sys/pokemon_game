@@ -12,6 +12,7 @@ import '../services/image_bytes_service.dart';
 import '../services/poke_api_service.dart';
 import '../services/pokemon_repository.dart';
 import '../services/random_pokemon_picker.dart';
+import '../services/sound/sound_service.dart';
 import '../views/game/stub_encounter_handler.dart';
 
 /// Raíz de composición: el ÚNICO sitio donde se crean los servicios,
@@ -29,6 +30,7 @@ class AppDependencies {
     PokemonRepository? repository,
     EncounterHandler? encounterHandler,
     SceneRenderer? sceneRenderer,
+    SoundService? soundService,
   }) {
     final navigatorKey = GlobalKey<NavigatorState>();
     // Cadena de capas: cliente HTTP -> servicio -> caché (patrón decorador).
@@ -59,6 +61,10 @@ class AppDependencies {
               FlutterSceneRenderer(
                 loadImage: ImageBytesService(client: client).fetch,
               ),
+        ),
+        // Sonido del 3D (en la web, sintetizado; en el resto, silencio).
+        Provider<SoundService>.value(
+          value: soundService ?? SoundService.create(),
         ),
         // A nivel de app: lo ya descargado sobrevive al salir y volver a entrar.
         ChangeNotifierProvider(

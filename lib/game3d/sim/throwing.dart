@@ -307,7 +307,11 @@ class BallSystem {
       ball.updateTrail();
       switch (ball.phase) {
         case BallPhase.flying || BallPhase.missed:
+          final wasFlying = ball.phase == BallPhase.flying;
           _fly(ball, dt, wild);
+          if (wasFlying && ball.phase == BallPhase.absorbing) {
+            emit(BallHit(ball.target!, ball.quality));
+          }
           if (ball.phase == BallPhase.missed && _stopped(ball)) {
             _balls.remove(ball);
             drop(ball.ball, ball.position);
@@ -477,9 +481,13 @@ class BallSystem {
   ) {
     final result = ball.result!;
     final t = ball.phaseTime - ThrownBall.shakeSettle;
+    final before = ball.shakesDone;
     ball.shakesDone = t < 0
         ? 0
         : math.min(result.shakes, (t / ThrownBall.shakeCycle).floor());
+    if (ball.shakesDone > before) {
+      emit(BallShook(ball.shakesDone, critical: result.critical));
+    }
     if (ball.phaseTime < ball.shakingDuration) return;
 
     final w = ball.target!;

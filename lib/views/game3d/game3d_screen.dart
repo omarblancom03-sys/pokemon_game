@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import '../../controllers/capture/capture_calculator.dart';
 import '../../controllers/field_controller.dart';
 import '../../controllers/game_controller.dart';
+import '../../controllers/sound_director.dart';
 import '../../controllers/trainer_controller.dart';
 import '../../game/input/movement_input.dart';
 import '../../game/map/map_layout.dart';
@@ -18,6 +19,7 @@ import '../../game3d/sim/camera_input.dart';
 import '../../game3d/sim/world3d_sim.dart';
 
 import '../../models/poke_ball.dart';
+import '../../services/sound/sound_service.dart';
 import '../game/widgets/d_pad.dart';
 import '../game/widgets/encounter_overlay.dart';
 import 'widgets/action_panel.dart';
@@ -50,6 +52,8 @@ class _Game3DScreenState extends State<Game3DScreen> {
   late final FieldController _field;
   late final TrainerController _trainer;
   late final World3DSim _sim;
+  late final SoundService _sound;
+  late final SoundDirector _director;
   late final StreamSubscription<String> _consumedSub;
 
   // Apuntar se puede pedir a la vez con el ratón, la tecla y el botón.
@@ -74,6 +78,8 @@ class _Game3DScreenState extends State<Game3DScreen> {
     _controller = context.read<GameController>();
     _field = context.read<FieldController>();
     _trainer = context.read<TrainerController>();
+    _sound = context.read<SoundService>();
+    _director = SoundDirector(_sound, clock: () => _sim.time);
     // Igual que en 2D: si se creara en build(), cada repintado reiniciaría.
     _sim = World3DSim(
       layout: MapLayout.parse(worldMapRows),
@@ -82,7 +88,7 @@ class _Game3DScreenState extends State<Game3DScreen> {
       onWildContact: (wild) =>
           unawaited(_controller.onWildEncounter(wild.id, wild.pokemon)),
       onGrassEncounter: () => unawaited(_controller.onGrassEncounter()),
-      onEvent: _field.onWorldEvent,
+      onEvent: _onWorldEvent,
     );
     _controller.addListener(_syncPause);
     _consumedSub = _controller.smokeConsumed.listen(_sim.removeWild);
@@ -91,6 +97,15 @@ class _Game3DScreenState extends State<Game3DScreen> {
     // En web, el clic derecho es para apuntar, no para el menú del navegador.
     if (kIsWeb) unawaited(BrowserContextMenu.disableContextMenu());
   }
+
+  /// Lo que pasa en el mundo: a la bolsa y los avisos, y a los sonidos.
+  void _onWorldEvent(World3DEvent event) {
+    _field.onWorldEvent(event);
+    _director.onWorldEvent(event);
+  }
+
+  /// Silenciar / volver a oír.
+  void _toggleSound() => setState(() => _sound.muted = !_sound.muted);
 
   void _syncPause() => _sim.setPaused(_controller.isPaused || _panelOpen);
 
@@ -198,6 +213,10 @@ class _Game3DScreenState extends State<Game3DScreen> {
     }
     if (key == LogicalKeyboardKey.keyM) {
       if (down) unawaited(_showMap());
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.keyN) {
+      if (down) _toggleSound();
       return KeyEventResult.handled;
     }
     if (key == LogicalKeyboardKey.keyH) {
@@ -342,6 +361,22 @@ class _Game3DScreenState extends State<Game3DScreen> {
                 key: const Key('game3d_minimap'),
                 sim: _sim,
                 onTap: () => unawaited(_showMap()),
+              ),
+            ),
+            Positioned(
+              right: 16,
+              top: 174,
+              child: IconButton.filled(
+                key: const Key('game3d_sound'),
+                tooltip: _sound.muted
+                    ? 'Activar el sonido (N)'
+                    : 'Silenciar (N)',
+                style: IconButton.styleFrom(
+                  backgroundColor: Colors.black54,
+                  foregroundColor: Colors.white,
+                ),
+                onPressed: _toggleSound,
+                icon: Icon(_sound.muted ? Icons.volume_off : Icons.volume_up),
               ),
             ),
             Positioned(

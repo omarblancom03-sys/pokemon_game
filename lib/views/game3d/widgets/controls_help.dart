@@ -115,6 +115,7 @@ class _Panel extends StatelessWidget {
     ('', 'R o 1-4 elegir bola o baya'),
     ('', 'Lanza cuando el aro de la mira sea pequeño: ¡Excelente! ×2'),
     ('Más', 'L leer carteles y sacudir arbustos · P capturas · M mapa'),
+    ('', 'H esta ayuda · N sonido'),
   ];
 
   @override

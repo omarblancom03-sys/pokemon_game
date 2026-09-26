@@ -114,8 +114,9 @@ combates (tus capturas = tu equipo), nunca compite con ellos. Nada de lo de aqu�
 - [ ] Acordar con el equipo de combate: qué hace el botón "Combatir" y que lean los capturados
       de TrainerController como equipo
 - [ ] Botón "Combatir" siempre visible en el HUD 3D (y en pausa) → hook del otro equipo
-- [ ] Sonido: gritos de PokeAPI (campo cries) al alertarse, "fiu" al lanzar, clic por sacudida,
+- [x] Sonido: gritos de PokeAPI (campo cries) al alertarse, "fiu" al lanzar, clic por sacudida,
       fanfarria al capturar
+      (sintetizado con Web Audio; también golpe, escape, recoger y arbustos; N o el altavoz silencian)
 - [x] Anillo que se encoge al apuntar: "¡Bien!/¡Genial!/¡Excelente!" ×1,2/×1,5/×2 (en ambos modos)
       (aro dentro de la mira, 1,6 s por vuelta; cuenta el tamaño al PULSAR; se suma a los demás bonus)
 - [ ] Reto Safari (opcional): se empieza en un puesto del mapa o con un botón; 10 min, 25 bolas

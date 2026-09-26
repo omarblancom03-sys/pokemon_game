@@ -92,6 +92,11 @@
     Pokémon sale de un salto (y queda alerta). Si falla, rebota y rueda (también contra árboles y
     casas) y queda en el suelo brillando para recogerla. Por la espalda y sin ser visto es más fácil.
     Al golpear se ve el bonus conseguido: "¡No te vio! ×1,5" y/o "¡Por la espalda! ×2".
+  - **Sonido** (en la web): "¡fiu!" al lanzar, un zumbido cuando la bola lo absorbe, un "toc" por cada
+    sacudida (más fuerte y con destellos si es crítica), "¡clic!" y fanfarria al capturar o "¡pop!" si
+    se escapa; también al recoger bolas o bayas y al sacudir arbustos. Los Pokémon GRITAN (su grito
+    real de PokeAPI) cuando te descubren, cuando salen asustados de la hierba y al escaparse de la
+    bola. Tecla N o el altavoz bajo el minimapa para silenciar. En Windows, por ahora, sin sonido.
   - **El aro que se encoge:** al apuntar a un Pokémon con una bola, dentro del anillo del % hay un aro
     que se encoge (en 1,6 s) y vuelve a empezar. Lanza cuando esté pequeño: blanco = sin bonus, azul =
     "¡Bien!" ×1,2, violeta = "¡Genial!" ×1,5 y dorado (el más pequeño, dura un suspiro) = "¡Excelente!"

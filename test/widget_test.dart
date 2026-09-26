@@ -11,6 +11,7 @@ import 'package:pokemon_game/app/app.dart';
 import 'package:pokemon_game/app/dependencies.dart';
 import 'package:pokemon_game/game/poke_game.dart';
 import 'package:pokemon_game/services/poke_api_exception.dart';
+import 'package:pokemon_game/services/sound/sound_service.dart';
 import 'package:pokemon_game/views/game3d/game3d_screen.dart';
 import 'package:pokemon_game/views/game3d/widgets/field_hud.dart';
 
@@ -436,6 +437,35 @@ void main() {
     await tester.tap(find.byKey(const Key('game3d_help_close')));
     await tester.pump(const Duration(milliseconds: 300));
     expect(tab, findsOneWidget);
+  });
+
+  testWidgets('3D: the speaker button (or N) mutes and unmutes', (
+    tester,
+  ) async {
+    final sound = SilentSoundService();
+    await tester.pumpWidget(
+      PokemonGameApp(
+        dependencies: AppDependencies.create(
+          repository: repository,
+          sceneRenderer: FakeSceneRenderer(),
+          soundService: sound,
+        ),
+      ),
+    );
+    await tester.tap(find.byKey(const Key('menu_play_3d')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.byIcon(Icons.volume_up), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('game3d_sound')));
+    await tester.pump();
+    expect(sound.muted, isTrue);
+    expect(find.byIcon(Icons.volume_off), findsOneWidget);
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.keyN);
+    await tester.pump();
+    expect(sound.muted, isFalse);
+    expect(find.byIcon(Icons.volume_up), findsOneWidget);
   });
 
   testWidgets('3D: once you toggle the help, it no longer folds by '
