@@ -92,6 +92,13 @@
     Pokémon sale de un salto (y queda alerta). Si falla, rebota y rueda (también contra árboles y
     casas) y queda en el suelo brillando para recogerla. Por la espalda y sin ser visto es más fácil.
     Al golpear se ve el bonus conseguido: "¡No te vio! ×1,5" y/o "¡Por la espalda! ×2".
+  - **Reto Safari** (opcional; botón "Reto Safari" a la derecha, bajo el altavoz): te explica las
+    reglas y, si aceptas, 10 minutos con 25 Poké Balls PROPIAS del reto (tu bolsa no se toca). No hay
+    bolas en el suelo y las que falles se pierden; tus bayas sí sirven. Arriba a la izquierda, en vez
+    de la bolsa, el marcador: reloj (rojo en el último minuto; se para si pausas o abres un panel),
+    bolas y bayas (tócalas para llevarlas en la mano), capturas y "Abandonar". Termina al acabarse el
+    tiempo, al resolverse la última bola o al abandonar (sin perder nada): sale un resumen con lo
+    capturado y vuelves al modo libre con todo como estaba.
   - **Variocolor (shiny):** 1 de cada 100 Pokémon sale con sus colores raros (el arte variocolor oficial).
     Al verlo cerca por primera vez: aviso dorado "¡Un X VARIOCOLOR! Qué suerte", un corro grande de
     destellos y un sonido de campanitas; luego brilla a ratos. Se captura igual (solo es cosmético); su

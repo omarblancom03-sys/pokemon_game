@@ -55,8 +55,12 @@ class FieldItems {
   double _respawnTimer = respawnSeconds;
   int _count = 0;
 
-  /// Lo que hay ahora en el suelo.
-  List<GroundItem> get items => List.unmodifiable(_items);
+  /// Apagado (durante el Reto Safari) no se ve nada, no se recoge nada y
+  /// no aparece nada; al volver a encenderlo, todo sigue donde estaba.
+  bool enabled = true;
+
+  /// Lo que hay ahora en el suelo (nada si está apagado).
+  List<GroundItem> get items => enabled ? List.unmodifiable(_items) : const [];
 
   /// Distancia (m) a la que el jugador recoge algo al pasar.
   static const pickupRadius = 1.1;
@@ -136,6 +140,7 @@ class FieldItems {
   /// Avanza [dt] segundos: recoge lo que el jugador pisa y repone el
   /// campo poco a poco.
   void update(double dt, Vector3 player, void Function(World3DEvent) emit) {
+    if (!enabled) return;
     for (final item in _items) {
       item.age += dt;
     }

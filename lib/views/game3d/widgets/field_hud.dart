@@ -21,6 +21,7 @@ String noticeText(FieldNotice n) {
       _ => '¡Qué rabia! ¡Por un pelo!',
     },
     FieldNoticeKind.missed => 'Fallaste: la bola quedó en el suelo',
+    FieldNoticeKind.ballLost => 'Fallaste: en el Safari la bola se pierde',
     FieldNoticeKind.noBalls => 'No te quedan Poké Balls: busca más brillos',
     FieldNoticeKind.burstOut => '¡Un $name salvaje salió de la hierba!',
     FieldNoticeKind.peeked => '$name asoma entre la hierba… ¡no te ha visto!',
@@ -334,7 +335,9 @@ class _NoticeChipState extends State<_NoticeChip> {
       FieldNoticeKind.caught => const Color(0xFF2E7D32),
       FieldNoticeKind.brokeFree => const Color(0xFFC62828),
       FieldNoticeKind.pickedUp => const Color(0xFF1565C0),
-      FieldNoticeKind.missed || FieldNoticeKind.noBalls => Colors.black87,
+      FieldNoticeKind.missed ||
+      FieldNoticeKind.ballLost ||
+      FieldNoticeKind.noBalls => Colors.black87,
       FieldNoticeKind.burstOut => const Color(0xFFE65100),
       FieldNoticeKind.peeked => const Color(0xFF00796B),
       FieldNoticeKind.berriesPickedUp => const Color(0xFFAD1457),

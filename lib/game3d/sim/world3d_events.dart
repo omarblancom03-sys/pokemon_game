@@ -18,12 +18,13 @@ class BallsPickedUp extends World3DEvent {
   final int count;
 }
 
-/// Una bola lanzada no dio a nadie y se quedó en el suelo (se puede
-/// volver a recoger).
+/// Una bola lanzada no dio a nadie. Normalmente se queda en el suelo (se
+/// puede volver a recoger); en el Reto Safari se pierde ([lost]).
 class BallMissed extends World3DEvent {
-  const BallMissed(this.ball);
+  const BallMissed(this.ball, {this.lost = false});
 
   final PokeBallType ball;
+  final bool lost;
 }
 
 /// ¡Capturado! [wild] ya no está en el mundo.
@@ -117,4 +118,9 @@ class ShinySpotted extends World3DEvent {
   const ShinySpotted(this.wild);
 
   final WildPokemon wild;
+}
+
+/// Se acabó el tiempo del Reto Safari.
+class SafariTimeUp extends World3DEvent {
+  const SafariTimeUp();
 }

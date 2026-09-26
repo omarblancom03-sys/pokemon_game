@@ -37,6 +37,9 @@ enum FieldNoticeKind {
 
   /// Se ve cerca un Pokémon variocolor.
   shinySpotted,
+
+  /// Una bola fallada se perdió (en el Reto Safari no se recogen).
+  ballLost,
 }
 
 /// Un aviso breve del campo ("+2 Poké Ball", "¡Capturado!"...). Guarda los
@@ -110,8 +113,11 @@ class FieldController extends ChangeNotifier {
       case BallsPickedUp(:final ball, :final count):
         _trainer.addBalls(ball, count);
         _post(FieldNoticeKind.pickedUp, ball: ball, count: count);
-      case BallMissed(:final ball):
-        _post(FieldNoticeKind.missed, ball: ball);
+      case BallMissed(:final ball, :final lost):
+        _post(
+          lost ? FieldNoticeKind.ballLost : FieldNoticeKind.missed,
+          ball: ball,
+        );
       case PokemonCaught(:final wild, :final ball, :final result):
         final isNew = !_trainer.hasCaught(wild.pokemon.id);
         _trainer.registerCapture(wild.pokemon, ball, shiny: wild.shiny);
@@ -152,6 +158,8 @@ class FieldController extends ChangeNotifier {
         );
       case ShinySpotted(:final wild):
         _post(FieldNoticeKind.shinySpotted, pokemon: wild.pokemon, shiny: true);
+      case SafariTimeUp():
+        break; // lo lleva SafariController
       // Solo sonidos (ver SoundDirector): no cambian la bolsa ni avisan.
       case ItemThrown() || BallHit() || BallShook() || PokemonNoticed():
         break;

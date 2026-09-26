@@ -409,3 +409,20 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
 - **2026-09-25 — Lección (perl):** con `s|...|...|`, un `\|` dentro del patrón deja de ser literal y
   pasa a ser la alternancia de la expresión regular: `a \|\| b` casó vacío al inicio del archivo y
   metió el texto en la línea 1. Con `||` en el código, usar otro delimitador (`#`) o el editor.
+- **2026-09-25 — Reto Safari (1.ª parte)** (TODO 8.14). Se empieza con un BOTÓN (a la derecha, bajo el
+  altavoz), no con un puesto en el mapa: un puesto sería un tipo de casilla nuevo en el mapa
+  compartido con el 2D. Antes, un diálogo con las reglas ("¡Empezar!" / "Ahora no"), con el mundo
+  congelado; no empieza si hay una bola en el aire. Reparto: la SIMULACIÓN pone las reglas del mundo
+  (`startSafari`/`endSafari`: el reloj, que solo corre con el mundo en marcha y avisa una vez con
+  `SafariTimeUp`; `FieldItems.enabled = false`, así las bolas del suelo ni se ven —tampoco en los
+  mapas— ni se recogen ni aparecen, y al acabar siguen donde estaban; y las bolas falladas se pierden:
+  `BallMissed(lost: true)` y el aviso "Fallaste: en el Safari la bola se pierde"). El
+  `SafariController` (por partida, como el FieldController) lleva las 25 bolas PROPIAS (Poké Balls
+  normales: se ven y capturan igual), lo capturado y el final: por tiempo, sin bolas (cuando la
+  ÚLTIMA termina: cada bola lanzada acaba en captura, escape o fallo, así se cuentan) o al abandonar.
+  La bolsa normal no se toca; las BAYAS sí se usan (son tuyas y el reto va de acercarse). Lo
+  capturado se queda (es tu equipo para los combates). En el Safari, 1-3 solo cambian baya → bola y
+  R alterna bola ↔ baya. El marcador sustituye a la bolsa arriba a la izquierda.
+- **2026-09-25 — Ayuda más corta:** con el aro y el sonido la ayuda crecía y, en una ventana de
+  800×600, tapaba el aviso de acción de abajo (lo detectó un test de widget). Las líneas se acortan
+  para no partirse (6 filas) y el botón del Safari va a la derecha, no bajo la bolsa.

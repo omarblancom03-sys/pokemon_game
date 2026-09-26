@@ -236,6 +236,64 @@ void main() {
     expect(find.textContaining('Aún no has capturado'), findsOneWidget);
   });
 
+  testWidgets('3D: Reto Safari: start, own balls and clock, abandon, summary', (
+    tester,
+  ) async {
+    final renderer = FakeSceneRenderer();
+    await tester.pumpWidget(
+      PokemonGameApp(
+        dependencies: AppDependencies.create(
+          repository: repository,
+          sceneRenderer: renderer,
+        ),
+      ),
+    );
+    await tester.tap(find.byKey(const Key('menu_play_3d')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    final sim = renderer.lastSim!;
+    Finder inside(String key, String text) =>
+        find.descendant(of: find.byKey(Key(key)), matching: find.text(text));
+
+    // Las reglas, con el mundo congelado; "¡Empezar!".
+    await tester.tap(find.byKey(const Key('safari_start')));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.byKey(const Key('safari_intro')), findsOneWidget);
+    expect(sim.isPaused, isTrue);
+    await tester.tap(find.byKey(const Key('safari_go')));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(sim.isPaused, isFalse);
+    expect(sim.safariActive, isTrue);
+    expect(sim.fieldItems.items, isEmpty);
+    expect(find.byKey(const Key('safari_hud')), findsOneWidget);
+    expect(find.byKey(const Key('bag_poke')), findsNothing);
+    expect(find.text('10:00'), findsOneWidget);
+    expect(inside('safari_balls', '×25'), findsOneWidget);
+
+    // Se lanza una bola DEL RETO (la bolsa no se toca).
+    await tester.tap(find.byKey(const Key('game3d_throw')));
+    await tester.pump();
+    expect(sim.throwProgress, isNotNull);
+    expect(inside('safari_balls', '×24'), findsOneWidget);
+    // Pasan 30 s (la simulación no avanza sola en los tests).
+    sim.update(30);
+    await tester.pump();
+    expect(find.text('9:30'), findsOneWidget);
+
+    // Abandonar: resumen y vuelta al modo libre, con la bolsa intacta.
+    await tester.tap(find.byKey(const Key('safari_abandon')));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.byKey(const Key('safari_summary')), findsOneWidget);
+    expect(find.text('Reto abandonado'), findsOneWidget);
+    expect(sim.safariActive, isFalse);
+    await tester.tap(find.byKey(const Key('safari_close')));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.byKey(const Key('safari_hud')), findsNothing);
+    expect(inside('bag_poke', '×5'), findsOneWidget);
+    expect(find.byKey(const Key('safari_start')), findsOneWidget);
+    await tester.pump(const Duration(seconds: 3));
+  });
+
   testWidgets('3D: the throw button spends a ball; an empty bag warns', (
     tester,
   ) async {

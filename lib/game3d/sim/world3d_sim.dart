@@ -602,7 +602,9 @@ class World3DSim {
 
   /// Deja en el suelo una bola fallada. Si cayó sobre algo que no se
   /// pisa (una valla), se lleva a la casilla libre más cercana.
+  /// (En el Reto Safari se pierde: no se deja nada.)
   void _dropBall(PokeBallType ball, Vector3 at) {
+    if (safariActive) return;
     final cell = cellAt(at);
     var spot = at;
     if (!layout.isWalkable(cell.col, cell.row)) {
@@ -620,6 +622,42 @@ class World3DSim {
       }
     }
     fieldItems.drop(ball, spot);
+  }
+
+  // --- Reto Safari ------------------------------------------------------
+
+  /// Segundos que le quedan al Reto Safari (null = no hay reto). Solo
+  /// corren con el mundo en marcha (no en pausa ni con un panel abierto).
+  double? get safariTimeLeft => _safariTimeLeft;
+  double? _safariTimeLeft;
+  bool _safariTimeUpSent = false;
+
+  bool get safariActive => _safariTimeLeft != null;
+
+  /// Empieza el Reto Safari: [seconds] de tiempo, sin Poké Balls en el
+  /// suelo (ni se ven ni aparecen) y las bolas falladas se pierden. Las
+  /// bolas, la puntuación y el final los lleva SafariController.
+  void startSafari(double seconds) {
+    _safariTimeLeft = seconds;
+    _safariTimeUpSent = false;
+    fieldItems.enabled = false;
+  }
+
+  /// Termina el reto: todo vuelve a ser como antes (las bolas del suelo
+  /// siguen donde estaban).
+  void endSafari() {
+    _safariTimeLeft = null;
+    fieldItems.enabled = true;
+  }
+
+  void _updateSafari(double dt) {
+    final left = _safariTimeLeft;
+    if (left == null) return;
+    _safariTimeLeft = math.max(0, left - dt);
+    if (_safariTimeLeft == 0 && !_safariTimeUpSent) {
+      _safariTimeUpSent = true;
+      _emit(const SafariTimeUp());
+    }
   }
 
   /// Quita un Pokémon salvaje (tras su encuentro).
@@ -691,6 +729,7 @@ class World3DSim {
       stealth: stealth,
       moving: player.isMoving,
     );
+    _updateSafari(dt);
     fieldItems.update(dt, player.position, _emit);
     berries.update(dt, player.position, _emit, landed: _berryLanded);
     for (final w in wild.toList()) {
@@ -703,7 +742,12 @@ class World3DSim {
       wild: wild,
       drop: _dropBall,
       remove: (w) => removeWild(w.id),
-      emit: _emit,
+      // En el Safari, una bola fallada se pierde (y el aviso lo dice).
+      emit: (event) => _emit(
+        event is BallMissed && safariActive
+            ? BallMissed(event.ball, lost: true)
+            : event,
+      ),
       impact: _startleAround,
       bounce: (at, speed) {
         if (speed > 2) dust.burst(at, strength: speed / 10);

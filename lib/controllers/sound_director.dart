@@ -56,7 +56,7 @@ class SoundDirector {
         if (startled) _cry(wild);
       case ShinySpotted():
         sound.play(GameSound.shiny);
-      case BallMissed() || PokemonEating():
+      case BallMissed() || PokemonEating() || SafariTimeUp():
         break;
     }
   }

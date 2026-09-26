@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../controllers/field_controller.dart';
 import '../controllers/game_controller.dart';
+import '../controllers/safari_controller.dart';
 import '../services/random_pokemon_picker.dart';
 import '../views/game/game_screen.dart';
 import '../views/game3d/game3d_screen.dart';
@@ -74,6 +75,8 @@ class PokemonGameApp extends StatelessWidget {
                   repository: context.read(),
                 ),
               ),
+              // El Reto Safari (opcional), también por partida.
+              ChangeNotifierProvider(create: (_) => SafariController()),
             ],
             child: const Game3DScreen(),
           ),

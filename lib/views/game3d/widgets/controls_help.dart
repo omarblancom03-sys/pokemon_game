@@ -112,10 +112,9 @@ class _Panel extends StatelessWidget {
     ('Moverse', 'WASD / flechas · Mayús correr · C agacharse'),
     ('Cámara', 'Arrastrar o Q/E girar · Rueda zoom · V detrás'),
     ('Capturar', 'Clic der. / F apuntar · Clic / Espacio lanzar'),
-    ('', 'R o 1-4 elegir bola o baya'),
-    ('', 'Lanza cuando el aro de la mira sea pequeño: ¡Excelente! ×2'),
-    ('Más', 'L leer carteles y sacudir arbustos · P capturas · M mapa'),
-    ('', 'H esta ayuda · N sonido'),
+    ('', 'R o 1-4 bola o baya · lanza con el aro pequeño'),
+    ('Más', 'L leer / sacudir arbustos · P capturas · M mapa'),
+    ('', 'N sonido · H esta ayuda'),
   ];
 
   @override

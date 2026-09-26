@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import '../../controllers/capture/capture_calculator.dart';
 import '../../controllers/field_controller.dart';
 import '../../controllers/game_controller.dart';
+import '../../controllers/safari_controller.dart';
 import '../../controllers/sound_director.dart';
 import '../../controllers/trainer_controller.dart';
 import '../../game/input/movement_input.dart';
@@ -28,6 +29,7 @@ import 'widgets/capture_card.dart';
 import 'widgets/controls_help.dart';
 import 'widgets/field_hud.dart';
 import 'widgets/minimap.dart';
+import 'widgets/safari_panels.dart';
 import 'widgets/world_overlay.dart';
 
 /// VISTA: exploración en 3D (tercera persona) y captura con Poké Balls.
@@ -37,6 +39,8 @@ import 'widgets/world_overlay.dart';
 ///    agresivo pausa el mundo hasta que termina el encuentro.
 ///  - [FieldController] (captura): lo que pasa en el mundo (recoger bolas,
 ///    capturas...) va a la bolsa; y al lanzar se saca una bola de ella.
+///  - [SafariController] (el reto opcional): al empezarlo, la simulación
+///    pone sus reglas y las bolas salen del reto, no de la bolsa.
 /// Además traduce teclado, ratón, D-pad y botones a las "intenciones" de
 /// la simulación. El dibujo lo hace el [SceneRenderer] que llega por
 /// provider.
@@ -51,6 +55,7 @@ class _Game3DScreenState extends State<Game3DScreen> {
   late final GameController _controller;
   late final FieldController _field;
   late final TrainerController _trainer;
+  late final SafariController _safari;
   late final World3DSim _sim;
   late final SoundService _sound;
   late final SoundDirector _director;
@@ -78,6 +83,7 @@ class _Game3DScreenState extends State<Game3DScreen> {
     _controller = context.read<GameController>();
     _field = context.read<FieldController>();
     _trainer = context.read<TrainerController>();
+    _safari = context.read<SafariController>();
     _sound = context.read<SoundService>();
     _director = SoundDirector(_sound, clock: () => _sim.time);
     // Igual que en 2D: si se creara en build(), cada repintado reiniciaría.
@@ -93,6 +99,7 @@ class _Game3DScreenState extends State<Game3DScreen> {
     _controller.addListener(_syncPause);
     _consumedSub = _controller.smokeConsumed.listen(_sim.removeWild);
     _trainer.addListener(_syncTrainer);
+    _safari.addListener(_onSafariChanged);
     _syncTrainer();
     // En web, el clic derecho es para apuntar, no para el menú del navegador.
     if (kIsWeb) unawaited(BrowserContextMenu.disableContextMenu());
@@ -101,7 +108,35 @@ class _Game3DScreenState extends State<Game3DScreen> {
   /// Lo que pasa en el mundo: a la bolsa y los avisos, y a los sonidos.
   void _onWorldEvent(World3DEvent event) {
     _field.onWorldEvent(event);
+    _safari.onWorldEvent(event);
     _director.onWorldEvent(event);
+  }
+
+  /// Empieza el Reto Safari si el jugador lo acepta (y no hay bolas en el
+  /// aire: el reto cuenta las suyas).
+  Future<void> _startSafari() async {
+    if (_safari.phase != SafariPhase.off) return;
+    final go = await _openPanel<bool>((_) => const SafariIntroDialog());
+    if (go != true || !mounted || _sim.balls.isNotEmpty || !_sim.canThrow) {
+      return;
+    }
+    _safari.start();
+    _sim.startSafari(SafariController.duration);
+  }
+
+  /// El reto cambió: bolas en la mano y, si terminó, resumen.
+  void _onSafariChanged() {
+    _syncTrainer();
+    if (_safari.phase == SafariPhase.finished && _sim.safariActive) {
+      _sim.endSafari();
+      unawaited(_showSafariSummary());
+    }
+    setState(() {});
+  }
+
+  Future<void> _showSafariSummary() async {
+    await _openPanel<void>((_) => SafariSummaryDialog(safari: _safari));
+    _safari.close();
   }
 
   /// Silenciar / volver a oír.
@@ -112,12 +147,16 @@ class _Game3DScreenState extends State<Game3DScreen> {
   /// Lo que la simulación necesita del entrenador: lo que lleva en la mano
   /// (la bola, con la que se calcula la probabilidad, o una baya) y la
   /// probabilidad de captura crítica, que crece con las especies
-  /// capturadas.
+  /// capturadas. En el Reto Safari, la bola es la del reto.
   void _syncTrainer() {
+    final PokeBallType? ball;
+    if (_safari.isRunning) {
+      ball = _safari.ballsLeft > 0 ? SafariController.ball : null;
+    } else {
+      ball = _trainer.count(_trainer.selected) > 0 ? _trainer.selected : null;
+    }
     _sim
-      ..readyBall = _trainer.count(_trainer.selected) > 0
-          ? _trainer.selected
-          : null
+      ..readyBall = ball
       ..berryReady = _trainer.berrySelected && _trainer.berries > 0
       ..criticalChance = CaptureCalculator.criticalChanceFor(
         _trainer.speciesCaught,
@@ -142,8 +181,9 @@ class _Game3DScreenState extends State<Game3DScreen> {
 
   /// Abre un panel encima del juego. El mundo se congela mientras está
   /// abierto (y se sueltan las teclas: el panel se queda con el teclado).
-  Future<void> _openPanel(WidgetBuilder builder) async {
-    if (_panelOpen) return;
+  /// Devuelve lo que devuelva el panel al cerrarse.
+  Future<T?> _openPanel<T>(WidgetBuilder builder) async {
+    if (_panelOpen) return null;
     _panelOpen = true;
     _aimKey = false;
     _aimMouse = false;
@@ -151,27 +191,53 @@ class _Game3DScreenState extends State<Game3DScreen> {
     _sim
       ..setPaused(true)
       ..cameraInput.clear();
-    await showDialog<void>(context: context, builder: builder);
+    final result = await showDialog<T>(context: context, builder: builder);
     _panelOpen = false;
     if (mounted) _syncPause();
+    return result;
   }
 
   /// Lanzar: saca de la bolsa lo que lleva en la mano (una bola o una
-  /// baya, si quedan) y la simulación lo lanza.
+  /// baya, si quedan) y la simulación lo lanza. En el Reto Safari las
+  /// bolas salen del reto.
   void _throw() {
     if (!_sim.canThrow) return;
     if (_trainer.berrySelected) {
       if (_field.takeBerryToThrow()) _sim.throwBerry();
       return;
     }
-    final ball = _field.takeBallToThrow();
+    final ball = _safari.isRunning
+        ? _safari.takeBall()
+        : _field.takeBallToThrow();
     if (ball != null) _sim.throwBall(ball);
+  }
+
+  /// Llevar la bola en la mano (en vez de la baya). En el Safari solo hay
+  /// una clase de bola: la del reto.
+  void _holdBall(PokeBallType type) {
+    if (_safari.isRunning) {
+      _trainer.select(_trainer.selected);
+    } else if (_trainer.count(type) > 0) {
+      _trainer.select(type);
+    }
+  }
+
+  /// R: lo siguiente de la bolsa (en el Safari, bola ↔ baya).
+  void _selectNext() {
+    if (!_safari.isRunning) {
+      _trainer.selectNext();
+    } else if (_trainer.berrySelected) {
+      _trainer.select(_trainer.selected);
+    } else {
+      _trainer.selectBerry();
+    }
   }
 
   @override
   void dispose() {
     _controller.removeListener(_syncPause);
     _trainer.removeListener(_syncTrainer);
+    _safari.removeListener(_onSafariChanged);
     unawaited(_consumedSub.cancel());
     _sim.dispose();
     _helpOpen.dispose();
@@ -224,13 +290,12 @@ class _Game3DScreenState extends State<Game3DScreen> {
       return KeyEventResult.handled;
     }
     if (key == LogicalKeyboardKey.keyR) {
-      if (down) _trainer.selectNext();
+      if (down) _selectNext();
       return KeyEventResult.handled;
     }
     final slot = _ballKeys.indexOf(key);
     if (slot >= 0) {
-      final type = PokeBallType.values[slot];
-      if (down && _trainer.count(type) > 0) _trainer.select(type);
+      if (down) _holdBall(PokeBallType.values[slot]);
       return KeyEventResult.handled;
     }
     if (key == LogicalKeyboardKey.digit4) {
@@ -379,6 +444,15 @@ class _Game3DScreenState extends State<Game3DScreen> {
                 icon: Icon(_sound.muted ? Icons.volume_off : Icons.volume_up),
               ),
             ),
+            // El Reto Safari se empieza aquí (en el modo libre).
+            if (_safari.phase == SafariPhase.off)
+              Positioned(
+                right: 16,
+                top: 230,
+                child: SafariStartButton(
+                  onPressed: () => unawaited(_startSafari()),
+                ),
+              ),
             Positioned(
               left: 16,
               top: 16,
@@ -386,11 +460,18 @@ class _Game3DScreenState extends State<Game3DScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   ListenableBuilder(
-                    listenable: _trainer,
-                    builder: (_, _) => BagBar(
-                      trainer: _trainer,
-                      onShowCaptures: () => unawaited(_showCaptures()),
-                    ),
+                    listenable: Listenable.merge([_trainer, _safari]),
+                    builder: (_, _) => _safari.isRunning
+                        ? SafariHud(
+                            sim: _sim,
+                            safari: _safari,
+                            trainer: _trainer,
+                            onAbandon: _safari.abandon,
+                          )
+                        : BagBar(
+                            trainer: _trainer,
+                            onShowCaptures: () => unawaited(_showCaptures()),
+                          ),
                   ),
                   const SizedBox(height: 8),
                   ControlsHelp(open: _helpOpen),

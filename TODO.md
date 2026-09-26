@@ -119,8 +119,10 @@ combates (tus capturas = tu equipo), nunca compite con ellos. Nada de lo de aqu�
       (sintetizado con Web Audio; también golpe, escape, recoger y arbustos; N o el altavoz silencian)
 - [x] Anillo que se encoge al apuntar: "¡Bien!/¡Genial!/¡Excelente!" ×1,2/×1,5/×2 (en ambos modos)
       (aro dentro de la mira, 1,6 s por vuelta; cuenta el tamaño al PULSAR; se suma a los demás bonus)
-- [ ] Reto Safari (opcional): se empieza en un puesto del mapa o con un botón; 10 min, 25 bolas
+- [x] Reto Safari (opcional): se empieza en un puesto del mapa o con un botón; 10 min, 25 bolas
       propias sin reaparición; "Abandonar reto" en cualquier momento sin penalización
+      (botón "Reto Safari" bajo el altavoz; reloj que se para con la pausa; sin bolas en el suelo;
+      las falladas se pierden; bayas propias sí; resumen al terminar)
   - [ ] Puntuación solo en el Safari: base por rareza (capture_rate) × bonus que ya existen
   - [ ] Solo en el Safari: probabilidad de que huyan al fallar (mayor si es raro)
   - [ ] Pantalla final con resumen y récord; premio en bolas y bayas
