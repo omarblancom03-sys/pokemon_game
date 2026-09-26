@@ -138,7 +138,7 @@ class ThrownBall {
   /// Segundos desde el golpe (null si no ha golpeado).
   double? get sinceHit => hitAge == null ? null : age - hitAge!;
 
-  /// Sacudidas ya hechas en el suelo.
+  /// Sacudidas empezadas en el suelo (cada una se cuenta al empezar).
   int shakesDone = 0;
 
   /// Rebotes contra el suelo.
@@ -168,12 +168,57 @@ class ThrownBall {
   static const absorbTime = 0.55;
   static const shakeSettle = 0.4;
   static const shakeTime = 0.85;
-  static const shakePause = 0.35;
   static const caughtTime = 1.6;
   static const escapeTime = 0.6;
 
-  /// Un ciclo de sacudida completo (sacudirse + quedarse quieta).
-  static const shakeCycle = shakeTime + shakePause;
+  /// SACUDIDAS CON TENSIÓN: tras cada sacudida la bola se queda quieta un
+  /// poco más que la anterior (0,35 s, 0,5 s…) y, tras la ÚLTIMA, más aún
+  /// ([finalPause]): el silencio antes del "¡clic!" o de que se escape.
+  static const shakePause = 0.35;
+  static const shakePauseStep = 0.15;
+  static const finalPause = 0.8;
+
+  /// Pausa tras la sacudida [index] (0, 1, 2) de [count].
+  static double pauseAfter(int index, int count) =>
+      index == count - 1 ? finalPause : shakePause + shakePauseStep * index;
+
+  /// Cuánto se ladea (rad) la sacudida [index]: cada una más que la
+  /// anterior. La crítica, la única, con toda la fuerza.
+  static double shakeStrength(int index, {bool critical = false}) =>
+      critical ? 0.85 : 0.42 + 0.16 * index;
+
+  int get _shakeCount => result?.shakes ?? 0;
+
+  /// Segundo de la fase [BallPhase.shaking] en que empieza la sacudida
+  /// [index].
+  double shakeStart(int index) {
+    var t = shakeSettle;
+    for (var k = 0; k < index; k++) {
+      t += shakeTime + pauseAfter(k, _shakeCount);
+    }
+    return t;
+  }
+
+  /// La sacudida en marcha: cuál (0..) y cuánto lleva (0..1). null si la
+  /// bola está quieta (antes, entre sacudidas o después).
+  ({int index, double progress})? get currentShake {
+    if (phase != BallPhase.shaking) return null;
+    for (var i = 0; i < _shakeCount; i++) {
+      final t = phaseTime - shakeStart(i);
+      if (t >= 0 && t < shakeTime) return (index: i, progress: t / shakeTime);
+    }
+    return null;
+  }
+
+  /// Sacudidas que ya han empezado.
+  int get shakesStarted {
+    if (phase != BallPhase.shaking) return shakesDone;
+    var n = 0;
+    while (n < _shakeCount && phaseTime >= shakeStart(n)) {
+      n++;
+    }
+    return n;
+  }
 
   void setPhase(BallPhase next) {
     phase = next;
@@ -181,36 +226,30 @@ class ThrownBall {
   }
 
   /// Segundos que pasa en el suelo antes de saberse el final.
-  double get shakingDuration =>
-      shakeSettle + (result?.shakes ?? 0) * shakeCycle;
+  double get shakingDuration {
+    final count = _shakeCount;
+    if (count == 0) return shakeSettle;
+    return shakeStart(count - 1) + shakeTime + pauseAfter(count - 1, count);
+  }
 
   /// Ángulo de la sacudida actual (rad) para dibujarla.
   double get wobble {
-    if (phase != BallPhase.shaking) return 0;
-    final t = phaseTime - shakeSettle;
-    if (t < 0) return 0;
-    final cycle = (t / shakeCycle).floor();
-    if (cycle >= (result?.shakes ?? 0)) return 0;
-    final inCycle = t - cycle * shakeCycle;
-    if (inCycle > shakeTime) return 0;
+    final shake = currentShake;
+    if (shake == null) return 0;
     // Un vaivén que se amortigua: izquierda fuerte, derecha, y se para.
-    final s = inCycle / shakeTime;
-    // La crítica se sacude con más fuerza: todo se decide en esa sacudida.
-    final strength = (result?.critical ?? false) ? 0.8 : 0.55;
+    final s = shake.progress;
+    final strength = shakeStrength(
+      shake.index,
+      critical: result?.critical ?? false,
+    );
     return math.sin(s * 3 * math.pi) * strength * (1 - s);
   }
 
   /// Luz roja del botón (0..1): se enciende con cada sacudida y se apaga
   /// en la pausa entre una y otra, como en los juegos.
   double get buttonGlow {
-    if (phase != BallPhase.shaking) return 0;
-    final t = phaseTime - shakeSettle;
-    if (t < 0) return 0;
-    final cycle = (t / shakeCycle).floor();
-    if (cycle >= (result?.shakes ?? 0)) return 0;
-    final inCycle = t - cycle * shakeCycle;
-    if (inCycle > shakeTime) return 0;
-    return math.sin(inCycle / shakeTime * math.pi);
+    final shake = currentShake;
+    return shake == null ? 0 : math.sin(shake.progress * math.pi);
   }
 
   /// "¡Clic!" al capturar: destello blanco del botón (1 → 0 en [clickTime]).
@@ -495,11 +534,9 @@ class BallSystem {
     void Function(World3DEvent event) emit,
   ) {
     final result = ball.result!;
-    final t = ball.phaseTime - ThrownBall.shakeSettle;
+    // Cada sacudida se cuenta al EMPEZAR (el "toc" va con el vaivén).
     final before = ball.shakesDone;
-    ball.shakesDone = t < 0
-        ? 0
-        : math.min(result.shakes, (t / ThrownBall.shakeCycle).floor());
+    ball.shakesDone = ball.shakesStarted;
     if (ball.shakesDone > before) {
       emit(BallShook(ball.shakesDone, critical: result.critical));
     }

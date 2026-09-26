@@ -273,7 +273,7 @@ void main() {
       expect(ball.result!.critical, isTrue);
       expect(
         ball.shakingDuration,
-        ThrownBall.shakeSettle + ThrownBall.shakeCycle,
+        ThrownBall.shakeSettle + ThrownBall.shakeTime + ThrownBall.finalPause,
       );
 
       var maxWobble = 0.0;
@@ -350,7 +350,7 @@ void main() {
         fromBehind: false,
         eating: false,
       ));
-      step(s, 5.4);
+      step(s, 6.4);
       expect(
         events.whereType<PokemonCaught>().single.result.chance,
         closeTo(0.2, 1e-9),
@@ -443,12 +443,54 @@ void main() {
           ..setPhase(BallPhase.shaking);
     expect(
       ball.shakingDuration,
-      ThrownBall.shakeSettle + ThrownBall.shakeCycle,
+      ThrownBall.shakeSettle + ThrownBall.shakeTime + ThrownBall.finalPause,
     );
     ball.phaseTime = ThrownBall.shakeSettle + ThrownBall.shakeTime * 0.25;
     expect(ball.wobble.abs(), greaterThan(0.1));
-    ball.phaseTime = ThrownBall.shakeSettle + ThrownBall.shakeCycle * 1.2;
+    ball.phaseTime = ball.shakingDuration - 0.05;
     expect(ball.wobble, 0, reason: 'second shake is not in the result');
+  });
+
+  test('tension: each shake leans further, each pause is longer', () {
+    final ball =
+        ThrownBall(
+            id: 'b',
+            ball: PokeBallType.poke,
+            position: Vector3.zero(),
+            velocity: Vector3.zero(),
+          )
+          ..result = const CaptureResult(chance: 0.5, shakes: 3, caught: true)
+          ..setPhase(BallPhase.shaking);
+    // La mayor inclinación de cada sacudida.
+    final peaks = [
+      for (var i = 0; i < 3; i++)
+        [
+          for (var k = 0; k < 100; k++)
+            (ball
+                  ..phaseTime =
+                      ball.shakeStart(i) + ThrownBall.shakeTime * k / 100)
+                .wobble
+                .abs(),
+        ].reduce(max),
+    ];
+    expect(peaks[1], greaterThan(peaks[0] + 0.1));
+    expect(peaks[2], greaterThan(peaks[1] + 0.1));
+    // Pausas: cada vez más largas; la última (antes del resultado), la
+    // más larga.
+    final pauses = [for (var i = 0; i < 3; i++) ThrownBall.pauseAfter(i, 3)];
+    expect(pauses[1], greaterThan(pauses[0]));
+    expect(pauses[2], greaterThan(pauses[1]));
+    expect(
+      ball.shakeStart(2) - ball.shakeStart(1),
+      greaterThan(ball.shakeStart(1) - ball.shakeStart(0)),
+    );
+    expect(
+      ball.shakingDuration,
+      closeTo(ball.shakeStart(2) + ThrownBall.shakeTime + pauses[2], 1e-9),
+    );
+    // Cada sacudida cuenta al empezar.
+    ball.phaseTime = ball.shakeStart(1) + 0.01;
+    expect(ball.shakesStarted, 2);
   });
 
   test('the button glows red with each shake and clicks white when caught', () {
@@ -466,12 +508,9 @@ void main() {
     expect(ball.buttonGlow, closeTo(1, 1e-9), reason: 'middle of shake 1');
     ball.phaseTime = ThrownBall.shakeSettle + ThrownBall.shakeTime + 0.1;
     expect(ball.buttonGlow, 0, reason: 'pause between shakes');
-    ball.phaseTime =
-        ThrownBall.shakeSettle +
-        ThrownBall.shakeCycle +
-        ThrownBall.shakeTime / 2;
+    ball.phaseTime = ball.shakeStart(1) + ThrownBall.shakeTime / 2;
     expect(ball.buttonGlow, closeTo(1, 1e-9), reason: 'middle of shake 2');
-    ball.phaseTime = ThrownBall.shakeSettle + ThrownBall.shakeCycle * 2.5;
+    ball.phaseTime = ball.shakingDuration - 0.05;
     expect(ball.buttonGlow, 0, reason: 'no third shake');
     expect(ball.clickFlash, 0);
 

@@ -478,3 +478,10 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
   fogonazo del primer tercio; en el PUNTO DEL GOLPE (`ThrownBall.hitPoint`), no en la bola, que ya
   sube a absorberlo. El tiempo lo da `ThrownBall.impactProgress` (probado sin GPU). Durante la
   micro-pausa la onda se queda en su primer fotograma: justo el "fogonazo congelado" del hit-stop.
+- **2026-09-26 — Sacudidas con tensión** (TODO 8.15). Antes, las tres sacudidas eran iguales (0,55
+  rad, ciclos de 1,2 s) y el resultado llegaba sin aviso. Ahora cada una se ladea más (0,42 · 0,58 ·
+  0,74 rad; la crítica, la única, 0,85), la pausa tras cada una crece (0,35 · 0,5 s) y tras la
+  ÚLTIMA hay 0,8 s de silencio: el momento de "¿lo tengo?". Tres sacudidas pasan de 4,0 a 4,6 s en
+  el suelo. Los tiempos salen de `ThrownBall.shakeStart(i)` / `pauseAfter(i, n)` (Dart puro, con
+  tests); `shakeCycle` desaparece. `BallShook` (el "toc") se emitía al TERMINAR cada ciclo, es decir,
+  ~1 s después del vaivén que se veía; ahora se emite al empezar, a la vez que la bola se mueve.

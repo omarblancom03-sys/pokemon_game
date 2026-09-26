@@ -69,6 +69,9 @@
   - **El golpe pesa:** cuando la bola le da, el mundo se congela un instante (el doble si la captura
     va a ser crítica) y en el punto del golpe salta un fogonazo y una onda blanca que se abre (dorada
     si es crítica).
+  - **Sacudidas con tensión:** cada sacudida ladea la bola más que la anterior y la espera entre una
+    y otra se alarga; tras la última, un silencio más largo antes del "¡clic!" (o del escape). El
+    "toc" suena justo cuando empieza cada vaivén.
   - **Cámara de captura:** cuando la bola le da a un Pokémon, la cámara va sola a verla de cerca
     (en un segundo, sin dar tirones): se ve cómo lo absorbe, cómo cae, cada sacudida con el botón
     rojo y el "¡clic!" con estrellas (o cómo se escapa). Al terminar vuelve detrás del jugador (o al
