@@ -17,6 +17,7 @@ import 'bush_renderer.dart';
 import 'butterfly_renderer.dart';
 import 'cloud_renderer.dart';
 import 'dust_renderer.dart';
+import 'footprint_renderer.dart';
 import 'grass_blade_renderer.dart';
 import 'grass_renderer.dart';
 import 'item_renderer.dart';
@@ -49,6 +50,7 @@ class _Scene3DViewState extends State<Scene3DView> {
   late ItemRenderer _items;
   late BallRenderer _balls;
   late DustRenderer _dust;
+  late FootprintRenderer _footprints;
   late GrassBladeRenderer _blades;
   late ButterflyRenderer _butterflies;
   late CloudRenderer _clouds;
@@ -144,6 +146,8 @@ class _Scene3DViewState extends State<Scene3DView> {
     scene.add(ballsRoot);
     _balls = BallRenderer(root: ballsRoot, toMesh: _mesh);
 
+    _footprints = FootprintRenderer();
+    scene.add(_footprints.node);
     _dust = DustRenderer();
     scene.add(_dust.node);
     _blades = GrassBladeRenderer(_mesh);
@@ -207,6 +211,7 @@ class _Scene3DViewState extends State<Scene3DView> {
     _grass.update(_sim.time, _sim.grassPushers, rustlers: _sim.grassRustlers);
     _wild.update(_sim.wild, _sim.balls, _sim.camera.yaw, _sim.time);
     _items.update(_sim.fieldItems.items, _sim.time);
+    _footprints.update(_sim.footprints.prints);
     _dust.update(_sim.dust.puffs);
     _blades.update(_sim.blades.blades);
     _butterflies.update();

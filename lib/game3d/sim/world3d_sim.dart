@@ -16,6 +16,7 @@ import 'clouds.dart';
 import 'camera_input.dart';
 import 'dust.dart';
 import 'field_items.dart';
+import 'footprints.dart';
 import 'grass_blades.dart';
 import 'grass_field.dart';
 import 'orbit_camera.dart';
@@ -32,6 +33,7 @@ import 'world3d_events.dart';
 export 'berries.dart' show BerryBush, BerrySystem, LooseBerry;
 export 'dust.dart' show DustPuff;
 export 'field_items.dart' show GroundItem;
+export 'footprints.dart' show Footprint, FootprintTrail;
 export 'grass_blades.dart' show GrassBlade;
 export 'signs.dart' show MapCell;
 export 'throwing.dart' show BallPhase, ThrownBall;
@@ -132,6 +134,9 @@ class World3DSim {
   /// Briznas que saltan de la hierba alta al pisarla, sobre los escondidos
   /// y cuando uno sale. Decorado con su propio azar, como el polvo.
   final GrassBladeSystem blades = GrassBladeSystem(random: math.Random(13));
+
+  /// Huellas del entrenador en la tierra del camino (decorado).
+  final FootprintTrail footprints = FootprintTrail();
 
   /// Mariposas sobre los macizos de flores (decorado, con su propio azar).
   late final ButterflySwarm butterflies = ButterflySwarm.fromLayout(
@@ -303,6 +308,12 @@ class World3DSim {
   bool isTallGrass(Vector3 p) {
     final cell = cellAt(p);
     return layout.tileAt(cell.col, cell.row) == TileKind.tallGrass;
+  }
+
+  /// ¿Es tierra de camino? (ahí quedan las huellas; en las losas, no).
+  bool isDirtPath(Vector3 p) {
+    final cell = cellAt(p);
+    return layout.tileAt(cell.col, cell.row) == TileKind.path;
   }
 
   /// Congela (encuentro en marcha) o reanuda el mundo. Al congelar se
@@ -684,9 +695,11 @@ class World3DSim {
   /// (una nubecilla por pisada, en el pie que toca el suelo) y al frenar
   /// en seco tras una carrera. Dentro, briznas en cada pisada: tres
   /// corriendo, una andando y ninguna agachado (se ve el ruido que haces).
+  /// En la tierra del camino, además, una huella por pisada.
   void _kickUp(double dt, Vector3 wish) {
     dust.update(dt);
     blades.update(dt);
+    footprints.update(dt);
     final feet = player.position;
     final onDirt = !isTallGrass(feet);
     final running = player.speed > config.walkSpeed * 1.15;
@@ -699,6 +712,16 @@ class World3DSim {
       if (running && onDirt) dust.footstep(foot, player.velocity);
       if (!onDirt && !crouching) {
         blades.footstep(foot, player.velocity, running: running);
+      }
+      if (isDirtPath(foot)) {
+        footprints.step(
+          foot,
+          f,
+          depth: FootprintTrail.depthFor(
+            running: running,
+            crouching: crouching,
+          ),
+        );
       }
     }
     final stopping = wish.length2 < 0.01;

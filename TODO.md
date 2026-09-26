@@ -101,7 +101,8 @@ El combate lo hace OTRO equipo (se engancha por el contrato EncounterHandler). N
 ## 8.13 Exploración: detalles (añadido 2026-09-25)
 - [x] Ayuda de controles plegable (H): se ve al entrar y luego queda en una pestaña pequeña (ahora tapa
       a los Pokémon lejanos de la parte de arriba de la pantalla)
-- [ ] Huellas del entrenador en la tierra del camino (se borran con el tiempo)
+- [x] Huellas del entrenador en la tierra del camino (se borran con el tiempo)
+      (una por pisada; corriendo más marcadas, agachado apenas; nítidas 18 s y se borran en 12)
 - [ ] Pokémon que dejan rastro: la hierba pisada por donde pasó uno que huyó
 
 ## 8.14 Diversión sin quitar protagonismo a los combates (añadido 2026-09-25)

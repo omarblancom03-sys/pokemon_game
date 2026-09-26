@@ -340,3 +340,12 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
   jugador la toca antes, deja de plegarse sola (manda él). Si está abierta lo guarda un
   `ValueNotifier<bool>` de la pantalla (la tecla H se maneja allí con las demás); el temporizador
   vive en el widget.
+- **2026-09-25 — Huellas en el camino** (`sim/footprints.dart`, Dart puro; `FootprintRenderer`, una
+  malla instanciada como el polvo). Una huella por pisada (las mismas pisadas que el polvo y las
+  briznas: `footstepSpacing`), en el pie que pisa y apuntando hacia donde miras. SOLO en la tierra
+  del camino (`=`): en las losas (`o`) no se marca y en el césped/hierba no se vería. Lo marcada
+  (alfa) cuenta el sigilo con el mismo lenguaje de siempre: corriendo 1, andando 0,8, agachado
+  0,45. Nítidas 18 s y se borran en los 12 siguientes; como mucho 90 (~45 m de rastro; la más vieja
+  se va). Huella simétrica (suela + tacón) para no tener que reflejar la malla en el pie izquierdo
+  (reflejar invierte las caras). A 0,03 m del suelo, alfa máximo 0,7 y color tierra húmeda
+  (0x7A5E38): con 0,55 y un tono más claro apenas se distinguían en la captura.

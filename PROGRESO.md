@@ -16,6 +16,8 @@
     rodea el mapa. Luz de sol con sombras, cielo en degradado, niebla ligera y aspecto "stylized".
   - Entrenador low-poly (gorra, chaqueta, mochila) con ciclo de caminar y carrera. Al correr levanta
     polvo (y al frenar en seco); las Poké Balls también al botar.
+    En la tierra del camino deja huellas (una por pisada, más marcadas corriendo y apenas agachado)
+    que se van borrando: a los 30 s ya no están.
   - Cámara en tercera persona: arrastrar con el ratón para girar, rueda para zoom, Q/E para girar con
     teclado. V (o el botón de la cámara) la vuelve a poner detrás del jugador con un giro suave.
     WASD/flechas mueven relativo a la cámara; Mayús corre. D-pad en pantalla. La cámara no
