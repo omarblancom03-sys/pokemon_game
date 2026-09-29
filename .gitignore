@@ -47,6 +47,5 @@ app.*.map.json
 # Widget Preview related
 .widget_preview/
 
-# Notas de trabajo y material de estudio (no forman parte del proyecto)
-CLAUDE.md
+# Material de estudio (no forma parte del proyecto). CLAUDE.md SÍ se sube: lo usan los dos turnos.
 Guia_del_codigo_Pokemon_Game.pdf
