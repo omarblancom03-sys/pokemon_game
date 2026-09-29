@@ -113,10 +113,10 @@ class ThrownBall {
   WildPokemon? target;
   CaptureResult? result;
 
-  /// Cómo fue el golpe (sin ser visto, por la espalda, mientras comía): se
-  /// le enseña al jugador sobre el Pokémon. null si aún no ha golpeado a
-  /// nadie.
-  ({bool unaware, bool fromBehind, bool eating})? hit;
+  /// Cómo fue el golpe (sin ser visto, por la espalda, mientras comía o
+  /// dormía): se le enseña al jugador sobre el Pokémon. null si aún no ha
+  /// golpeado a nadie.
+  ThrowHit? hit;
 
   /// [age] en el momento del golpe.
   double? hitAge;
@@ -544,9 +544,15 @@ class BallSystem {
     final fromBehind = flat.dot(w.facingDirection) > 0.5;
     final unaware = !w.isAlert;
     final eating = w.isEating;
+    final asleep = w.asleep;
     ball
       ..target = w
-      ..hit = (unaware: unaware, fromBehind: fromBehind, eating: eating)
+      ..hit = (
+        unaware: unaware,
+        fromBehind: fromBehind,
+        eating: eating,
+        asleep: asleep,
+      )
       ..hitAge = ball.age
       ..hitPoint = ball.position.clone()
       ..result = calculator.roll(
@@ -555,6 +561,7 @@ class BallSystem {
         unaware: unaware,
         fromBehind: fromBehind,
         eating: eating,
+        asleep: asleep,
         quality: ball.quality,
         criticalChance: criticalChance,
       )
@@ -564,6 +571,8 @@ class BallSystem {
       ..capturedBy = ball.id
       ..hidden =
           false // si estaba escondido, ¡sorpresa!
+      ..asleep =
+          false // si se escapa, sale bien despierto
       ..target = null;
   }
 

@@ -325,7 +325,12 @@ void main() {
         s.update(1 / 60);
       }
       final ball = s.balls.single;
-      expect(ball.hit, (unaware: true, fromBehind: true, eating: false));
+      expect(ball.hit, (
+        unaware: true,
+        fromBehind: true,
+        eating: false,
+        asleep: false,
+      ));
       expect(ball.sinceHit, closeTo(0, 0.02));
       step(s, 0.5);
       // (Menos la micro-pausa del golpe: el mundo se congela un instante.)
@@ -351,6 +356,7 @@ void main() {
         unaware: false,
         fromBehind: false,
         eating: false,
+        asleep: false,
       ));
       step(s, 6.4);
       expect(

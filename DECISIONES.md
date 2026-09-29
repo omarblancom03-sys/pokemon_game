@@ -548,3 +548,26 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
   del sonido sintetizado). Durante la voltereta no hay pisadas (suena su "¡zas!"). Comprobado en
   Chrome contando nodos de audio: 8 pisadas (ruido + golpe) en 1,5 s andando por el camino. Ojo en
   los tests: la casilla de inicio `@` del mapa es CAMINO.
+- **2026-09-28 — Pokémon dormidos** (TODO 8.15). Los decide la simulación al aparecer, con el MISMO
+  azar del juego (`_random`, no uno propio como el variocolor): dormir cambia la partida y así los
+  tests con semilla siguen siendo deterministas. 20 % de los que NO se esconden (`sleepChance`,
+  cambiable; un escondido nunca duerme). Dormido: no se mueve ni ve; OYE al 80 % de lo normal
+  (andando 4,8 m, corriendo 11 m, agachado 1,4 m = pegado; la voltereta es "ruidosa") y su desvelo
+  (`awareness`) sube con la misma fórmula del oído y baja a 0,2/s en silencio. Por encima de 0,35
+  "se revuelve": NO sale "?" (dormido no sospecha de ti); las zetas tiemblan en naranja y el dibujo
+  tiembla: es la señal para pararse. A 1 despierta. Tocarlo (1,4 m), tropezar con él o una bola que
+  cae a < 4 m lo despiertan de golpe; el ruido del arbusto solo lo revuelve (0,6). Despertado por ti:
+  respingo, "!" (alerta), grito y aviso "¡X se despertó!"; 0,8 s espabilándose (quieto, se gira
+  hacia ti, no esquiva ni se le puede "pasar de largo") y luego reacciona según su carácter. Si
+  nadie le molesta, a los 90 s se despierta solo y tranquilo (sin aviso ni grito): si no, ocuparían
+  para siempre los 6 huecos de Pokémon.
+  **Bonus ×2** (el estado "dormido" de los juegos clásicos, Gen III-IV), que se SUMA al sigilo
+  (dormido nunca te ha visto: ×1,5 o ×2 por la espalda) y puntúa en el Safari. Con ratio 45 y por
+  la espalda: 0,35 → 0,71. El golpe lo cuenta en `ThrowHit.asleep`: el registro del golpe pasa a
+  ser un `typedef` (models/throw_hit.dart) porque ya se repetía en cuatro sitios.
+  **¿Por qué acercarse?** Los tiros fijados no fallan, así que desde 17 m un dormido sería un regalo
+  y el sigilo no pintaría nada. Regla: tumbado en la hierba alta, la mira solo lo fija a ≤ 8 m
+  (`sleepLockDistance`). Andando se llega a 8 m sin despertarlo, pero más cerca (o por la espalda)
+  hay que ir agachado, y corriendo se despierta a 11 m: enseña a no correr. Sin fijar, un tiro a ojo
+  sí puede darle (habilidad). Visual: dibujo más bajo (×0,78) y ancho, respiración lenta y un tono
+  más frío; minimapa y mapa grande con un punto azul claro.

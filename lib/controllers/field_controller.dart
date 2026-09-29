@@ -49,6 +49,9 @@ enum FieldNoticeKind {
 
   /// Uno que te embestía se pasó de largo (rodaste) y quedó aturdido.
   dazed,
+
+  /// Uno que dormía se despertó por tu culpa (ruido, contacto, una bola).
+  wokeUp,
 }
 
 /// Un aviso breve del campo ("+2 Poké Ball", "¡Capturado!"...). Guarda los
@@ -180,6 +183,9 @@ class FieldController extends ChangeNotifier {
       // Solo sonidos (ver SoundDirector): no cambian la bolsa ni avisan.
       case PokemonDazed(:final wild):
         _post(FieldNoticeKind.dazed, pokemon: wild.pokemon);
+      case PokemonWoke(:final wild, :final startled):
+        // Si se despierta solo (lejos, sin que pase nada), no se avisa.
+        if (startled) _post(FieldNoticeKind.wokeUp, pokemon: wild.pokemon);
       case ItemThrown() ||
           BallHit() ||
           BallShook() ||

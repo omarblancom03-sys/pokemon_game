@@ -316,6 +316,11 @@ void main() {
     step(s, 0.1);
     expect(s.throwBall(PokeBallType.poke), isTrue);
     step(s, 1.2);
-    expect(s.balls.single.hit, (unaware: true, fromBehind: true, eating: true));
+    expect(s.balls.single.hit, (
+      unaware: true,
+      fromBehind: true,
+      eating: true,
+      asleep: false,
+    ));
   });
 }

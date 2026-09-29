@@ -22,10 +22,11 @@ import '../../common/pokemon_formatters.dart';
 ///    lo tienes aún).
 ///  - BAYAS: una baya en un bocadillo sobre los Pokémon que van a por una
 ///    baya del suelo (late con cada mordisco mientras se la comen).
+///  - DORMIDOS: "Zzz" que suben; tiemblan en naranja si se revuelve.
 ///  - AL GOLPEAR: sobre el Pokémon, qué bonus ha tenido el tiro ("¡No te
-///    vio!", "¡Por la espalda!", "¡Está comiendo!"), que sube y se
-///    desvanece. Si es una captura crítica, también lo dice, y la calidad
-///    del tiro ("¡Excelente! ×2").
+///    vio!", "¡Por la espalda!", "¡Está comiendo!", "¡Estaba dormido!"),
+///    que sube y se desvanece. Si es una captura crítica, también lo dice,
+///    y la calidad del tiro ("¡Excelente! ×2").
 ///  - EL ARO: dentro del anillo del fijado, un aro que se encoge (su color
 ///    dice qué tiro saldría si lanzas ya).
 ///
@@ -132,6 +133,14 @@ class _WorldPainter extends CustomPainter {
       if (w.isDazed) {
         final head = onScreen(w.position..y = w.displayHeight + 0.2);
         if (head != null) _paintDizzy(canvas, head);
+        continue;
+      }
+      // Dormido: "Zzz" que suben (tiemblan si se está despertando).
+      if (w.asleep) {
+        final head = onScreen(
+          w.position..y = w.displayHeight * WildPokemon.sleepSquash + 0.1,
+        );
+        if (head != null) _paintZzz(canvas, head, w);
         continue;
       }
       final marked = w.isAlert || w.isSuspicious;
@@ -264,6 +273,43 @@ class _WorldPainter extends CustomPainter {
       final a = i * 2 * math.pi / count + offset + t * 0.8;
       final at = center + Offset(math.cos(a), math.sin(a)) * radius;
       _paintStar(canvas, at, (big ? 10 : 7) * (1 - 0.3 * t), paint);
+    }
+  }
+
+  /// Segundos que tarda cada "z" en subir y desvanecerse.
+  static const _zzzPeriod = 2.4;
+
+  /// Tres zetas que suben en diagonal, crecen y se desvanecen, una tras
+  /// otra (dormido). Si se revuelve (algo le está despertando), tiemblan y
+  /// se vuelven naranjas: ¡quieto o agáchate!
+  void _paintZzz(Canvas canvas, Offset head, WildPokemon w) {
+    final stirring = w.isStirring;
+    final color = stirring ? Colors.orangeAccent : const Color(0xFFE1F5FE);
+    final shake = stirring ? math.sin(sim.time * 40) * 2.5 : 0.0;
+    // Cada uno a su ritmo (no suben todas a la vez).
+    final offset = (w.id.hashCode % 10) * 0.23;
+    for (var i = 0; i < 3; i++) {
+      final t = ((sim.time + offset) / _zzzPeriod + i / 3) % 1;
+      final alpha = math.sin(t * math.pi);
+      final text = TextPainter(
+        text: TextSpan(
+          text: t < 0.34 ? 'z' : 'Z',
+          style: TextStyle(
+            color: color.withValues(alpha: alpha),
+            fontSize: 11 + 9 * t,
+            fontWeight: FontWeight.w900,
+            shadows: [
+              Shadow(
+                blurRadius: 3,
+                color: Colors.black.withValues(alpha: 0.7 * alpha),
+              ),
+            ],
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      final at = head + Offset(6 + 22 * t + shake, -30 * t);
+      text.paint(canvas, at - Offset(text.width / 2, text.height / 2));
     }
   }
 
@@ -447,6 +493,11 @@ class _WorldPainter extends CustomPainter {
         (
           '¡Está comiendo! ×${_factor(CaptureCalculator.eatingBonus)}',
           Colors.pinkAccent,
+        ),
+      if (hit.asleep)
+        (
+          '¡Estaba dormido! ×${_factor(CaptureCalculator.sleepBonus)}',
+          const Color(0xFF80D8FF),
         ),
     ];
     if (lines.isEmpty) return;

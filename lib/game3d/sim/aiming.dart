@@ -13,6 +13,10 @@ import 'wild_pokemon.dart';
 /// con el alcance real del tiro (v²/g ≈ 16 m en llano).
 const maxLockDistance = 17.0;
 
+/// Un Pokémon DORMIDO está tumbado entre la hierba alta: la mira solo lo
+/// fija a menos de esto (m). Hay que acercarse… sin despertarlo.
+const sleepLockDistance = 8.0;
+
 /// Ángulo (rad) a cada lado del centro de la cámara dentro del cual se
 /// fija un objetivo (≈ 20°): no hace falta una puntería perfecta.
 const lockCone = 0.35;
@@ -32,7 +36,9 @@ WildPokemon? findLockTarget({
     final to = w.position - player
       ..y = 0;
     final d = to.length;
-    if (d < 0.5 || d > maxLockDistance) continue;
+    if (d < 0.5 || d > (w.asleep ? sleepLockDistance : maxLockDistance)) {
+      continue;
+    }
     final cos = to.dot(forward) / d;
     if (cos < minCos) continue;
     // Manda estar centrado; a igualdad, el más cercano.

@@ -26,9 +26,11 @@ const Map<({int col, int row}), SignText> worldSigns = {
   ),
   (col: 14, row: 15): SignText(
     'Consejo del entrenador',
-    '¿La hierba se agita y saltan briznas? Hay un Pokémon escondido.\n'
-        'Si llegas agachado se asoma sin verte. Si corres, sale asustado. '
-        'También puedes lanzar la bola a la mata… ¡y pillarlo por sorpresa!',
+    '¿La hierba se agita y saltan briznas? Hay un Pokémon escondido: '
+        'agachado se asoma sin verte; si corres, sale asustado. ¡O dale a la '
+        'mata con una bola!\n'
+        '¿Ves «Zzz»? Está dormido: no te ve, pero te oye. Ve agachado (la '
+        'mira solo lo fija de cerca): dormido se atrapa mejor (×2).',
   ),
   (col: 20, row: 17): SignText(
     'Tienda de Poké Balls (cerrada)',

@@ -322,6 +322,14 @@ class World3DSim {
   /// Si nadie encuentra a un escondido en este tiempo (s), se va.
   static const hiddenLifetime = 60.0;
 
+  /// Probabilidad de que uno que NO se esconde aparezca DORMIDO ("Zzz").
+  /// Se puede cambiar (tests y vista previa).
+  static const defaultSleepChance = 0.2;
+  double sleepChance = defaultSleepChance;
+
+  /// Si nadie le despierta en este tiempo (s), se despierta solo.
+  static const sleepLifetime = 90.0;
+
   /// Distancia (m) a la que un escondido sale de la hierba, según lo que
   /// se note el jugador. Quieto, solo si está pegado.
   static double revealDistance(PlayerStealth stealth, {required bool moving}) {
@@ -480,7 +488,7 @@ class World3DSim {
     for (final w in wild) {
       if (!w.isFree || w.hidden || !w.isAlert || w.engaged) continue;
       if (w.temperament != Temperament.aggressive) continue;
-      if (w.isDazed || w.overshootTo != null) continue;
+      if (w.isDazed || w.overshootTo != null || w.isWaking) continue;
       final to = here - w.position
         ..y = 0;
       final d = to.length;
@@ -589,8 +597,9 @@ class World3DSim {
   }
 
   /// Los Pokémon cerca de [at] oyen el arbusto: los tranquilos sospechan
-  /// y se giran; los escondidos muy cerca salen asustados. Los pájaros
-  /// cercanos se van volando.
+  /// y se giran, los dormidos se revuelven (sin llegar a despertarse) y
+  /// los escondidos muy cerca salen asustados. Los pájaros cercanos se van
+  /// volando.
   void _shakeNoise(Vector3 at) {
     final ground = Vector3(at.x, 0, at.z);
     birds.startle(ground, player.position);
@@ -646,6 +655,7 @@ class World3DSim {
       unaware: !target.isAlert,
       fromBehind: toTarget.dot(target.facingDirection) > 0.5,
       eating: target.isEating,
+      asleep: target.asleep,
     );
   }
 
@@ -878,7 +888,8 @@ class World3DSim {
       if (speed < 1) continue;
       dir.scale(1 / speed);
       for (final w in wild) {
-        if (!w.isFree || w.hidden || w.isEating) continue;
+        // Recién despertado aún no está para saltos.
+        if (!w.isFree || w.hidden || w.isEating || w.isWaking) continue;
         if (!w.isAlert && !w.isSuspicious) continue;
         if (w.isDodging || w.isLeaving || w.dodgeCheckedBall == b.id) continue;
         final to = w.position - b.position
@@ -1256,10 +1267,13 @@ class World3DSim {
           .then((pokemon) {
             _pendingSpawns--;
             if (pokemon != null && !_disposed) {
+              final hidden = _random.nextDouble() < hiddenChance;
               spawn(
                 pokemon.pokemon,
                 captureRate: pokemon.captureRate,
-                hidden: _random.nextDouble() < hiddenChance,
+                hidden: hidden,
+                // De los que se ven, algunos están durmiendo.
+                asleep: !hidden && _random.nextDouble() < sleepChance,
                 // Con su propio azar: es cosmético y no debe cambiar el
                 // resto de la partida.
                 shiny: _shinyRandom.nextDouble() < shinyChance,
@@ -1273,12 +1287,13 @@ class World3DSim {
   }
 
   /// Hace aparecer [pokemon] en una casilla de hierba alta lejos del
-  /// jugador y de los demás ([hidden]: escondido en la hierba). Devuelve
-  /// null si no hay sitio.
+  /// jugador y de los demás ([hidden]: escondido en la hierba; [asleep]:
+  /// dormido, si no está escondido). Devuelve null si no hay sitio.
   WildPokemon? spawn(
     Pokemon pokemon, {
     int captureRate = 45,
     bool hidden = false,
+    bool asleep = false,
     bool shiny = false,
   }) {
     final playerPos = player.position;
@@ -1301,7 +1316,8 @@ class World3DSim {
             shiny: shiny,
           )
           ..idleTime = _random.nextDouble() * 2
-          ..hidden = hidden;
+          ..hidden = hidden
+          ..asleep = asleep && !hidden;
     wild.add(w);
     return w;
   }
@@ -1348,6 +1364,14 @@ class World3DSim {
     }
     if (w.hidden) {
       _updateHidden(w, dt);
+      return;
+    }
+    if (w.asleep) {
+      _sleep(w, dt);
+      return;
+    }
+    if (w.isWaking) {
+      _wakeUp(w, dt);
       return;
     }
     if (w.isDodging) {
@@ -1503,6 +1527,53 @@ class World3DSim {
     }
   }
 
+  /// Dormido: quieto y sin ver. Se despierta de golpe si te oye cerca o le
+  /// tocas (ver WildBehavior.perceiveAsleep); si nadie le molesta en
+  /// [sleepLifetime] s, se despierta solo.
+  void _sleep(WildPokemon w, double dt) {
+    w
+      ..velocity = Vector3.zero()
+      ..target = null
+      ..sleptFor += dt;
+    final woke = behavior.perceiveAsleep(
+      w,
+      player: player.position,
+      stealth: stealth,
+      moving: player.isMoving,
+      dt: dt,
+    );
+    if (woke) {
+      _wake(w, startled: true);
+    } else if (w.sleptFor > sleepLifetime) {
+      _wake(w, startled: false);
+    }
+  }
+
+  /// Se despierta. De golpe (por ti): da un respingo, te descubre ("!") y,
+  /// tras espabilarse, reacciona según su carácter. Solo: tranquilo, y
+  /// luego se pone a pasear.
+  void _wake(WildPokemon w, {required bool startled}) {
+    if (!w.asleep) return;
+    w
+      ..asleep = false
+      ..wakingFor = 0
+      ..wokeStartled = startled
+      ..awareness = 0
+      ..target = null;
+    if (startled) behavior.startle(w);
+    _emit(PokemonWoke(w, startled: startled));
+  }
+
+  /// Espabilándose ([WildPokemon.wakeSeconds]): no se mueve; si le
+  /// despertaste tú, se gira hacia ti. Es el margen para lanzarle antes
+  /// de que huya o cargue (ya no cuenta como dormido).
+  void _wakeUp(WildPokemon w, double dt) {
+    final t = w.wakingFor! + dt;
+    w.velocity = Vector3.zero();
+    if (w.wokeStartled) behavior.faceTowards(w, player.position, dt);
+    w.wakingFor = t >= WildPokemon.wakeSeconds ? null : t;
+  }
+
   /// Sale de la hierba de un salto. Asustado: te mira y reacciona según su
   /// carácter. Si te acercaste con sigilo, se asoma distraído, mirando
   /// hacia otro lado (¡la ocasión de lanzarle por la espalda!).
@@ -1530,6 +1601,8 @@ class World3DSim {
       if (w.isFree && w.position.distanceTo(Vector3(at.x, 0, at.z)) < 4) {
         if (w.hidden) {
           _reveal(w, startled: true);
+        } else if (w.asleep) {
+          _wake(w, startled: true);
         } else {
           behavior.startle(w);
         }
@@ -1570,6 +1643,10 @@ class World3DSim {
       if (w.engaged || !w.isFree || w.hidden || w.isLeaving) continue;
       if (w.isDazed || w.overshootTo != null) continue;
       if (w.position.distanceTo(p) >= w.contactRadius) continue;
+      if (w.asleep) {
+        _wake(w, startled: true); // ¡tropezaste con él!
+        continue;
+      }
       if (w.temperament == Temperament.aggressive && w.isAlert) {
         // Rodando no te alcanza: se pasa de largo y queda aturdido.
         if (isRolling) {

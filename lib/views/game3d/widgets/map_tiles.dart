@@ -33,6 +33,7 @@ abstract final class MapColors {
   static Color forMark(MinimapMark mark) => switch (mark) {
     MinimapMark.ball => const Color(0xFFE53935),
     MinimapMark.calm => Colors.white,
+    MinimapMark.asleep => const Color(0xFF80D8FF),
     MinimapMark.suspicious => Colors.amberAccent,
     MinimapMark.alert => Colors.orangeAccent,
     MinimapMark.hostile => Colors.redAccent,

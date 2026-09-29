@@ -13,6 +13,9 @@ enum MinimapMark {
   /// Pokémon tranquilo.
   calm,
 
+  /// Pokémon dormido ("Zzz").
+  asleep,
+
   /// Pokémon que sospecha ("?").
   suspicious,
 
@@ -24,6 +27,7 @@ enum MinimapMark {
 
   /// La marca de un Pokémon según lo que sabe de ti.
   static MinimapMark forWild(WildPokemon w) {
+    if (w.asleep) return asleep;
     if (w.isAlert) {
       return w.temperament == Temperament.aggressive ? hostile : alert;
     }

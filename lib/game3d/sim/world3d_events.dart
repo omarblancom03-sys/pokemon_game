@@ -1,5 +1,6 @@
 import '../../models/capture_result.dart';
 import '../../models/poke_ball.dart';
+import '../../models/throw_hit.dart';
 import '../../models/throw_quality.dart';
 import 'wild_pokemon.dart';
 
@@ -42,7 +43,7 @@ class PokemonCaught extends World3DEvent {
   final WildPokemon wild;
   final PokeBallType ball;
   final CaptureResult result;
-  final ({bool unaware, bool fromBehind, bool eating})? hit;
+  final ThrowHit? hit;
   final ThrowQuality quality;
 }
 
@@ -61,7 +62,7 @@ class PokemonBrokeFree extends World3DEvent {
   final WildPokemon wild;
   final PokeBallType ball;
   final CaptureResult result;
-  final ({bool unaware, bool fromBehind, bool eating})? hit;
+  final ThrowHit? hit;
   final bool fled;
 }
 
@@ -118,6 +119,16 @@ class BerriesPickedUp extends World3DEvent {
 /// verte (te acercaste con sigilo).
 class PokemonRevealed extends World3DEvent {
   const PokemonRevealed(this.wild, {required this.startled});
+
+  final WildPokemon wild;
+  final bool startled;
+}
+
+/// Un Pokémon DORMIDO se despertó. [startled]: de golpe, por ti (te oyó
+/// cerca, le tocaste o cayó una bola al lado): te busca con la mirada y
+/// reacciona según su carácter. Si no, se despertó solo, tranquilo.
+class PokemonWoke extends World3DEvent {
+  const PokemonWoke(this.wild, {required this.startled});
 
   final WildPokemon wild;
   final bool startled;

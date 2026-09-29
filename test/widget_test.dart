@@ -291,7 +291,7 @@ void main() {
         ),
         PokeBallType.poke,
         const CaptureResult(chance: 1, shakes: 3, caught: true),
-        hit: (unaware: true, fromBehind: true, eating: false),
+        hit: (unaware: true, fromBehind: true, eating: false, asleep: false),
       ),
     );
     await tester.pump();

@@ -159,7 +159,10 @@ el campo (movimiento, cámara, hierba alta, encuentros, escenario). Va antes que
 - [x] Pasos que suenan según el suelo (camino, césped, crujido en la hierba alta)
       (tierra, losas, césped y hierba alta; tan fuerte como te delata: corriendo 1, andando 0,5,
       agachado 0,15, escondido en la hierba 0,08)
-- [ ] Pokémon dormidos (Zzz): se acercan sin despertar si vas con sigilo; bonus al capturarlos
+- [x] Pokémon dormidos (Zzz): se acercan sin despertar si vas con sigilo; bonus al capturarlos
+      (20 % de los que se ven; no ven y oyen al 80 %: andando a 4,8 m, corriendo a 11 m, agachado solo
+      pegado; se revuelven antes de despertar; tocarlos o una bola al lado los despierta; ×2; la mira
+      solo los fija a ≤ 8 m; a los 90 s se despiertan solos)
 - [ ] Manadas: algunos aparecen en grupo; si uno te descubre, avisa a los demás
 - [ ] Árboles que se mecen con el viento y hojas que caen de los otoñales
 

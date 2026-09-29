@@ -107,10 +107,30 @@ void main() {
   });
 
   test('the bonus is the throw: stealth, back, eating and the ring', () {
-    const seen = (unaware: false, fromBehind: false, eating: false);
-    const unseen = (unaware: true, fromBehind: false, eating: false);
-    const back = (unaware: true, fromBehind: true, eating: false);
-    const backEating = (unaware: true, fromBehind: true, eating: true);
+    const seen = (
+      unaware: false,
+      fromBehind: false,
+      eating: false,
+      asleep: false,
+    );
+    const unseen = (
+      unaware: true,
+      fromBehind: false,
+      eating: false,
+      asleep: false,
+    );
+    const back = (
+      unaware: true,
+      fromBehind: true,
+      eating: false,
+      asleep: false,
+    );
+    const backEating = (
+      unaware: true,
+      fromBehind: true,
+      eating: true,
+      asleep: false,
+    );
     expect(SafariController.bonusFor(null, ThrowQuality.none), 1);
     expect(SafariController.bonusFor(seen, ThrowQuality.none), 1);
     expect(SafariController.bonusFor(unseen, ThrowQuality.none), 1.5);
@@ -126,10 +146,19 @@ void main() {
         unaware: false,
         fromBehind: false,
         eating: true,
+        asleep: false,
       ), ThrowQuality.nice),
       closeTo(1.8, 1e-9),
       reason: 'eating counts even if it saw you',
     );
+    // Dormido ×2, que se suma al sigilo: por la espalda 2 × 2 = 4.
+    const backAsleep = (
+      unaware: true,
+      fromBehind: true,
+      eating: false,
+      asleep: true,
+    );
+    expect(SafariController.bonusFor(backAsleep, ThrowQuality.none), 4);
   });
 
   test('each catch scores rarity × bonus; the score adds them up', () {
@@ -145,7 +174,7 @@ void main() {
           wild(2),
           PokeBallType.poke,
           caught,
-          hit: (unaware: true, fromBehind: true, eating: false),
+          hit: (unaware: true, fromBehind: true, eating: false, asleep: false),
           quality: ThrowQuality.great,
         ),
       );

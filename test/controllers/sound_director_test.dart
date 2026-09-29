@@ -124,6 +124,13 @@ void main() {
     expect(sound.cries, [1, 7]);
   });
 
+  test('it cries when you wake it up, not when it wakes up by itself', () {
+    director.onWorldEvent(PokemonWoke(wild('a', 1), startled: false));
+    now = 5;
+    director.onWorldEvent(PokemonWoke(wild('b', 4), startled: true));
+    expect(sound.cries, [4]);
+  });
+
   test('no flood of cries: the same one waits, and any two are apart', () {
     final a = wild('a', 1);
     director.onWorldEvent(PokemonNoticed(a));

@@ -202,4 +202,13 @@ void main() {
     ]);
     expect(field.notices.last.pokemon!.id, 4);
   });
+
+  test('waking one up posts a notice; waking up alone does not', () {
+    final field = newField(TrainerController())
+      ..onWorldEvent(PokemonWoke(wild(4), startled: false));
+    expect(field.notices, isEmpty);
+    field.onWorldEvent(PokemonWoke(wild(7), startled: true));
+    expect(field.notices.single.kind, FieldNoticeKind.wokeUp);
+    expect(field.notices.single.pokemon!.id, 7);
+  });
 }

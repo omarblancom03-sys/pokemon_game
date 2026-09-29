@@ -134,7 +134,7 @@ class WildRenderer {
         ? 1.0
         : math.sin(t * math.pi * 0.75) / math.sin(math.pi * 0.75);
     var tint = vm.Vector4(1, 1, 1, 1);
-    var offset = vm.Vector3(0, w.hopHeight + w.dodgeJump, 0);
+    var offset = vm.Vector3(0, w.hopHeight + w.dodgeJump + w.wakeJump, 0);
 
     // Dentro de una bola: rojo, encogiéndose hacia ella; luego invisible.
     if (!w.isFree) {
@@ -165,22 +165,33 @@ class WildRenderer {
       final glow = 2.5 * (1 - r);
       tint = vm.Vector4(1 + glow, 1 + glow, 1 + glow, 1);
     }
-    v.material.baseColorFactor = tint;
     // Respiración: se estira un poco arriba y abajo cuando está quieto.
-    final breathe = 1 + 0.035 * math.sin(time * 3 + w.id.hashCode % 7);
+    final phase = w.id.hashCode % 7;
+    var breathe = 1 + 0.035 * math.sin(time * 3 + phase);
+    var wide = 1.0;
+    // Dormido: tumbado (más bajo y ancho), respira hondo y despacio y se ve
+    // algo más apagado; si se revuelve, tiembla.
+    if (w.asleep) {
+      final deep = math.sin(time * 1.6 + phase);
+      breathe = WildPokemon.sleepSquash * (1 + 0.05 * deep);
+      wide = 1.1 * (1 - 0.02 * deep);
+      if (w.isStirring) wide *= 1 + 0.05 * math.sin(time * 30);
+      tint = vm.Vector4(0.8, 0.84, 0.95, 1);
+    }
+    v.material.baseColorFactor = tint;
     // Comiendo: se achata un poco con cada mordisco (se agacha a la baya).
     final munch = w.munch;
 
     v.node.position = vm.Vector3(p.x, 0, -p.z); // espacio del motor
     v.shadow
       ..position = vm.Vector3(0, 0.02, 0)
-      ..scale = vm.Vector3(h * 0.7 * pop, 1, h * 0.45 * pop);
+      ..scale = vm.Vector3(h * 0.7 * pop * wide, 1, h * 0.45 * pop);
     v.sprite
       ..position = offset
       // Mirar a la cámara: el mismo giro que la cámara (signo del motor).
       ..rotation = vm.Quaternion.axisAngle(_y, -cameraYaw)
       ..scale = vm.Vector3(
-        h * pop * (1 + 0.05 * munch),
+        h * pop * wide * (1 + 0.05 * munch),
         h * pop * breathe * (1 - 0.09 * munch),
         1,
       );

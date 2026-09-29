@@ -207,7 +207,8 @@ Error → Failed (overlay Reintentar/Cancelar). Guard contra doble disparo.
       Verificación visual: puppeteer en scratchpad (drive.mjs) con GPU real (GPU=1 → ANGLE d3d11).
       Hecho: 8.0–8.10 (mundo, entrenador, hierba, Pokémon visibles, captura lanzando Poké Balls, sigilo,
       campo) y casi toda la 8.11 (escondidos en la hierba, briznas, carteles, recentrar cámara, nubes).
-      Luego 8.11 completa y 8.12 (marca de capturado, arbustos con bayas). 354 tests. El detalle, en TODO.md.
+      Luego 8.11 completa y 8.12 (marca de capturado, arbustos con bayas), 8.13–8.14 y casi toda la 8.15
+      (sensación de captura y exploración; Pokémon dormidos 2026-09-28). 507 tests. El detalle, en TODO.md.
 
 ### Notas / siguiente paso
 - **Vista previa por fase (pedido del usuario):** al terminar cada fase, poner un parche superficial marcado

@@ -86,12 +86,10 @@ class SafariController extends ChangeNotifier {
       (100 * math.sqrt(255 / captureRate.clamp(1, 255))).round();
 
   /// Multiplicador por cómo fue el tiro: los MISMOS bonus que facilitan la
-  /// captura (sin ser visto ×1,5 o por la espalda ×2, comiendo ×1,5 y el
-  /// aro ×1,2 a ×2). La captura crítica no suma: es suerte, no puntería.
-  static double bonusFor(
-    ({bool unaware, bool fromBehind, bool eating})? hit,
-    ThrowQuality quality,
-  ) {
+  /// captura (sin ser visto ×1,5 o por la espalda ×2, comiendo ×1,5,
+  /// dormido ×2 y el aro ×1,2 a ×2). La captura crítica no suma: es
+  /// suerte, no puntería.
+  static double bonusFor(ThrowHit? hit, ThrowQuality quality) {
     var bonus = quality.bonus;
     if (hit != null && hit.unaware) {
       bonus *= hit.fromBehind
@@ -99,6 +97,7 @@ class SafariController extends ChangeNotifier {
           : CaptureCalculator.unawareBonus;
     }
     if (hit != null && hit.eating) bonus *= CaptureCalculator.eatingBonus;
+    if (hit != null && hit.asleep) bonus *= CaptureCalculator.sleepBonus;
     return bonus;
   }
 

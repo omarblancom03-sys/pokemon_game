@@ -182,8 +182,42 @@ class WildPokemon {
     return t == null ? 0 : math.sin(t * 9).abs();
   }
 
-  /// "?" en la cabeza: sospecha pero aún no te ha descubierto.
-  bool get isSuspicious => !isAlert && awareness > 0.35;
+  /// DORMIDO ("Zzz"): no se mueve ni ve; solo le despierta el ruido cerca,
+  /// que le toquen o una bola que cae al lado (ver World3DSim). Mientras
+  /// duerme, [awareness] mide lo cerca que está de despertarse.
+  bool asleep = false;
+
+  /// Segundos que lleva dormido (si nadie le despierta, se despierta solo).
+  double sleptFor = 0;
+
+  /// Dormido está tumbado: su dibujo mide esta parte de lo normal.
+  static const sleepSquash = 0.78;
+
+  /// Se revuelve en sueños: algo le está despertando (¡quieto o agáchate!).
+  bool get isStirring => asleep && awareness > 0.35;
+
+  /// Segundos desde que se despertó (null = no se está despertando): se
+  /// queda un momento espabilándose antes de reaccionar. [wokeStartled]:
+  /// se despertó de golpe (por ti), con un respingo.
+  double? wakingFor;
+  bool wokeStartled = false;
+
+  bool get isWaking => wakingFor != null;
+
+  /// Lo que tarda en espabilarse (s).
+  static const wakeSeconds = 0.8;
+
+  /// Altura del respingo al despertarse de golpe (0 si no).
+  double get wakeJump {
+    final t = wakingFor;
+    if (t == null || !wokeStartled || t >= 0.35) return 0;
+    final s = t / 0.35;
+    return 4 * s * (1 - s) * 0.35;
+  }
+
+  /// "?" en la cabeza: sospecha pero aún no te ha descubierto (dormido no
+  /// sospecha: se revuelve, ver [isStirring]).
+  bool get isSuspicious => !isAlert && !asleep && awareness > 0.35;
 
   /// Dirección a la que mira, en el suelo.
   Vector3 get facingDirection => Vector3(math.sin(facing), 0, math.cos(facing));

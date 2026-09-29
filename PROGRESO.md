@@ -69,6 +69,15 @@
     espaldas ("X asoma entre la hierba… ¡no te ha visto!"): la ocasión perfecta. Una bola que cae cerca
     también los hace salir, y si le das de lleno a la mata que se agita, ¡lo capturas por sorpresa!
     La mata donde se esconde escupe briznas grandes y claras a ratos; al salir, un surtidor de briznas.
+  - **Pokémon dormidos:** algunos Pokémon (1 de cada 5 de los que se ven) están DURMIENDO: tumbados,
+    respirando despacio y con "Zzz" que suben (en el minimapa, un punto azul claro). No ven nada, pero
+    te OYEN: andando te oyen a unos 5 m y corriendo a 11 m; agachado puedes llegar a su lado. Si las
+    zetas tiemblan en naranja se está desvelando: párate o agáchate y se le pasa. Si le despiertas
+    (ruido, tropezar con él o una bola que cae al lado) da un respingo, "¡X se despertó!", grita, te
+    mira un momento y luego huye, se acerca o carga según su carácter. Tumbado en la hierba, la mira
+    solo lo fija a menos de 8 m: hay que acercarse. Capturarlo dormido vale el doble: "¡Estaba
+    dormido! ×2" (se suma a "por la espalda"; en el Safari también puntúa). Si nadie le molesta, a
+    los 90 s se despierta solo. El cartel "Consejo del entrenador" lo explica.
   - **Sigilo:** los Pokémon ven en un cono delante de ellos y oyen tus pasos (correr se oye de lejos).
     Si sospechan sale "?" y se giran; si te descubren, "!" y reaccionan según su carácter: los
     asustadizos huyen, los curiosos se acercan a mirarte y los agresivos (¡rojo!) cargan: si te

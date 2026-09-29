@@ -10,10 +10,10 @@ import '../services/sound/sound_service.dart';
 ///    fanfarria) o se escapa ("¡pop!" y su grito).
 ///  - Recoger bolas o bayas, sacudir un arbusto.
 ///  - Un destello al ver un variocolor.
-///  - El GRITO de la especie cuando un Pokémon te descubre ("!") o sale de
-///    la hierba asustado. Para no saturar: el mismo Pokémon no vuelve a
-///    gritar en [cryCooldown] s y entre dos gritos cualesquiera pasan al
-///    menos [cryGap] s.
+///  - El GRITO de la especie cuando un Pokémon te descubre ("!"), sale de
+///    la hierba asustado o le despiertas. Para no saturar: el mismo Pokémon
+///    no vuelve a gritar en [cryCooldown] s y entre dos gritos cualesquiera
+///    pasan al menos [cryGap] s.
 class SoundDirector {
   SoundDirector(this.sound, {required this._clock});
 
@@ -53,6 +53,9 @@ class SoundDirector {
         _cry(wild);
       case PokemonRevealed(:final wild, :final startled):
         // Si se asoma sin verte, no grita (no sabe que estás ahí).
+        if (startled) _cry(wild);
+      case PokemonWoke(:final wild, :final startled):
+        // Despertado de golpe, grita; si se despierta solo, no.
         if (startled) _cry(wild);
       case ShinySpotted():
         sound.play(GameSound.shiny);

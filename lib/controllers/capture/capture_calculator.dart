@@ -5,6 +5,7 @@ import '../../models/poke_ball.dart';
 import '../../models/throw_quality.dart';
 
 export '../../models/capture_result.dart';
+export '../../models/throw_hit.dart';
 export '../../models/throw_quality.dart';
 
 /// LÓGICA DE CAPTURA (sin combate, estilo Leyendas Arceus): no hay PS que
@@ -13,6 +14,7 @@ export '../../models/throw_quality.dart';
 ///  - el tipo de Poké Ball,
 ///  - el sigilo: si el Pokémon no te ha visto ×1,5, y por la espalda ×2,
 ///  - si se está comiendo una baya ×1,5 (distraído; se suma al sigilo),
+///  - si está dormido ×2 (como el estado "dormido" de los juegos),
 ///  - y la calidad del tiro (el aro que se encoge al apuntar): ×1,2, ×1,5
 ///    o ×2 (ver ThrowQuality; también se suma).
 ///
@@ -32,6 +34,10 @@ class CaptureCalculator {
   /// Bonus si se está comiendo una baya (como la Baya Frambu de los juegos).
   static const eatingBonus = 1.5;
 
+  /// Bonus si está dormido (el ×2 del estado "dormido" de los juegos
+  /// clásicos).
+  static const sleepBonus = 2.0;
+
   /// Probabilidad de captura (0..1).
   static double chance({
     required int captureRate,
@@ -39,6 +45,7 @@ class CaptureCalculator {
     required bool unaware,
     required bool fromBehind,
     bool eating = false,
+    bool asleep = false,
     ThrowQuality quality = ThrowQuality.none,
   }) {
     final stealth = !unaware
@@ -47,11 +54,10 @@ class CaptureCalculator {
         ? backStrikeBonus
         : unawareBonus;
     final food = eating ? eatingBonus : 1.0;
+    final sleep = asleep ? sleepBonus : 1.0;
     final rate = captureRate.clamp(1, 255) / 255;
-    return (rate * ball.multiplier * stealth * food * quality.bonus).clamp(
-      0.0,
-      1.0,
-    );
+    return (rate * ball.multiplier * stealth * food * sleep * quality.bonus)
+        .clamp(0.0, 1.0);
   }
 
   /// Probabilidad de CAPTURA CRÍTICA según cuántas especies distintas ha
@@ -71,6 +77,7 @@ class CaptureCalculator {
     required bool unaware,
     required bool fromBehind,
     bool eating = false,
+    bool asleep = false,
     ThrowQuality quality = ThrowQuality.none,
     double criticalChance = 0,
   }) {
@@ -80,6 +87,7 @@ class CaptureCalculator {
       unaware: unaware,
       fromBehind: fromBehind,
       eating: eating,
+      asleep: asleep,
       quality: quality,
     );
     final perCheck = math.pow(p, 0.25).toDouble();

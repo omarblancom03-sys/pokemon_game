@@ -74,6 +74,13 @@ class WildBehavior {
   /// Se para a comer a esta distancia (m) de la baya.
   static const eatDistance = 0.5;
 
+  /// Dormido no ve nada y oye a esta parte de la distancia normal: andando
+  /// te oye a 4,8 m, corriendo a 11 m y agachado apenas a 1,4 m (pegado).
+  static const sleepHearing = 0.8;
+
+  /// Dormido, en silencio se le pasa el desvelo a este ritmo (por s).
+  static const sleepSettle = 0.2;
+
   /// Alcance de la vista según lo escondido que va el jugador.
   static double sightFor(PlayerStealth s) => switch (s) {
     PlayerStealth.hidden => sightRange * 0.2,
@@ -137,6 +144,31 @@ class WildBehavior {
       return true;
     }
     return false;
+  }
+
+  /// Lo que percibe [w] DORMIDO: no ve; solo le desvela oírte cerca (ver
+  /// [sleepHearing]) y le despierta de golpe que le toques. Su sospecha
+  /// (el desvelo) sube mientras te oye y baja en silencio. Devuelve true si
+  /// debe DESPERTARSE ya (lo hace la simulación).
+  bool perceiveAsleep(
+    WildPokemon w, {
+    required Vector3 player,
+    required PlayerStealth stealth,
+    required bool moving,
+    required double dt,
+  }) {
+    final d = (Vector3(player.x, 0, player.z) - w.position).length;
+    if (d < touchRange) return true;
+    final noise = noiseFor(stealth, moving: moving) * sleepHearing;
+    if (d < noise) {
+      w.awareness = math.min(
+        1,
+        w.awareness + (0.4 + 1.2 * (1 - d / noise)) * dt,
+      );
+    } else {
+      w.awareness = math.max(0, w.awareness - sleepSettle * dt);
+    }
+    return w.awareness >= 1;
   }
 
   /// Le da un susto (lo descubre de golpe): un ruido, una bola que cae al
@@ -276,6 +308,10 @@ class WildBehavior {
     }
     w.target = null; // acorralado
   }
+
+  /// Se gira (sin moverse) hacia [point].
+  void faceTowards(WildPokemon w, Vector3 point, double dt) =>
+      _turnTowards(w, point - w.position, dt);
 
   void _turnTowards(WildPokemon w, Vector3 dir, double dt, {double speed = 6}) {
     if (dir.length2 < 1e-9) return;
