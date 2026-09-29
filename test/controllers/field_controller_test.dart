@@ -211,4 +211,13 @@ void main() {
     expect(field.notices.single.kind, FieldNoticeKind.wokeUp);
     expect(field.notices.single.pokemon!.id, 7);
   });
+
+  test('a herd warned by one of them posts who and how many', () {
+    final field = newField(TrainerController())
+      ..onWorldEvent(HerdAlerted(wild(25), 2));
+    final notice = field.notices.single;
+    expect(notice.kind, FieldNoticeKind.herdAlerted);
+    expect(notice.pokemon!.id, 25);
+    expect(notice.count, 2);
+  });
 }

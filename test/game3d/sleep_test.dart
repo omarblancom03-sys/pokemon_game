@@ -102,12 +102,16 @@ void main() {
   group('who sleeps', () {
     Future<World3DSim> spawnSome(double sleepChance) async {
       var n = 0;
-      final s = World3DSim(
-        layout: meadow,
-        random: Random(3),
-        maxFieldItems: 0,
-        spawnWild: () async => (pokemon: fakePokemon(++n), captureRate: 45),
-      )..sleepChance = sleepChance;
+      final s =
+          World3DSim(
+              layout: meadow,
+              random: Random(3),
+              maxFieldItems: 0,
+              spawnWild: () async =>
+                  (pokemon: fakePokemon(++n), captureRate: 45),
+            )
+            ..sleepChance = sleepChance
+            ..herdChance = 0;
       for (var i = 0; i < 20 && s.wild.length < World3DSim.maxWild; i++) {
         step(s, 1);
         await pumpEventQueue();

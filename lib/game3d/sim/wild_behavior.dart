@@ -323,14 +323,18 @@ class WildBehavior {
   }
 
   /// Paseo tranquilo por la hierba alta. Si está fuera (tras huir), vuelve
-  /// a ella por cualquier sitio pisable.
+  /// a ella por cualquier sitio pisable. En manada, sigue al guía: pasea
+  /// cerca de él ([WildPokemon.herdHome]).
   void _wander(WildPokemon w, double dt) {
     final target = w.target;
     if (target == null) {
       w.idleTime -= dt;
       if (w.idleTime <= 0) {
+        final home = w.herdHome;
         final inGrass = isTallGrass(w.position);
-        w.target = nearbyGrass(w.position, inGrass ? 3 : 8);
+        w.target = home != null
+            ? nearbyGrass(home, 1)
+            : nearbyGrass(w.position, inGrass ? 3 : 8);
         if (w.target == null) w.idleTime = 1;
       }
       return;

@@ -176,6 +176,15 @@ class PokemonNoticed extends World3DEvent {
   final WildPokemon wild;
 }
 
+/// [caller] te descubrió (o se asustó) y avisó a su MANADA: [count]
+/// compañeros te descubrirán también en un momento.
+class HerdAlerted extends World3DEvent {
+  const HerdAlerted(this.caller, this.count);
+
+  final WildPokemon caller;
+  final int count;
+}
+
 /// El jugador tiene cerca, a la vista, un Pokémon VARIOCOLOR (se avisa una
 /// vez por Pokémon).
 class ShinySpotted extends World3DEvent {

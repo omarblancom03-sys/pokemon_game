@@ -52,6 +52,9 @@ enum FieldNoticeKind {
 
   /// Uno que dormía se despertó por tu culpa (ruido, contacto, una bola).
   wokeUp,
+
+  /// Uno te descubrió y avisó a su manada ([FieldNotice.count] compañeros).
+  herdAlerted,
 }
 
 /// Un aviso breve del campo ("+2 Poké Ball", "¡Capturado!"...). Guarda los
@@ -186,6 +189,12 @@ class FieldController extends ChangeNotifier {
       case PokemonWoke(:final wild, :final startled):
         // Si se despierta solo (lejos, sin que pase nada), no se avisa.
         if (startled) _post(FieldNoticeKind.wokeUp, pokemon: wild.pokemon);
+      case HerdAlerted(:final caller, :final count):
+        _post(
+          FieldNoticeKind.herdAlerted,
+          pokemon: caller.pokemon,
+          count: count,
+        );
       case ItemThrown() ||
           BallHit() ||
           BallShook() ||

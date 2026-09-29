@@ -151,6 +151,18 @@ class WildPokemon {
   static const dazeSeconds = 2.5;
   static const overshootSpeed = 5.0;
 
+  /// MANADA a la que pertenece (null = va solo). Los de una manada son de
+  /// la misma especie, pasean juntos y se avisan (ver World3DSim).
+  String? herdId;
+
+  /// Dónde está el guía de su manada, al que sigue al pasear (null = no
+  /// sigue a nadie: va solo o es él quien guía). Lo pone la simulación.
+  Vector3? herdHome;
+
+  /// Segundos que faltan para que le llegue el aviso de alarma de su
+  /// manada (null = ninguno): entonces te descubre él también ("!").
+  double? alarmIn;
+
   /// Segundos que lleva YÉNDOSE para siempre (null = no se va): en el Reto
   /// Safari, tras escaparse de una bola, puede huir. Corre lejos de ti y
   /// desaparece (ver World3DSim).

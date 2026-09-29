@@ -264,6 +264,7 @@ class World3DSim {
   bool _disposed = false;
   int _pendingSpawns = 0;
   int _spawnCount = 0;
+  int _herdCount = 0;
   double _spawnTimer = 0.5;
   double _grace = 0;
   double _grassMeters = 0;
@@ -329,6 +330,17 @@ class World3DSim {
 
   /// Si nadie le despierta en este tiempo (s), se despierta solo.
   static const sleepLifetime = 90.0;
+
+  /// Probabilidad de que una aparición sea una MANADA de [herdSize] de la
+  /// misma especie (si caben). Se puede cambiar (tests y vista previa).
+  static const defaultHerdChance = 0.2;
+  double herdChance = defaultHerdChance;
+  static const herdSize = 3;
+
+  /// Hasta dónde (m) llega el aviso de alarma de una manada, y cuánto
+  /// tarda en pasar de uno a otro (s): se ve cómo se van girando.
+  static const herdCallRange = 16.0;
+  static const herdCallDelay = 0.3;
 
   /// Distancia (m) a la que un escondido sale de la hierba, según lo que
   /// se note el jugador. Quieto, solo si está pegado.
@@ -1108,6 +1120,7 @@ class World3DSim {
     _updateSafari(dt);
     fieldItems.update(dt, player.position, _emit);
     berries.update(dt, player.position, _emit, landed: _berryLanded);
+    _updateHerds();
     for (final w in wild.toList()) {
       _updateWild(w, dt);
     }
@@ -1127,7 +1140,8 @@ class World3DSim {
           ball,
           lost: true,
         ),
-        PokemonBrokeFree() => _maybeFlee(event),
+        PokemonBrokeFree() => _maybeFlee(_herdAfterEscape(event)),
+        PokemonCaught() => _herdAfterCatch(event),
         _ => event,
       }),
       impact: _startleAround,
@@ -1267,6 +1281,15 @@ class World3DSim {
           .then((pokemon) {
             _pendingSpawns--;
             if (pokemon != null && !_disposed) {
+              final room = maxWild - wild.length - _pendingSpawns;
+              if (room >= herdSize && _random.nextDouble() < herdChance) {
+                spawnHerd(
+                  pokemon.pokemon,
+                  captureRate: pokemon.captureRate,
+                  shiny: () => _shinyRandom.nextDouble() < shinyChance,
+                );
+                return;
+              }
               final hidden = _random.nextDouble() < hiddenChance;
               spawn(
                 pokemon.pokemon,
@@ -1320,6 +1343,46 @@ class World3DSim {
           ..asleep = asleep && !hidden;
     wild.add(w);
     return w;
+  }
+
+  /// Hace aparecer una MANADA de [size] [pokemon] (el guía, donde lo
+  /// pondría [spawn], y los demás a su alrededor en la hierba alta). Nunca
+  /// escondidos ni dormidos: se ven pasear juntos. [shiny] decide cada
+  /// uno (es cosmético). Pueden salir menos si no caben; vacía si no hay
+  /// sitio.
+  List<WildPokemon> spawnHerd(
+    Pokemon pokemon, {
+    int captureRate = 45,
+    int size = herdSize,
+    bool Function()? shiny,
+  }) {
+    bool isShiny() => shiny?.call() ?? false;
+    final leader = spawn(pokemon, captureRate: captureRate, shiny: isShiny());
+    if (leader == null) return const [];
+    final herd = 'herd-${_herdCount++}';
+    leader.herdId = herd;
+    final members = [leader];
+    final start = _random.nextDouble() * 2 * math.pi;
+    for (var i = 0; i < 8 && members.length < size; i++) {
+      final a = start + i * math.pi / 4;
+      final at = leader.position + Vector3(math.sin(a), 0, math.cos(a)) * 1.8;
+      if (!isTallGrass(at)) continue;
+      if (wild.any((w) => w.position.distanceTo(at) < 1.2)) continue;
+      final w =
+          WildPokemon(
+              id: 'wild-${_spawnCount++}',
+              pokemon: pokemon,
+              captureRate: captureRate,
+              position: at,
+              facing: leader.facing + (_random.nextDouble() - 0.5) * 1.2,
+              shiny: isShiny(),
+            )
+            ..idleTime = 1 + _random.nextDouble() * 2
+            ..herdId = herd;
+      wild.add(w);
+      members.add(w);
+    }
+    return members;
   }
 
   /// ¿Cuánto se deja notar el jugador? (agachado, corriendo, en la hierba)
@@ -1390,6 +1453,7 @@ class World3DSim {
       _leave(w, dt);
       return;
     }
+    _hearAlarm(w, dt);
     final noticed = behavior.perceive(
       w,
       player: player.position,
@@ -1397,7 +1461,10 @@ class World3DSim {
       moving: player.isMoving,
       dt: dt,
     );
-    if (noticed) _emit(PokemonNoticed(w));
+    if (noticed) {
+      _emit(PokemonNoticed(w));
+      _alarmHerd(w);
+    }
     // Si te descubre (o la baya ya no está), se olvida de ella.
     final bait = w.bait;
     if (bait != null && (w.isAlert || !berries.contains(bait))) _dropBait(w);
@@ -1560,8 +1627,8 @@ class World3DSim {
       ..wokeStartled = startled
       ..awareness = 0
       ..target = null;
-    if (startled) behavior.startle(w);
     _emit(PokemonWoke(w, startled: startled));
+    if (startled) _scare(w);
   }
 
   /// Espabilándose ([WildPokemon.wakeSeconds]): no se mueve; si le
@@ -1604,11 +1671,94 @@ class World3DSim {
         } else if (w.asleep) {
           _wake(w, startled: true);
         } else {
-          behavior.startle(w);
+          _scare(w);
         }
       }
     }
   }
+
+  // --- Manadas -------------------------------------------------------------
+
+  /// Quién guía cada manada (el primero de la lista que sigue libre, sin
+  /// irse) y dónde lo tienen que seguir los demás al pasear.
+  void _updateHerds() {
+    final leaders = <String, WildPokemon>{};
+    for (final w in wild) {
+      final herd = w.herdId;
+      if (herd == null) continue;
+      w.herdHome = null;
+      if (!w.isFree || w.isLeaving) continue;
+      final leader = leaders[herd];
+      if (leader == null) {
+        leaders[herd] = w;
+      } else {
+        w.herdHome = leader.position;
+      }
+    }
+  }
+
+  /// Se asusta de golpe (te descubre) y, si va en manada, avisa a los
+  /// demás.
+  void _scare(WildPokemon w) {
+    behavior.startle(w);
+    _alarmHerd(w);
+  }
+
+  /// [caller] te ha descubierto: avisa a su manada. Los compañeros
+  /// cercanos (a [herdCallRange] m) que aún no te han visto te descubren
+  /// uno tras otro, cada [herdCallDelay] s.
+  void _alarmHerd(WildPokemon caller) {
+    final herd = caller.herdId;
+    if (herd == null) return;
+    var count = 0;
+    for (final w in wild) {
+      if (w == caller || w.herdId != herd || !w.isFree) continue;
+      if (w.isAlert || w.isLeaving || w.alarmIn != null) continue;
+      if (w.position.distanceTo(caller.position) > herdCallRange) continue;
+      count++;
+      w.alarmIn = herdCallDelay * count;
+    }
+    if (count > 0) _emit(HerdAlerted(caller, count));
+  }
+
+  /// Le llega el aviso de su manada: te descubre él también (y lo dice con
+  /// su "!" y su grito). Si ya te había visto, no pasa nada.
+  void _hearAlarm(WildPokemon w, double dt) {
+    final left = w.alarmIn;
+    if (left == null) return;
+    if (left > dt) {
+      w.alarmIn = left - dt;
+      return;
+    }
+    w.alarmIn = null;
+    if (w.isAlert) return;
+    behavior.startle(w);
+    _emit(PokemonNoticed(w));
+  }
+
+  /// El que se escapa de la bola sale gritando: avisa a su manada.
+  PokemonBrokeFree _herdAfterEscape(PokemonBrokeFree event) {
+    _alarmHerd(event.wild);
+    return event;
+  }
+
+  /// Al capturar a uno, los de su manada oyen el "¡clic!" y miran
+  /// alrededor ("?"): si te ven, te descubren. Sigue siendo posible
+  /// capturarlos a todos… con cuidado.
+  PokemonCaught _herdAfterCatch(PokemonCaught event) {
+    final herd = event.wild.herdId;
+    if (herd == null) return event;
+    for (final w in wild) {
+      if (w.herdId != herd || !w.isFree || w.isAlert) continue;
+      w
+        ..awareness = math.max(w.awareness, herdCatchSuspicion)
+        ..target = null;
+    }
+    return event;
+  }
+
+  /// Sospecha de los compañeros del capturado.
+  static const herdCatchSuspicion = 0.6;
 
   /// Un punto de hierba alta al azar a menos de [radius] casillas de [p]
   /// (null si no hay ninguna).
@@ -1657,7 +1807,7 @@ class World3DSim {
         onWildContact?.call(w);
         return true;
       }
-      if (!w.isAlert) behavior.startle(w);
+      if (!w.isAlert) _scare(w);
     }
     return false;
   }

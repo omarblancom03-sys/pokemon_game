@@ -163,7 +163,10 @@ el campo (movimiento, cámara, hierba alta, encuentros, escenario). Va antes que
       (20 % de los que se ven; no ven y oyen al 80 %: andando a 4,8 m, corriendo a 11 m, agachado solo
       pegado; se revuelven antes de despertar; tocarlos o una bola al lado los despierta; ×2; la mira
       solo los fija a ≤ 8 m; a los 90 s se despiertan solos)
-- [ ] Manadas: algunos aparecen en grupo; si uno te descubre, avisa a los demás
+- [x] Manadas: algunos aparecen en grupo; si uno te descubre, avisa a los demás
+      (20 % de las apariciones, si caben: 3 de la misma especie; siguen al guía al pasear; el aviso
+      pasa de uno a otro cada 0,3 s hasta 16 m; también al asustarse o escaparse de una bola; al
+      capturar a uno, los demás miran alrededor "?")
 - [ ] Árboles que se mecen con el viento y hojas que caen de los otoñales
 
 ## Mejoras continuas

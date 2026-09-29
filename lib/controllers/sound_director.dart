@@ -70,7 +70,8 @@ class SoundDirector {
           GroundSurface.lawn => GameSound.stepGrass,
           GroundSurface.tallGrass => GameSound.stepTallGrass,
         }, volume: loudness);
-      case BallMissed() || PokemonEating() || SafariTimeUp():
+      // La manada: cada compañero grita al descubrirte (PokemonNoticed).
+      case BallMissed() || PokemonEating() || SafariTimeUp() || HerdAlerted():
         break;
     }
   }

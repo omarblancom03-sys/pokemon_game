@@ -78,6 +78,11 @@
     solo lo fija a menos de 8 m: hay que acercarse. Capturarlo dormido vale el doble: "¡Estaba
     dormido! ×2" (se suma a "por la espalda"; en el Safari también puntúa). Si nadie le molesta, a
     los 90 s se despierta solo. El cartel "Consejo del entrenador" lo explica.
+  - **Manadas:** a veces aparecen tres Pokémon de la misma especie juntos: uno guía y los otros le
+    siguen al pasear por la hierba. Si UNO te descubre (o se asusta, o se escapa de una bola), avisa
+    a los demás ("¡X avisó a su manada!") y se van girando uno tras otro con su "!": los asustadizos
+    salen todos corriendo y los agresivos… cargan todos. Si capturas a uno sin que te vean, los otros
+    oyen el "¡clic!" y miran alrededor ("?"): quieto o agachado aún puedes capturarlos a todos.
   - **Sigilo:** los Pokémon ven en un cono delante de ellos y oyen tus pasos (correr se oye de lejos).
     Si sospechan sale "?" y se giran; si te descubren, "!" y reaccionan según su carácter: los
     asustadizos huyen, los curiosos se acercan a mirarte y los agresivos (¡rojo!) cargan: si te

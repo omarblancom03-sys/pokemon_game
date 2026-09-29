@@ -571,3 +571,19 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
   hay que ir agachado, y corriendo se despierta a 11 m: enseña a no correr. Sin fijar, un tiro a ojo
   sí puede darle (habilidad). Visual: dibujo más bajo (×0,78) y ancho, respiración lenta y un tono
   más frío; minimapa y mapa grande con un punto azul claro.
+- **2026-09-28 — Manadas** (TODO 8.15). Una aparición es MANADA con probabilidad 0,2 (`herdChance`,
+  con el azar del juego) si caben 3 más (`maxWild` sigue siendo 6: como mucho dos manadas). Son el
+  MISMO Pokémon de PokeAPI repetido (una sola petición; mismo ratio y carácter, que va por especie),
+  el guía donde iría uno suelto y los otros a 1,8 m en hierba alta. Nunca escondidos ni dormidos (se
+  ven pasear juntos); el variocolor se tira para cada uno. Cohesión sin física de bandadas: el
+  primero libre de la lista GUÍA y los demás, al elegir destino de paseo, lo eligen a ≤ 1 casilla de
+  él (`herdHome`); medido: 2,6–3,7 m de media frente a 10–18 m si fueran sueltos. Si el guía cae en
+  una bola, guía el siguiente.
+  **El aviso** (`_alarmHerd`): lo dispara quien te DESCUBRE (sospecha a 1), se ASUSTA (tocarlo, una
+  bola al lado, despertarlo) o se ESCAPA de una bola (sale gritando). Llega a los compañeros a
+  ≤ 16 m que aún no te han visto, uno cada 0,3 s (se ve la ola de "!", y cada uno grita con los
+  límites de siempre). Un solo aviso en pantalla, "¡X avisó a su manada!" (`HerdAlerted`). Lo que
+  hagan después es su carácter: una manada de agresivos es peligrosa (la voltereta sirve).
+  **Capturar a uno** NO da la alarma: los demás oyen el "¡clic!" y pasan a sospechar (0,6, "?"), se
+  paran y se giran hacia ti. Así una manada se puede capturar entera con sigilo, pero cada captura
+  complica la siguiente. No se añadieron bonus ni puntos: la manada es un reto, no un premio.
