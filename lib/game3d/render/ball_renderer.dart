@@ -25,12 +25,14 @@ import 'ball_model.dart';
 /// Además, al apuntar, la trayectoria prevista (puntos) y dónde caerá.
 class BallRenderer {
   BallRenderer({required this.root, required this.toMesh}) {
+    var hinge = vm.Vector3.zero();
     for (final type in PokeBallType.values) {
       final parts = buildPokeBallParts(type, radius: ballRadius);
       _lids[type] = BallModel(type, parts.top);
       _bases[type] = BallModel(type, parts.bottom);
-      _hinge = _engine(parts.hinge);
+      hinge = parts.hinge; // la misma en los tres tipos
     }
+    _hinge = _engine(hinge);
     _star = _unlit(buildStar(vm.Vector4(2.4, 2.0, 0.5, 1)));
     _flash = Mesh(
       SphereGeometry(radius: 1),
