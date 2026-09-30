@@ -112,6 +112,34 @@ class MeshBuilder {
     _indices.addAll([base, base + 1, base + 2]);
   }
 
+  /// Un triángulo SUAVE: cada vértice lleva su propia normal ([na], [nb],
+  /// [nc]) en vez de la de la cara, y la luz se interpola entre ellos. Así
+  /// una esfera se ve redonda aunque tenga pocas caras (la Poké Ball).
+  void smoothTriangle(
+    Vector3 a,
+    Vector3 b,
+    Vector3 c,
+    Vector3 na,
+    Vector3 nb,
+    Vector3 nc,
+    Vector4 color,
+  ) {
+    final pa = _current.transformed3(a);
+    final pb = _current.transformed3(b);
+    final pc = _current.transformed3(c);
+    if ((pb - pa).cross(pc - pa).length2 == 0) return; // degenerado
+    // Las normales se giran con la transformación (sin trasladarlas).
+    final normalMatrix = _current.getNormalMatrix();
+    final base = _positions.length ~/ 3;
+    for (final (p, n) in [(pa, na), (pb, nb), (pc, nc)]) {
+      final normal = normalMatrix.transformed(n)..normalize();
+      _positions.addAll([p.x, p.y, p.z]);
+      _normals.addAll([normal.x, normal.y, normal.z]);
+      _colors.addAll([color.x, color.y, color.z, color.w]);
+    }
+    _indices.addAll([base, base + 1, base + 2]);
+  }
+
   /// Cuadrilátero a-b-c-d (antihorario visto desde fuera).
   void quad(Vector3 a, Vector3 b, Vector3 c, Vector3 d, Vector4 color) {
     triangle(a, b, c, color);

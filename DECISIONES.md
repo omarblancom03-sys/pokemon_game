@@ -587,3 +587,22 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
   **Capturar a uno** NO da la alarma: los demás oyen el "¡clic!" y pasan a sospechar (0,6, "?"), se
   paran y se giran hacia ti. Así una manada se puede capturar entera con sigilo, pero cada captura
   complica la siguiente. No se añadieron bonus ni puntos: la manada es un reto, no un premio.
+- **2026-09-30 — Poké Ball rediseñada** (pedido del usuario: "se ve muy pixeleada"). Antes era
+  una icoesfera de 320 caras PLANAS donde cada cara tomaba un solo color según su dirección: bordes en
+  zigzag en la franja, el botón y las marcas, y facetas a la vista. El usuario hizo una ficha técnica
+  con Claude Design ("PokeBall Spec", rev. 2, R = 1) y se implementó tal cual en `ball_mesh.dart`:
+  casquete UV de 32 × 7 anillos con el primero justo en el borde de la franja y NORMALES SUAVES
+  (`MeshBuilder.smoothTriangle`, nuevo; el resto del mundo sigue facetado a propósito); franja
+  HUNDIDA (r 0,975) con labio; bola hueca (interior r 0,93 y canto de corte, se ve al abrirla); aro,
+  aro de luz y botón TORNEADOS sobre +Z (van en la base, la tapa no lleva muesca); alas y "H" como
+  calcomanías, con los bordes en aristas y no en colores por cara. Una malla por MATERIAL
+  (`BallSurface`: carcasa rough 0,32 (Ultra 0,28), mate 0,85, aro 0,55, aro de luz, botón 0,25) →
+  `render/ball_model.dart` las junta en un `Mesh.primitives`. El botón y el aro de luz de cada bola
+  lanzada tienen material PROPIO con `emissiveFactor` (rojo #FF3B30 × 1,6 / #FF7A5C × 2,4 al sacudirse;
+  blanco × 1,8 / #CFE9FF × 2,6 en el clic; dorado si es crítica, que no venía en la ficha): sustituye
+  al disco sin luz que se superponía antes. Bisagra en (0, 0, −0,975 R). 1736 / 1976 / 2000
+  triángulos (Poké / Super / Ultra). Icono del HUD: el `CustomPainter` de la ficha (franja alineada a
+  píxel, aro 0,40 r, brillo). Desvíos de la ficha: calcomanías a r 1,008 (no 1,006) y rejillas más
+  finas, porque con las de la ficha algún triángulo plano quedaba por debajo de la carcasa (lo vigila
+  un test); aro de luz hasta r 0,198 para tapar la costura entre sus 24 lados y los 32 del aro.
+  Verificado a ojo con una lámina de flutter_scene (Chrome headless con GPU) con las vistas de la ficha.

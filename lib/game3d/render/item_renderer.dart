@@ -5,17 +5,20 @@ import 'package:vector_math/vector_math.dart' as vm;
 
 import '../../models/poke_ball.dart';
 import '../mesh/ball_mesh.dart';
-import '../mesh/mesh_builder.dart';
 import '../sim/field_items.dart';
 import '../sim/throwing.dart';
+import 'ball_model.dart';
 
 /// Dibuja las Poké Balls que hay en el suelo: la bola flotando y girando
 /// despacio, con un haz de luz que se ve desde lejos y aparece con un
 /// pequeño "pop". Solo copia el estado de la simulación.
 class ItemRenderer {
-  ItemRenderer({required this.root, required this.toMesh}) {
+  ItemRenderer({required this.root}) {
     for (final type in PokeBallType.values) {
-      _balls[type] = toMesh(buildPokeBall(type, radius: ballRadius));
+      _balls[type] = BallModel(
+        type,
+        buildPokeBall(type, radius: ballRadius),
+      ).mesh();
       final beam = buildGlowBeam(_glowColor(type)).toEngineSpace();
       _beams[type] = Mesh(
         MeshGeometry.fromArrays(
@@ -31,9 +34,6 @@ class ItemRenderer {
 
   /// Nodo de la escena donde se cuelgan los objetos.
   final Node root;
-
-  /// Malla del constructor → malla del motor (material con luz).
-  final Mesh Function(MeshBuffers) toMesh;
 
   final Map<PokeBallType, Mesh> _balls = {};
   final Map<PokeBallType, Mesh> _beams = {};

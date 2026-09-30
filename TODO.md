@@ -170,4 +170,7 @@ el campo (movimiento, cámara, hierba alta, encuentros, escenario). Va antes que
 - [ ] Árboles que se mecen con el viento y hojas que caen de los otoñales
 
 ## Mejoras continuas
+- [x] Poké Ball rediseñada en alta calidad (2026-09-30, ficha de Claude Design): superficie lisa,
+      franja hundida, aro y botón en relieve, bola hueca, marcas nítidas y botón que se enciende;
+      icono del HUD nuevo
 - [ ] (se irán añadiendo)

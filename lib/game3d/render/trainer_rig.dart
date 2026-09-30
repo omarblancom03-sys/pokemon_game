@@ -10,6 +10,7 @@ import '../mesh/props.dart' show buildBerry;
 import '../mesh/trainer_mesh.dart';
 import '../sim/throwing.dart';
 import '../sim/trainer_pose.dart';
+import 'ball_model.dart';
 
 /// El entrenador como jerarquía de nodos del motor ("esqueleto" simple):
 ///
@@ -34,11 +35,17 @@ class TrainerRig {
     }
     // Una bola de cada tipo en el guante derecho (solo se ve la que toca).
     for (final type in PokeBallType.values) {
-      final ball = Node(mesh: toMesh(buildPokeBall(type, radius: ballRadius)))
-        ..position = vm.Vector3(0, -0.62, 0)
-        // Con el brazo en alto, la mitad de color queda hacia arriba.
-        ..rotation = vm.Quaternion.axisAngle(_x, math.pi)
-        ..visible = false;
+      final ball =
+          Node(
+              mesh: BallModel(
+                type,
+                buildPokeBall(type, radius: ballRadius),
+              ).mesh(),
+            )
+            ..position = vm.Vector3(0, -0.62, 0)
+            // Con el brazo en alto, la mitad de color queda hacia arriba.
+            ..rotation = vm.Quaternion.axisAngle(_x, math.pi)
+            ..visible = false;
       _handBalls[type] = ball;
       _rightArm.add(ball);
     }

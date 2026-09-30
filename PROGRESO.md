@@ -132,7 +132,9 @@
   - **Capturar lanzando Poké Balls (estilo Leyendas Arceus):** apunta con clic derecho (o F): la cámara
     se pone al hombro, aparece la mira, la bola en la mano, el arco que seguirá (puntos) y un anillo
     donde caerá (verde si va al Pokémon fijado). Sobre el Pokémon fijado, un anillo con la
-    probabilidad de captura. Clic izquierdo (o Espacio) lanza. La bola deja una estela de su color. Si da: la bola se abre, el Pokémon se
+    probabilidad de captura. Clic izquierdo (o Espacio) lanza. Las bolas son lisas y brillantes
+    (plástico), con la franja hundida, el aro y el botón en relieve y la bola hueca al abrirse; el
+    botón y su aro de luz se encienden de verdad (emisivo con bloom). La bola deja una estela de su color. Si da: la bola se abre, el Pokémon se
     vuelve rojo y entra, la bola cae, se sacude 0–3 veces (el botón se enciende en rojo en cada sacudida) y... ¡estrellas y "capturado"! o se abre y el
     Pokémon sale de un salto (y queda alerta). Si falla, rebota y rueda (también contra árboles y
     casas) y queda en el suelo brillando para recogerla. Por la espalda y sin ser visto es más fácil.

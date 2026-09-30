@@ -8,6 +8,7 @@ import '../mesh/ball_mesh.dart';
 import '../mesh/effects_mesh.dart';
 import '../mesh/mesh_builder.dart';
 import '../sim/throwing.dart';
+import 'ball_model.dart';
 
 /// Dibuja las Poké Balls LANZADAS y sus efectos, a partir del estado de la
 /// simulación (fase y tiempo de cada bola):
@@ -26,21 +27,11 @@ class BallRenderer {
   BallRenderer({required this.root, required this.toMesh}) {
     for (final type in PokeBallType.values) {
       final parts = buildPokeBallParts(type, radius: ballRadius);
-      _lids[type] = toMesh(parts.top);
-      _bases[type] = toMesh(parts.bottom);
+      _lids[type] = BallModel(type, parts.top);
+      _bases[type] = BallModel(type, parts.bottom);
+      _hinge = _engine(parts.hinge);
     }
     _star = _unlit(buildStar(vm.Vector4(2.4, 2.0, 0.5, 1)));
-    // Luz del botón: un disco algo por delante del botón (+Z en la
-    // simulación), que solo se ve cuando se enciende.
-    _button = Mesh(
-      MeshGeometry.fromArrays(
-        positions: _buttonDisc.positions,
-        normals: _buttonDisc.normals,
-        colors: _buttonDisc.colors,
-        indices: _buttonDisc.indices,
-      ),
-      UnlitMaterial()..alphaMode = AlphaMode.blend,
-    );
     _flash = Mesh(
       SphereGeometry(radius: 1),
       UnlitMaterial()
@@ -125,12 +116,14 @@ class BallRenderer {
   final Node root;
   final Mesh Function(MeshBuffers) toMesh;
 
-  final Map<PokeBallType, Mesh> _lids = {};
-  final Map<PokeBallType, Mesh> _bases = {};
+  final Map<PokeBallType, BallModel> _lids = {};
+  final Map<PokeBallType, BallModel> _bases = {};
+
+  /// Bisagra de la tapa (en el motor), en la parte de atrás de la bola.
+  late final vm.Vector3 _hinge;
   late final Mesh _star;
   late final Mesh _flash;
   late final MeshGeometry _impactRing;
-  late final Mesh _button;
   late final InstancedMesh _dots;
   late final InstancedMesh _trail;
   late final Node _marker;
@@ -162,15 +155,6 @@ class BallRenderer {
     );
   }
 
-  static final _buttonDisc =
-      (MeshBuilder()..gem(
-            vm.Vector3(0, 0, ballRadius * 1.02),
-            vm.Vector3(ballRadius * 0.4, ballRadius * 0.4, ballRadius * 0.08),
-            vm.Vector4(1, 1, 1, 1),
-          ))
-          .build()
-          .toEngineSpace();
-
   static vm.Vector3 _engine(vm.Vector3 v) => vm.Vector3(v.x, v.y, -v.z);
 
   /// Giro alrededor del eje vertical para que el "frente" (+Z de la
@@ -199,23 +183,27 @@ class BallRenderer {
   }
 
   _BallVisual _create(ThrownBall ball) {
-    final base = Node(mesh: _bases[ball.ball]!.clone());
-    final lid = Node(mesh: _lids[ball.ball]!.clone());
-    // La tapa gira sobre la bisagra trasera (en el motor, Z invertida).
+    // El botón y su aro de luz se encienden en cada bola por separado:
+    // llevan materiales propios (el resto se comparte).
+    final model = _bases[ball.ball]!;
+    final buttonMaterial = model.material(BallSurface.button);
+    final haloMaterial = model.material(BallSurface.halo);
+    final base = Node(
+      mesh: model.mesh(
+        replace: {
+          BallSurface.button: buttonMaterial,
+          BallSurface.halo: haloMaterial,
+        },
+      ),
+    );
+    final lid = Node(mesh: _lids[ball.ball]!.mesh());
+    // La tapa gira sobre la bisagra trasera.
     final lidPivot = Node()
-      ..position = vm.Vector3(0, 0, ballRadius)
+      ..position = _hinge
       ..add(lid);
-    final buttonMaterial = UnlitMaterial()
-      ..alphaMode = AlphaMode.blend
-      ..baseColorFactor = vm.Vector4(1, 1, 1, 0);
-    final button =
-        Node(mesh: Mesh(_button.primitives.first.geometry, buttonMaterial))
-          ..castsShadows = false
-          ..visible = false;
     final orient = Node()
       ..add(base)
-      ..add(lidPivot)
-      ..add(button);
+      ..add(lidPivot);
     final flashMaterial = UnlitMaterial()
       ..alphaMode = AlphaMode.blend
       ..baseColorFactor = vm.Vector4(1, 1, 1, 0);
@@ -265,8 +253,8 @@ class BallRenderer {
       lidPivot: lidPivot,
       flash: flash,
       flashMaterial: flashMaterial,
-      button: button,
       buttonMaterial: buttonMaterial,
+      haloMaterial: haloMaterial,
       stars: stars,
       impact: impact,
       ring: ring,
@@ -375,21 +363,33 @@ class BallRenderer {
       ..scale = vm.Vector3.all(scale);
     v.lidPivot
       ..rotation = vm.Quaternion.axisAngle(_x, lidOpen)
-      ..position = vm.Vector3(0, 0, ballRadius) + lidOffset;
+      ..position = _hinge + lidOffset;
     v.base.rotation = vm.Quaternion.axisAngle(_x, baseTilt);
     v.flashMaterial.baseColorFactor = flashColor;
     v.flash
       ..visible = flashColor.w > 0.01
       ..scale = vm.Vector3.all(flashSize);
-    // Botón: rojo en cada sacudida; blanco en el "clic" de la captura.
+    // Botón: rojo en cada sacudida (dorado si es crítica); blanco en el
+    // "clic" de la captura. Se enciende el disco y, más fuerte, el aro de
+    // luz de alrededor: así el halo se ve como anillo y no como mancha.
     final glow = ball.buttonGlow;
     final click = ball.clickFlash;
-    v.buttonMaterial.baseColorFactor = click > 0
-        ? vm.Vector4(3, 3, 2.6, click)
+    final (core, halo) = click > 0
+        ? (
+            BallPalette.catchCore * (BallPalette.catchCoreIntensity * click),
+            BallPalette.catchHalo * (BallPalette.catchHaloIntensity * click),
+          )
         : critical
-        ? vm.Vector4(4, 3.2, 0.6, glow)
-        : vm.Vector4(4, 0.3, 0.25, glow);
-    v.button.visible = glow > 0.01 || click > 0.01;
+        ? (
+            BallPalette.criticalCore * (BallPalette.coreIntensity * glow),
+            BallPalette.criticalHalo * (BallPalette.haloIntensity * glow),
+          )
+        : (
+            BallPalette.shakeCore * (BallPalette.coreIntensity * glow),
+            BallPalette.shakeHalo * (BallPalette.haloIntensity * glow),
+          );
+    v.buttonMaterial.emissiveFactor = core..w = 1;
+    v.haloMaterial.emissiveFactor = halo..w = 1;
     _placeStars(v, ball);
     _placeImpact(v, ball, cameraYaw, critical: critical);
     _placeShards(v, ball);
@@ -569,8 +569,8 @@ class _BallVisual {
     required this.lidPivot,
     required this.flash,
     required this.flashMaterial,
-    required this.button,
     required this.buttonMaterial,
+    required this.haloMaterial,
     required this.stars,
     required this.impact,
     required this.ring,
@@ -590,9 +590,10 @@ class _BallVisual {
   final Node flash;
   final UnlitMaterial flashMaterial;
 
-  /// Luz del botón (roja al sacudirse, blanca en el "clic").
-  final Node button;
-  final UnlitMaterial buttonMaterial;
+  /// Materiales del botón y de su aro de luz: se encienden (emisivo) en
+  /// rojo al sacudirse y en blanco en el "clic".
+  final PhysicallyBasedMaterial buttonMaterial;
+  final PhysicallyBasedMaterial haloMaterial;
   final List<Node> stars;
 
   /// Onda y fogonazo del golpe.

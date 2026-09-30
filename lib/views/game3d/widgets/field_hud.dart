@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
@@ -80,19 +81,20 @@ class _BerryPainter extends CustomPainter {
   bool shouldRepaint(_BerryPainter old) => false;
 }
 
-/// Colores de cada bola para los iconos de la interfaz.
+/// Colores de cada bola para los iconos de la interfaz (los mismos de la
+/// bola 3D, ficha "PokeBall Spec").
 ({Color top, Color accent}) ballColors(PokeBallType type) => switch (type) {
   PokeBallType.poke => (
-    top: const Color(0xFFE53935),
-    accent: const Color(0xFFE53935),
+    top: const Color(0xFFE3392F),
+    accent: const Color(0xFFE3392F),
   ),
   PokeBallType.great => (
-    top: const Color(0xFF2D6CDF),
-    accent: const Color(0xFFE53935),
+    top: const Color(0xFF2F6BD8),
+    accent: const Color(0xFFE3392F),
   ),
   PokeBallType.ultra => (
-    top: const Color(0xFF303030),
-    accent: const Color(0xFFF4C430),
+    top: const Color(0xFF2A2B31),
+    accent: const Color(0xFFF4C21B),
   ),
 };
 
@@ -108,36 +110,99 @@ class BallIcon extends StatelessWidget {
       CustomPaint(size: Size.square(size), painter: _BallPainter(type));
 }
 
+/// Pensado para 14–22 px: exagera a propósito el aro, la franja y las
+/// marcas respecto a la bola 3D para que se lean a ese tamaño, y alinea la
+/// franja a píxeles enteros para que no salga borrosa.
 class _BallPainter extends CustomPainter {
   _BallPainter(this.type);
 
   final PokeBallType type;
 
+  static const _ink = Color(0xFF1B1B21);
+
   @override
   void paint(Canvas canvas, Size size) {
-    final r = size.width / 2;
-    final c = Offset(r, r);
-    final rect = Rect.fromCircle(center: c, radius: r);
+    final cx = size.width / 2;
+    final cy = size.height / 2;
+    // Radio con 1 px de margen.
+    final r = size.width / 2 - 1;
+    final center = Offset(cx, cy);
     final colors = ballColors(type);
+    final fill = Paint();
+
+    // Mitades, marcas y franja, recortadas por el círculo.
     canvas
-      ..drawArc(rect, 3.1416, 3.1416, true, Paint()..color = colors.top)
-      ..drawArc(rect, 0, 3.1416, true, Paint()..color = Colors.white);
-    if (type != PokeBallType.poke) {
-      // Las "alas" de la Super Ball / la "H" de la Ultra Ball.
-      final accent = Paint()..color = colors.accent;
-      canvas
-        ..drawRect(Rect.fromLTWH(r * 0.35, r * 0.25, r * 0.3, r * 0.6), accent)
-        ..drawRect(Rect.fromLTWH(r * 1.35, r * 0.25, r * 0.3, r * 0.6), accent);
+      ..save()
+      ..clipPath(Path()..addOval(Rect.fromCircle(center: center, radius: r)))
+      ..drawRect(
+        Rect.fromLTRB(cx - r, cy - r, cx + r, cy),
+        fill..color = colors.top,
+      )
+      ..drawRect(
+        Rect.fromLTRB(cx - r, cy, cx + r, cy + r),
+        fill..color = const Color(0xFFF2EEE6),
+      );
+    fill.color = colors.accent;
+    switch (type) {
+      case PokeBallType.poke:
+        break;
+      case PokeBallType.great:
+        // Las alas: una cuña por lado que sale del borde.
+        for (final s in [-1.0, 1.0]) {
+          canvas.drawPath(
+            Path()
+              ..moveTo(cx + s * 0.32 * r, cy)
+              ..lineTo(cx + s * 0.58 * r, cy - 0.80 * r)
+              ..lineTo(cx + s * 1.2 * r, cy - 1.2 * r)
+              ..lineTo(cx + s * 1.2 * r, cy)
+              ..close(),
+            fill,
+          );
+        }
+      case PokeBallType.ultra:
+        // Los palos de la "H" (vista de frente), con bordes en píxel entero.
+        for (final s in [-1.0, 1.0]) {
+          final a = (cx + s * 0.30 * r).roundToDouble();
+          final b = (cx + s * 0.62 * r).roundToDouble();
+          canvas.drawRect(
+            Rect.fromLTRB(math.min(a, b), cy - r, math.max(a, b), cy),
+            fill,
+          );
+        }
     }
-    final line = Paint()
-      ..color = const Color(0xFF222222)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = r * 0.14;
+    final band = (0.24 * r).roundToDouble().clamp(2.0, 3.0);
+    final bandTop = (cy - band / 2).roundToDouble();
     canvas
-      ..drawLine(Offset(0, r), Offset(size.width, r), line)
-      ..drawCircle(c, r - line.strokeWidth / 2, line)
-      ..drawCircle(c, r * 0.3, Paint()..color = Colors.white)
-      ..drawCircle(c, r * 0.3, line);
+      ..drawRect(
+        Rect.fromLTRB(cx - r, bandTop, cx + r, bandTop + band),
+        fill..color = _ink,
+      )
+      ..restore();
+
+    // Contorno, un brillo arriba a la izquierda, y el botón con su aro.
+    final stroke = math.max(1.25, 0.16 * r);
+    canvas
+      ..drawCircle(
+        center,
+        r - stroke / 2,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = stroke
+          ..color = _ink,
+      )
+      ..drawArc(
+        Rect.fromCircle(center: center, radius: 0.62 * r),
+        200 * math.pi / 180,
+        50 * math.pi / 180,
+        false,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = math.max(1, 0.13 * r)
+          ..strokeCap = StrokeCap.round
+          ..color = const Color(0x8CFFFFFF),
+      )
+      ..drawCircle(center, 0.40 * r, fill..color = _ink)
+      ..drawCircle(center, 0.22 * r, fill..color = const Color(0xFFF7F5EF));
   }
 
   @override

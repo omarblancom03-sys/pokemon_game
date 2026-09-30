@@ -208,7 +208,8 @@ Error → Failed (overlay Reintentar/Cancelar). Guard contra doble disparo.
       Hecho: 8.0–8.10 (mundo, entrenador, hierba, Pokémon visibles, captura lanzando Poké Balls, sigilo,
       campo) y casi toda la 8.11 (escondidos en la hierba, briznas, carteles, recentrar cámara, nubes).
       Luego 8.11 completa y 8.12 (marca de capturado, arbustos con bayas), 8.13–8.14 y casi toda la 8.15
-      (sensación de captura y exploración; Pokémon dormidos 2026-09-28). 507 tests. El detalle, en TODO.md.
+      (sensación de captura y exploración; Pokémon dormidos 2026-09-28). 2026-09-30: Poké Ball
+      rediseñada (ficha de Claude Design; ver DECISIONES.md). 519 tests. El detalle, en TODO.md.
 
 ### Notas / siguiente paso
 - **Vista previa por fase (pedido del usuario):** al terminar cada fase, poner un parche superficial marcado

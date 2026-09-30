@@ -140,7 +140,7 @@ class _Scene3DViewState extends State<Scene3DView> {
 
     final itemsRoot = Node(name: 'items');
     scene.add(itemsRoot);
-    _items = ItemRenderer(root: itemsRoot, toMesh: _mesh);
+    _items = ItemRenderer(root: itemsRoot);
 
     final ballsRoot = Node(name: 'balls');
     scene.add(ballsRoot);
