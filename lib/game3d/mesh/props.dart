@@ -5,6 +5,7 @@ import 'package:vector_math/vector_math.dart';
 import '../../game/map/map_layout.dart';
 import '../sim/berries.dart' show bushLeafBalls;
 import '../sim/cell_noise.dart';
+import '../sim/trees.dart';
 import 'mesh_builder.dart';
 
 export '../sim/cell_noise.dart' show cellNoise;
@@ -76,8 +77,15 @@ List<HouseBlock> findHouseBlocks(MapLayout layout) {
 /// en una sola malla: una única llamada de dibujo para el mundo entero.
 ///
 /// Con [bushes] = false se saltan los arbustos: en el juego se dibujan
-/// aparte porque se balancean al sacudirlos.
-MeshBuffers buildProps(MapLayout layout, double tile, {bool bushes = true}) {
+/// aparte porque se balancean al sacudirlos. Con [canopies] = false los
+/// árboles se quedan en el tronco: sus copas se mecen con el viento y
+/// también se dibujan aparte (ver [buildCanopy]).
+MeshBuffers buildProps(
+  MapLayout layout,
+  double tile, {
+  bool bushes = true,
+  bool canopies = true,
+}) {
   final b = MeshBuilder();
   for (var row = 0; row < layout.rows; row++) {
     for (var col = 0; col < layout.columns; col++) {
@@ -87,9 +95,6 @@ MeshBuffers buildProps(MapLayout layout, double tile, {bool bushes = true}) {
         Matrix4.translation(center)
           ..scaleByDouble(tile / 2, tile / 2, tile / 2, 1),
         () => switch (layout.tileAt(col, row)!) {
-          TileKind.tree => addTree(b, n),
-          TileKind.pine => addPine(b, n),
-          TileKind.autumnTree => addTree(b, n, autumn: true),
           TileKind.bush => bushes ? addBush(b) : null,
           TileKind.fence => _addFence(b, layout, col, row),
           TileKind.sign => addSign(b),
@@ -108,54 +113,84 @@ MeshBuffers buildProps(MapLayout layout, double tile, {bool bushes = true}) {
   for (var i = 0; i < houses.length; i++) {
     addHouse(b, houses[i], tile, roofs[i % roofs.length]);
   }
-  _addOuterForest(b, layout, tile);
+  // Los árboles del mapa y el bosque que lo rodea (para que no se vea el
+  // vacío del borde), donde los pone la simulación.
+  for (final tree in TreeField.fromLayout(layout, tile).trees) {
+    addTreeAt(b, tree, canopy: canopies);
+  }
   return b.build();
 }
 
 // Las piezas siguientes se construyen en una casilla "unidad": de -1 a 1
 // en X y Z (el llamador escala al tamaño real de la casilla).
 
-/// Árbol redondo: tronco + dos o tres "bolas" facetadas de hojas.
-void addTree(MeshBuilder b, double n, {bool autumn = false}) {
-  final h = 1.0 + n * 0.35; // altura variable
+/// Árbol entero en su sitio: tronco y, si [canopy], copa (con el viento
+/// quieto). En el juego la copa va aparte, porque se mece.
+void addTreeAt(MeshBuilder b, Tree tree, {bool canopy = true}) {
+  b.withTransform(
+    Matrix4.translationValues(tree.x, 0, tree.z)
+      ..rotateY(tree.yaw)
+      ..scaleByDouble(tree.size, tree.size * tree.height, tree.size, 1),
+    () {
+      addTrunk(b, tree.kind);
+      if (canopy) {
+        b.withTransform(
+          Matrix4.translationValues(0, Tree.pivotUnit(tree.kind), 0),
+          () => addCanopy(b, tree.kind),
+        );
+      }
+    },
+  );
+}
+
+/// Tronco (alto 1: quien lo coloca lo estira con `Tree.height`). El del
+/// árbol redondo llega hasta dentro de la copa; el del pino es corto.
+void addTrunk(MeshBuilder b, TreeKind kind) {
+  b.prism(
+    base: Vector3.zero(),
+    bottomRadius: kind.isPine ? 0.17 : 0.2,
+    topRadius: kind.isPine ? 0.12 : 0.14,
+    height: kind.isPine ? 0.7 : 1.2,
+    sides: 6,
+    color: kind.isPine ? Palette.trunkDark : Palette.trunk,
+  );
+}
+
+/// Copa con el PIVOTE del vaivén en el origen (lo alto del tronco del
+/// árbol redondo, la base de las ramas del pino; ver `Tree.pivotUnit`):
+/// así se inclina sin despegarse del tronco.
+///
+/// Árbol redondo (y otoñal): tres "bolas" facetadas de hojas. Pino: tres
+/// conos apilados.
+void addCanopy(MeshBuilder b, TreeKind kind) {
+  if (kind.isPine) {
+    for (var i = 0; i < 3; i++) {
+      b.prism(
+        base: Vector3(0, i * 0.75, 0),
+        bottomRadius: 0.95 - i * 0.25,
+        topRadius: 0,
+        height: 1.3,
+        sides: 7,
+        color: i.isEven ? Palette.pine : Palette.pineDark,
+        twist: i * 0.4,
+      );
+    }
+    return;
+  }
+  final autumn = kind == TreeKind.autumn;
   final dark = autumn ? Palette.autumn : Palette.leaf;
   final light = autumn ? Palette.autumnLight : Palette.leafLight;
   b
-    ..prism(
-      base: Vector3.zero(),
-      bottomRadius: 0.2,
-      topRadius: 0.14,
-      height: 1.2 * h,
-      sides: 6,
-      color: Palette.trunk,
-    )
-    ..gem(Vector3(0, 1.55 * h, 0), Vector3(0.95, 0.8, 0.95), dark)
-    ..gem(Vector3(0.25, 2.15 * h, 0.1), Vector3(0.62, 0.55, 0.62), light)
-    ..gem(Vector3(-0.3, 1.9 * h, -0.25), Vector3(0.5, 0.45, 0.5), light);
+    ..gem(Vector3(0, 0.35, 0), Vector3(0.95, 0.8, 0.95), dark)
+    ..gem(Vector3(0.25, 0.95, 0.1), Vector3(0.62, 0.55, 0.62), light)
+    ..gem(Vector3(-0.3, 0.7, -0.25), Vector3(0.5, 0.45, 0.5), light);
 }
 
-/// Pino: tronco + tres conos apilados.
-void addPine(MeshBuilder b, double n) {
-  final h = 1.0 + n * 0.4;
-  b.prism(
-    base: Vector3.zero(),
-    bottomRadius: 0.17,
-    topRadius: 0.12,
-    height: 0.7 * h,
-    sides: 6,
-    color: Palette.trunkDark,
-  );
-  for (var i = 0; i < 3; i++) {
-    b.prism(
-      base: Vector3(0, (0.5 + i * 0.75) * h, 0),
-      bottomRadius: 0.95 - i * 0.25,
-      topRadius: 0,
-      height: 1.3 * h,
-      sides: 7,
-      color: i.isEven ? Palette.pine : Palette.pineDark,
-      twist: i * 0.4 + n,
-    );
-  }
+/// La copa de un tipo de árbol, sola (casilla unidad, pivote en el origen).
+MeshBuffers buildCanopy(TreeKind kind) {
+  final b = MeshBuilder();
+  addCanopy(b, kind);
+  return b.build();
 }
 
 /// Arbusto: racimo de bolas verdes ([bushLeafBalls], la forma que también
@@ -460,29 +495,4 @@ void addHouse(MeshBuilder b, HouseBlock house, double tile, Vector4 roof) {
     Palette.chimney,
     topColor: Palette.trunkDark,
   );
-}
-
-/// Bosque denso alrededor del mapa para que no se vea el vacío del borde.
-void _addOuterForest(MeshBuilder b, MapLayout layout, double tile) {
-  const ring = 4;
-  for (var row = -ring; row < layout.rows + ring; row++) {
-    for (var col = -ring; col < layout.columns + ring; col++) {
-      if (layout.contains(col, row)) continue;
-      final n = cellNoise(col, row, 99);
-      final center = Vector3(
-        (col + 0.5 + (n - 0.5) * 0.4) * tile,
-        0,
-        (row + 0.5 + (cellNoise(col, row, 98) - 0.5) * 0.4) * tile,
-      );
-      b.withTransform(
-        Matrix4.translation(center)..scaleByDouble(
-          tile / 2 * (1 + n * 0.3),
-          tile / 2 * (1 + n * 0.3),
-          tile / 2 * (1 + n * 0.3),
-          1,
-        ),
-        () => n > 0.45 ? addPine(b, n) : addTree(b, n),
-      );
-    }
-  }
 }

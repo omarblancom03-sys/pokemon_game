@@ -1,3 +1,4 @@
+import '../game3d/sim/trees.dart';
 import '../game3d/sim/wild_pokemon.dart';
 import '../game3d/sim/world3d_events.dart';
 import '../services/sound/sound_service.dart';
@@ -49,6 +50,12 @@ class SoundDirector {
         sound.play(GameSound.pickUp);
       case BushShaken():
         sound.play(GameSound.bushRustle);
+      case TreeShaken(:final strength):
+        // Más fuerte cuanto más fuerte fue el golpe.
+        sound.play(
+          GameSound.treeKnock,
+          volume: (0.4 + strength / TreeField.maxKnock * 0.6).clamp(0, 1),
+        );
       case PokemonNoticed(:final wild):
         _cry(wild);
       case PokemonRevealed(:final wild, :final startled):

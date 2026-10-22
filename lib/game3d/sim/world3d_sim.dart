@@ -28,6 +28,7 @@ import 'signs.dart';
 import 'throw_ring.dart';
 import 'throwing.dart';
 import 'trainer_pose.dart';
+import 'trees.dart';
 import 'wild_behavior.dart';
 import 'wild_pokemon.dart';
 import 'world3d_config.dart';
@@ -42,6 +43,7 @@ export 'grass_trampling.dart' show GrassTrampling;
 export 'signs.dart' show MapCell;
 export 'throw_ring.dart' show ThrowRing;
 export 'throwing.dart' show BallPhase, ThrownBall;
+export 'trees.dart' show Tree, TreeField, TreeKind;
 export 'wild_behavior.dart' show PlayerStealth;
 export 'world3d_events.dart';
 
@@ -176,6 +178,10 @@ class World3DSim {
     depth: depth,
     random: math.Random(17),
   );
+
+  /// Los árboles (los del mapa y el bosque del borde): se mecen con el
+  /// viento y se sacuden si les da una bola. Decorado: sin azar.
+  late final TreeField trees = TreeField.fromLayout(layout, config.tileSize);
 
   /// Carteles del mapa: cuál se puede leer y cuál está abierto.
   late final SignReader signReader = SignReader.fromLayout(
@@ -1148,7 +1154,9 @@ class World3DSim {
       bounce: (at, speed) {
         if (speed > 2) dust.burst(at, strength: speed / 10);
       },
+      knock: _knockTree,
     );
+    trees.update(dt);
     _maybeSpawn(dt);
 
     if (_grace > 0) {
@@ -1658,6 +1666,14 @@ class World3DSim {
     if (startled) behavior.startle(w);
     blades.burst(w.position);
     _emit(PokemonRevealed(w, startled: startled));
+  }
+
+  /// Una bola choca contra algo alto: si es un árbol, su copa se sacude
+  /// (y suena el golpe en las hojas).
+  void _knockTree(Vector3 at, Vector3 velocity) {
+    final knocked = trees.knock(at, velocity);
+    if (knocked == null) return;
+    _emit(TreeShaken(knocked.tree, knocked.strength));
   }
 
   /// Una bola que cae cerca asusta a los Pokémon (y a los pájaros) de

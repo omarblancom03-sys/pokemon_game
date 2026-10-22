@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:pokemon_game/game/map/map_layout.dart';
 import 'package:pokemon_game/game3d/mesh/mesh_builder.dart';
 import 'package:pokemon_game/game3d/mesh/props.dart';
+import 'package:pokemon_game/game3d/sim/trees.dart';
 import 'package:vector_math/vector_math.dart';
 
 void main() {
@@ -55,15 +56,64 @@ void main() {
   });
 
   test('a tree stays roughly inside its own cell', () {
+    final layout = MapLayout.parse(const ['...', '.T.', '.@.']);
+    final tree = TreeField.fromLayout(layout, 2, outerRing: 0).trees.single;
     final b = MeshBuilder();
-    b.withTransform(Matrix4.translation(Vector3(5, 0, 5)), () {
-      addTree(b, 1);
-    });
+    addTreeAt(b, tree);
     final m = b.build();
     for (var i = 0; i < m.vertexCount; i++) {
-      expect(m.positions[i * 3], inInclusiveRange(3.9, 6.1));
+      expect(m.positions[i * 3], inInclusiveRange(1.9, 4.1));
       expect(m.positions[i * 3 + 1], greaterThanOrEqualTo(0));
-      expect(m.positions[i * 3 + 2], inInclusiveRange(3.9, 6.1));
+      expect(m.positions[i * 3 + 2], inInclusiveRange(1.9, 4.1));
+    }
+  });
+
+  test('without canopies only the trunks stay (the canopies sway apart)', () {
+    final layout = MapLayout.parse(const ['.TPA', '.@..']);
+    final all = buildProps(layout, 2);
+    final trunks = buildProps(layout, 2, canopies: false);
+    expect(trunks.isEmpty, isFalse);
+    expect(all.triangleCount, greaterThan(trunks.triangleCount));
+    // Ningún tronco del mapa pasa de lo alto del pivote de su copa.
+    var maxY = 0.0;
+    for (var i = 0; i < trunks.vertexCount; i++) {
+      final x = trunks.positions[i * 3];
+      final z = trunks.positions[i * 3 + 2];
+      if (x < 0 || z < 0 || x > 8 || z > 4) continue; // bosque del borde
+      maxY = trunks.positions[i * 3 + 1] > maxY
+          ? trunks.positions[i * 3 + 1]
+          : maxY;
+    }
+    expect(maxY, lessThanOrEqualTo(1.2 * 1.35 * 1 + 1e-6));
+  });
+
+  test('the canopy, placed by TreeField, lands where the whole tree was', () {
+    // La copa aparte (pivote en el origen) + su transformación sin viento
+    // = la misma copa que addTreeAt dibuja entera.
+    final layout = MapLayout.parse(const ['.T', '.@']);
+    final tree = TreeField.fromLayout(layout, 2, outerRing: 0).trees.single;
+    final whole = MeshBuilder();
+    addTreeAt(whole, tree);
+    final trunk = MeshBuilder();
+    addTreeAt(trunk, tree, canopy: false);
+    final canopy = buildCanopy(tree.kind);
+    final m = TreeField.canopyTransform(tree, (x: 0, z: 0));
+
+    final w = whole.build();
+    final t = trunk.build();
+    expect(w.vertexCount, t.vertexCount + canopy.vertexCount);
+    for (var i = 0; i < canopy.vertexCount; i++) {
+      final p = m.transformed3(
+        Vector3(
+          canopy.positions[i * 3],
+          canopy.positions[i * 3 + 1],
+          canopy.positions[i * 3 + 2],
+        ),
+      );
+      final j = t.vertexCount + i;
+      expect(p.x, closeTo(w.positions[j * 3], 1e-4));
+      expect(p.y, closeTo(w.positions[j * 3 + 1], 1e-4));
+      expect(p.z, closeTo(w.positions[j * 3 + 2], 1e-4));
     }
   });
 

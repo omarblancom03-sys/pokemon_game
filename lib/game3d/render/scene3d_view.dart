@@ -22,6 +22,7 @@ import 'grass_blade_renderer.dart';
 import 'grass_renderer.dart';
 import 'item_renderer.dart';
 import 'trainer_rig.dart';
+import 'tree_renderer.dart';
 import 'wild_renderer.dart';
 
 /// VISTA 3D: dibuja la [World3DSim] con flutter_scene.
@@ -56,6 +57,7 @@ class _Scene3DViewState extends State<Scene3DView> {
   late CloudRenderer _clouds;
   late BirdRenderer _birds;
   late BushRenderer _bushes;
+  late TreeRenderer _trees;
   Object? _error;
 
   World3DSim get _sim => widget.sim;
@@ -113,11 +115,20 @@ class _Scene3DViewState extends State<Scene3DView> {
     final tile = _sim.config.tileSize;
     scene.add(Node(mesh: _mesh(buildTerrain(_sim.layout, tile))));
 
-    // Todo lo fijo (árboles, casas, vallas...) va en UNA malla. Los
-    // arbustos van aparte: se balancean al sacudirlos.
-    scene.add(Node(mesh: _mesh(buildProps(_sim.layout, tile, bushes: false))));
+    // Todo lo fijo (troncos, casas, vallas...) va en UNA malla. Los
+    // arbustos van aparte (se balancean al sacudirlos) y las copas de los
+    // árboles también (se mecen con el viento).
+    scene.add(
+      Node(
+        mesh: _mesh(
+          buildProps(_sim.layout, tile, bushes: false, canopies: false),
+        ),
+      ),
+    );
     _bushes = BushRenderer(_sim.berries, _mesh);
     scene.add(_bushes.root);
+    _trees = TreeRenderer(_sim.trees, _mesh);
+    scene.add(_trees.root);
 
     // Césped exterior bajo el bosque del borde (un poco por debajo del
     // suelo para que no parpadee con él).
@@ -224,6 +235,7 @@ class _Scene3DViewState extends State<Scene3DView> {
     _clouds.update();
     _birds.update();
     _bushes.update();
+    _trees.update(_sim.time);
     _balls.update(
       _sim.balls,
       preview: _sim.aimPreview,

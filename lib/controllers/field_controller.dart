@@ -200,6 +200,7 @@ class FieldController extends ChangeNotifier {
           BallShook() ||
           PokemonNoticed() ||
           PlayerRolled() ||
+          TreeShaken() ||
           Footstep():
         break;
     }

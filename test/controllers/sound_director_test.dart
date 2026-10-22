@@ -6,6 +6,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pokemon_game/controllers/capture/capture_calculator.dart';
 import 'package:pokemon_game/controllers/sound_director.dart';
+import 'package:pokemon_game/game/map/map_layout.dart';
+import 'package:pokemon_game/game3d/sim/trees.dart';
 import 'package:pokemon_game/game3d/sim/wild_pokemon.dart';
 import 'package:pokemon_game/game3d/sim/world3d_events.dart';
 import 'package:pokemon_game/models/poke_ball.dart';
@@ -188,5 +190,19 @@ void main() {
       GameSound.stepStone,
     ]);
     expect(sound.volumes, [1, 0.5, 0.15, 0.5]);
+  });
+
+  test('a ball knocking a tree sounds louder the harder it hit', () {
+    final tree = TreeField.fromLayout(
+      MapLayout.parse(const ['T', '@']),
+      2,
+      outerRing: 0,
+    ).trees.single;
+    director
+      ..onWorldEvent(TreeShaken(tree, TreeField.maxKnock))
+      ..onWorldEvent(TreeShaken(tree, 0));
+    expect(sound.played, [GameSound.treeKnock, GameSound.treeKnock]);
+    expect(sound.volumes[0], 1);
+    expect(sound.volumes[1], closeTo(0.4, 1e-9));
   });
 }

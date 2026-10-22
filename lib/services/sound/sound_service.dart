@@ -33,6 +33,10 @@ enum GameSound {
   /// Sacudir un arbusto.
   bushRustle,
 
+  /// Una bola choca contra un árbol: golpe seco en la madera y las hojas
+  /// que se agitan.
+  treeKnock,
+
   /// Destellos: se ve un Pokémon variocolor.
   shiny,
 

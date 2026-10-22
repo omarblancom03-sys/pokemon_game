@@ -2,6 +2,7 @@ import '../../models/capture_result.dart';
 import '../../models/poke_ball.dart';
 import '../../models/throw_hit.dart';
 import '../../models/throw_quality.dart';
+import 'trees.dart';
 import 'wild_pokemon.dart';
 
 /// Lo que la simulación 3D cuenta hacia fuera (a la pantalla, que lo pasa
@@ -105,6 +106,15 @@ class BushShaken extends World3DEvent {
   const BushShaken(this.berries);
 
   final int berries;
+}
+
+/// Una Poké Ball lanzada chocó contra un árbol y lo sacudió:
+/// [strength] es la inclinación que le dio (rad; ver TreeField.knock).
+class TreeShaken extends World3DEvent {
+  const TreeShaken(this.tree, this.strength);
+
+  final Tree tree;
+  final double strength;
 }
 
 /// El jugador recogió bayas del suelo.

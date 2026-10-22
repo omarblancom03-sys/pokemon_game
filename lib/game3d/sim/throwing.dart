@@ -339,6 +339,7 @@ class BallSystem {
   int _count = 0;
   void Function(Vector3 at)? _impact;
   void Function(Vector3 at, double speed)? _bounce;
+  void Function(Vector3 at, Vector3 velocity)? _knock;
 
   List<ThrownBall> get balls => List.unmodifiable(_balls);
 
@@ -382,6 +383,8 @@ class BallSystem {
   /// mundo al Pokémon capturado; [impact] avisa del primer golpe de una
   /// bola fallada contra el suelo u otra cosa (el ruido asusta). [bounce]
   /// avisa de cada bote contra el suelo, con la velocidad de caída (polvo).
+  /// [knock] avisa de cada choque contra un obstáculo (árbol, casa...),
+  /// con el punto y la velocidad que llevaba la bola (sacude los árboles).
   void update(
     double dt, {
     required List<WildPokemon> wild,
@@ -390,9 +393,11 @@ class BallSystem {
     required void Function(World3DEvent event) emit,
     void Function(Vector3 at)? impact,
     void Function(Vector3 at, double speed)? bounce,
+    void Function(Vector3 at, Vector3 velocity)? knock,
   }) {
     _impact = impact;
     _bounce = bounce;
+    _knock = knock;
     for (final ball in _balls.toList()) {
       ball
         ..age += dt
@@ -462,6 +467,7 @@ class BallSystem {
 
     // Árboles, casas, vallas... la bola rebota hacia atrás.
     if (next.y < heightAt(next.x, next.z)) {
+      _knock?.call(next, v.clone());
       final blockX = next.y < heightAt(next.x, p.z);
       final blockZ = next.y < heightAt(p.x, next.z);
       if (blockX || !blockZ) v.x = -v.x * 0.4;
