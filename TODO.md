@@ -172,6 +172,21 @@ el campo (movimiento, cámara, hierba alta, encuentros, escenario). Va antes que
       una bola que choca sacude la copa, suena y suelta hojas; los otoñales a < 30 m sueltan hojas
       que caen balanceándose, más con cada ráfaga, y se quedan un rato en el suelo)
 
+## 8.16 Captura y exploración: más sensación (añadido 2026-10-23)
+Sigue el foco de 8.15 (lanzar y andar por el campo), que quedó completo.
+- [x] Lanzar con todo el cuerpo: la bola por ENCIMA del hombro (el torso gira antes que el brazo, el
+      izquierdo apunta y se recoge, paso con la pierna izquierda, el brazo sigue de largo cruzado);
+      la baya por DEBAJO, en globo (de abajo atrás a arriba delante)
+- [ ] Pokémon en las copas: algunos árboles esconden un Pokémon (la copa se agita a ratos y suelta
+      hojas); una bola contra el árbol o una voltereta contra el tronco lo hace caer aturdido: ocasión
+      de captura
+- [ ] Apuntar sin tirones: la postura de apuntar entra y sale suave (~0,15 s) en vez de saltar
+- [ ] Viento que suena: las ráfagas (las mismas que mecen árboles y hierba) se oyen, y pájaros que
+      pían a ratos cerca de las bandadas
+- [ ] Última sacudida con tensión: con poca probabilidad de captura, la última sacudida va a cámara
+      lenta (y el sonido se apaga) antes del resultado
+- [ ] Huellas de Pokémon en la tierra del camino: se puede seguir el rastro de uno que pasó
+
 ## Mejoras continuas
 - [x] Poké Ball rediseñada en alta calidad (2026-09-30, ficha de Claude Design): superficie lisa,
       franja hundida, aro y botón en relieve, bola hueca, marcas nítidas y botón que se enciende;

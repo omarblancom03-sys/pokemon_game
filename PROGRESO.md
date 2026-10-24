@@ -136,6 +136,10 @@
   - **Poké Balls en el campo:** puñados de Poké/Super/Ultra Balls flotando con un haz de luz (se ven de
     lejos). Se recogen al pasar por encima; reaparecen en otro sitio a los 12 s. Bolsa arriba a la
     izquierda (toca una bola para elegirla) con el número de capturados; avisos arriba en el centro.
+  - **El gesto de lanzar:** al apuntar con una bola, el entrenador echa el brazo derecho arriba y
+    atrás, gira el hombro y señala al Pokémon con la mano izquierda. Al lanzar, el cuerpo gira, da
+    un paso con la pierna izquierda y la bola sale POR ENCIMA del hombro; el brazo sigue de largo y
+    acaba cruzado por delante. Las bayas se lanzan de otra manera: POR DEBAJO, en globo.
   - **Capturar lanzando Poké Balls (estilo Leyendas Arceus):** apunta con clic derecho (o F): la cámara
     se pone al hombro, aparece la mira, la bola en la mano, el arco que seguirá (puntos) y un anillo
     donde caerá (verde si va al Pokémon fijado). Sobre el Pokémon fijado, un anillo con la

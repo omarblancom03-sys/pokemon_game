@@ -15,7 +15,8 @@ import 'ball_model.dart';
 /// El entrenador como jerarquía de nodos del motor ("esqueleto" simple):
 ///
 ///   raíz (posición y giro) → cadera (rebote e inclinación)
-///     → cuerpo, 2 piernas y 2 brazos (cada uno gira en su articulación).
+///     → 2 piernas y el torso (gira sobre la cadera al lanzar)
+///       → cuerpo y 2 brazos (cada extremidad gira en su articulación).
 ///
 /// Solo traduce una [TrainerPose] a transformaciones; la lógica de la
 /// postura vive en la simulación.
@@ -24,14 +25,15 @@ class TrainerRig {
     final parts = buildTrainerParts();
     final legMesh = toMesh(parts.leg);
     final armMesh = toMesh(parts.arm);
-    _hips.add(Node(mesh: toMesh(parts.body)));
+    _torso.add(Node(mesh: toMesh(parts.body)));
+    _hips.add(_torso);
     for (final limb in [_leftLeg, _rightLeg]) {
       limb.add(Node(mesh: legMesh.clone()));
       _hips.add(limb);
     }
     for (final limb in [_leftArm, _rightArm]) {
       limb.add(Node(mesh: armMesh.clone()));
-      _hips.add(limb);
+      _torso.add(limb);
     }
     // Una bola de cada tipo en el guante derecho (solo se ve la que toca).
     for (final type in PokeBallType.values) {
@@ -57,6 +59,7 @@ class TrainerRig {
   /// Nodo a añadir a la escena.
   final Node root = Node(name: 'trainer');
   final Node _hips = Node(name: 'hips');
+  final Node _torso = Node(name: 'torso');
   final Node _leftLeg = Node(name: 'leftLeg');
   final Node _rightLeg = Node(name: 'rightLeg');
   final Node _leftArm = Node(name: 'leftArm');
@@ -99,6 +102,10 @@ class TrainerRig {
     _hips
       ..position = hips
       ..rotation = tilt;
+    // El torso gira sobre la vertical de la cadera. Hombro derecho atrás
+    // (twist positivo) es girar −twist en la simulación; el motor, con la Z
+    // invertida, cambia el signo de los giros en Y: +twist.
+    _torso.rotation = vm.Quaternion.axisAngle(_y, pose.twist);
     // Ángulo positivo en X lleva el pie hacia atrás: por eso el signo menos
     // para "hacia delante".
     // Agachado: una pierna adelantada y la otra atrás (medio arrodillado).
@@ -118,7 +125,11 @@ class TrainerRig {
       // rightArm/armSwing son "positivo = hacia delante"; aquí es al revés.
       -(pose.rightArm ?? pose.armSwing),
     );
-    _setLimb(_leftArm, TrainerJoints.leftShoulder, pose.armSwing);
+    _setLimb(
+      _leftArm,
+      TrainerJoints.leftShoulder,
+      pose.leftArm == null ? pose.armSwing : -pose.leftArm!,
+    );
   }
 
   void _setLimb(Node limb, vm.Vector3 joint, double simAngle) {

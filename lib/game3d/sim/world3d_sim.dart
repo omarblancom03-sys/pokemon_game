@@ -665,6 +665,11 @@ class World3DSim {
     return isAiming && berryReady;
   }
 
+  /// ¿El gesto es el de una baya (por debajo, en globo)? Al apuntar con
+  /// ella y mientras se lanza.
+  bool get lobbing =>
+      _throwTime != null ? _throwingBerry : isAiming && berryReady;
+
   /// ¿Hay algo en la mano para lanzar?
   bool get _itemReady => berryReady || readyBall != null;
 

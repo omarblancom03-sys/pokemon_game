@@ -627,3 +627,18 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
   plana 3,5 s y se encoge (sin transparencias, como las briznas). La hoja sale EXACTAMENTE de su punto
   de partida (el centro del vaivén se corrige al crearla): si no, daba un salto de medio metro.
   Las hojas no cambian nada del juego (ni asustan ni tapan): es escenario.
+- **2026-10-23 — Lanzar con todo el cuerpo** (TODO 8.16). Antes solo giraba el brazo derecho, y de
+  −2,5 a 1,1 rad: pasaba por ABAJO (como en los bolos) aunque la bola saliera en arco hacia arriba.
+  Ahora el gesto son posturas clave (`_Keyframe` en `trainer_pose.dart`: brazos, giro del torso,
+  inclinación, paso y flexión) entre "apuntando", el pico (0,42 del gesto, justo tras soltar a 0,36)
+  y el reposo. La Poké Ball va POR ENCIMA del hombro: el brazo baja de −π (pasa sobre la cabeza),
+  acelera (u^1,6, latigazo) mientras el torso se adelanta (gira antes que el brazo), al soltar apunta
+  arriba y adelante, sigue de largo cruzado por delante (−5,5) y acaba colgando en −2π (= 0, sin
+  vuelta atrás). Apuntando: hombro derecho atrás (0,45 rad) y el brazo IZQUIERDO señalando al
+  objetivo, que en el lanzamiento se recoge. La baya va POR DEBAJO, en globo (de −0,7 a 1,9): dos
+  gestos distintos para dos cosas distintas, se leen de lejos. El paso de la pierna izquierda solo
+  se suma parado (andando mandan las piernas, si no patinarían). En el esqueleto, nodo `torso` (cuerpo
+  y brazos) que gira sobre la cadera; las piernas siguen en la cadera. La mano de donde sale la bola
+  (`handPosition`) no cambia: así las trayectorias y sus pruebas siguen igual. Lanzar sin apuntar
+  salta al gesto en un fotograma (el tiro sale a los 0,18 s: no hay tiempo de preparar).
+  Verificado con una lámina de fotogramas a ¼ de velocidad (Chrome con GPU) y de perfil.
