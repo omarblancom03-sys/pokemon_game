@@ -182,7 +182,8 @@ Sigue el foco de 8.15 (lanzar y andar por el campo), que quedó completo.
       de captura
       (15 % de las apariciones, en árboles de hojas del mapa; se agita cada ~4 s, el doble cerca, y se
       oye a < 20 m; cae de tu lado y de espaldas, aturdido 3,5 s; a los 90 s se va; cartel con la pista)
-- [ ] Apuntar sin tirones: la postura de apuntar entra y sale suave (~0,15 s) en vez de saltar
+- [x] Apuntar sin tirones: la postura de apuntar entra y sale suave (~0,15 s) en vez de saltar
+      (también al acabar un lanzamiento apuntando; un tiro rápido arranca desde el brazo colgando)
 - [ ] Viento que suena: las ráfagas (las mismas que mecen árboles y hierba) se oyen, y pájaros que
       pían a ratos cerca de las bandadas
 - [ ] Última sacudida con tensión: con poca probabilidad de captura, la última sacudida va a cámara

@@ -25,7 +25,7 @@ class TrainerPose {
     required double walkSpeed,
     required double runSpeed,
     double crouch = 0,
-    bool aiming = false,
+    double aim = 0,
     double? throwProgress,
     bool lob = false,
     double? rollProgress,
@@ -42,7 +42,12 @@ class TrainerPose {
     final intensity = (speed / walkSpeed).clamp(0.0, runSpeed / walkSpeed);
     final phase = distanceWalked / strideLength * 2 * math.pi;
     final swing = math.sin(phase) * 0.55 * math.min(intensity, 1.3);
-    final g = _gesture(aiming: aiming, progress: throwProgress, lob: lob);
+    final g = _gesture(
+      aim: aim,
+      progress: throwProgress,
+      lob: lob,
+      armSwing: -swing * 0.9,
+    );
     // El paso del lanzamiento solo se nota parado: andando mandan las
     // piernas (si no, patinarían).
     final still = (1 - intensity).clamp(0.0, 1.0);
@@ -103,16 +108,23 @@ class TrainerPose {
   );
   static const _rest = _Keyframe();
 
-  /// Postura del gesto al apuntar (preparado) o en el [progress] (0..1)
-  /// de un lanzamiento; sin gesto, brazos con su balanceo normal.
+  /// Postura del gesto: [aim] (0..1) es cuánto está apuntando (la
+  /// postura de preparado entra y sale suave, ver World3DSim.aimPose); en
+  /// un lanzamiento ([progress] 0..1) es de dónde arranca: preparado o,
+  /// en un tiro rápido sin apuntar, desde los brazos como iban
+  /// ([armSwing]). Sin gesto, brazos con su balanceo normal.
   static _Gesture _gesture({
-    required bool aiming,
+    required double aim,
     required double? progress,
     required bool lob,
+    required double armSwing,
   }) {
-    final aim = lob ? _lobAim : _ballAim;
+    final k = _smooth(aim.clamp(0.0, 1.0));
+    // Los brazos como van al andar (el izquierdo, al revés que el derecho).
+    final swinging = _Keyframe(rightArm: armSwing, leftArm: -armSwing);
+    final from = _Keyframe.mix(swinging, lob ? _lobAim : _ballAim, k);
     if (progress == null || progress >= 1) {
-      return aiming ? aim.gesture() : _rest.gesture(arms: false);
+      return k > 0 ? from.gesture() : _rest.gesture(arms: false);
     }
     final t = progress.clamp(0.0, 1.0);
     final top = lob ? _lobPeak : _ballPeak;
@@ -122,7 +134,7 @@ class TrainerPose {
       // El torso se adelanta al brazo; el brazo acelera (latigazo).
       final body = _smooth(math.min(1, u * 1.3));
       final arm = math.pow(u, 1.6).toDouble();
-      return _Keyframe.mix(aim, top, body, arm: arm).gesture();
+      return _Keyframe.mix(from, top, body, arm: arm).gesture();
     }
     final u = (t - peak) / (1 - peak);
     final g = _Keyframe.mix(top, rest, _smooth(u)).gesture();

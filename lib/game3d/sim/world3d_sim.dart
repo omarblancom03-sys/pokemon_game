@@ -297,6 +297,12 @@ class World3DSim {
   WildPokemon? _throwTarget;
   bool _released = false;
 
+  /// Cuánto está en postura de apuntar (0..1): sube y baja en
+  /// [aimBlendTime] s. En un lanzamiento, de dónde arrancó el gesto (1 =
+  /// preparado; 0 = un tiro rápido sin apuntar).
+  double aimPose = 0;
+  static const aimBlendTime = 0.15;
+
   /// Duración de la animación de lanzar y momento en que suelta la bola.
   static const throwDuration = 0.5;
   static const releaseTime = 0.18;
@@ -886,6 +892,9 @@ class World3DSim {
     if (now >= throwDuration) {
       _throwTime = null;
       _throwTarget = null;
+      // El brazo acaba colgando: si sigue apuntando, vuelve a prepararse
+      // poco a poco (sin saltar).
+      aimPose = 0;
     }
   }
 
@@ -1174,6 +1183,14 @@ class World3DSim {
         ? 1.0
         : 0.0;
     camera.stance += (stanceGoal - camera.stance) * math.min(1, dt * 2.5);
+    // La postura de apuntar entra y sale suave (durante un lanzamiento no
+    // cambia: marca de dónde arrancó el gesto).
+    if (_throwTime == null) {
+      final step = dt / aimBlendTime;
+      aimPose = isAiming
+          ? math.min(1, aimPose + step)
+          : math.max(0, aimPose - step);
+    }
     camera.avoidObstacles(player.position, ballSystem.heightAt, dt);
     signReader.update(player.position);
 

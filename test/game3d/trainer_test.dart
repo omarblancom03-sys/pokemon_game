@@ -76,7 +76,7 @@ void main() {
           speed: speed,
           walkSpeed: 4.5,
           runSpeed: 7.5,
-          aiming: true,
+          aim: 1,
           throwProgress: t,
           lob: lob,
         );
@@ -166,6 +166,44 @@ void main() {
       expect(f2, greaterThan(0.8)); // hacia delante, casi a la altura
       // del hombro (un globo se suelta un poco por debajo)
       expect(u2, greaterThan(-0.4));
+    });
+  });
+
+  group('aim blend', () {
+    TrainerPose at(double aim, {double? t}) => TrainerPose.fromMotion(
+      distanceWalked: 0,
+      speed: 0,
+      walkSpeed: 4.5,
+      runSpeed: 7.5,
+      aim: aim,
+      throwProgress: t,
+    );
+
+    test('the aiming pose comes in gradually, not in one jump', () {
+      expect(at(0).rightArm, isNull);
+      expect(at(0).twist, 0);
+      final half = at(0.5);
+      final full = at(1);
+      expect(half.rightArm!, inExclusiveRange(full.rightArm!, 0));
+      expect(half.leftArm!, inExclusiveRange(0, full.leftArm!));
+      expect(half.twist, inExclusiveRange(0, full.twist));
+      // Al principio apenas se mueve (entra suave).
+      expect(at(0.05).rightArm!.abs(), lessThan(0.05));
+    });
+
+    test('a quick throw without aiming starts from the hanging arm and '
+        'goes back and over the head (no jump)', () {
+      var last = at(0, t: 0).rightArm!;
+      expect(last.abs(), lessThan(1e-9));
+      var overHead = false;
+      for (var t = 1 / 30; t < TrainerPose.peak; t += 1 / 30) {
+        final a = at(0, t: t).rightArm!;
+        expect(a, lessThanOrEqualTo(last + 1e-9));
+        expect((a - last).abs(), lessThan(0.6));
+        if (-math.cos(a) > 0.95) overHead = true;
+        last = a;
+      }
+      expect(overHead, isTrue);
     });
   });
 }

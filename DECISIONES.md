@@ -669,3 +669,11 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
   y si no, el primer choque de la bola contra el árbol lo asustaba en plena caída.
   Si nadie lo tira, a los 90 s se va. Cartel "Consejo del entrenador": una línea nueva con la pista.
   Verificado en Chrome con GPU (lanzamiento automático contra el árbol del prado).
+- **2026-10-23 — Apuntar sin tirones** (TODO 8.16). `World3DSim.aimPose` (0..1) sube y baja en
+  0,15 s (lineal; la postura le aplica un smoothstep, así entra y sale suave) en vez del salto que
+  daba al cruzar la cámara la mitad del camino al hombro (`camera.aim > 0.5`, ya no se usa). Durante
+  un lanzamiento NO cambia: dice de dónde arranca el gesto (1 = preparado; 0 = un tiro rápido sin
+  apuntar, que ahora sale desde los brazos como iban: el brazo derecho colgando sube por detrás y por
+  encima de la cabeza, sin el salto de un fotograma de antes). Al acabar un lanzamiento se pone a 0:
+  si sigues apuntando, el brazo vuelve a prepararse poco a poco desde colgando (−2π = 0, sin vuelta
+  atrás). `TrainerPose.fromMotion` recibe `aim` (double) en vez de `aiming` (bool).

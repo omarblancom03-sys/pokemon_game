@@ -638,4 +638,34 @@ void main() {
     }
     expect(ball.trail, isEmpty);
   });
+
+  test('the aiming pose blends in and out in a moment; after a throw it '
+      'comes back gradually', () {
+    final s = world();
+    void stepFor(double seconds) {
+      for (var t = 0.0; t < seconds - 1e-9; t += 1 / 60) {
+        s.update(1 / 60);
+      }
+    }
+
+    expect(s.aimPose, 0);
+    s.aiming = true;
+    stepFor(1 / 60);
+    expect(s.aimPose, inExclusiveRange(0, 0.5));
+    stepFor(World3DSim.aimBlendTime);
+    expect(s.aimPose, 1);
+    // Lanzando: no cambia (es de dónde arrancó el gesto)...
+    s.throwBall(PokeBallType.poke);
+    stepFor(World3DSim.throwDuration / 2);
+    expect(s.aimPose, 1);
+    // ...y al terminar vuelve a prepararse desde el brazo colgando.
+    stepFor(World3DSim.throwDuration / 2 + 1 / 60);
+    expect(s.throwProgress, isNull);
+    expect(s.aimPose, lessThan(0.3));
+    stepFor(World3DSim.aimBlendTime);
+    expect(s.aimPose, 1);
+    s.aiming = false;
+    stepFor(World3DSim.aimBlendTime + 1 / 60);
+    expect(s.aimPose, 0);
+  });
 }
