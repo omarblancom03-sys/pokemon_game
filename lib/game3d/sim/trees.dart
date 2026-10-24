@@ -284,20 +284,32 @@ class TreeField {
     if (tree == null) return null;
     final speed = math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z);
     if (speed < minKnockSpeed) return null;
+    final strength = math.min(maxKnock, speed * knockPerSpeed);
+    return (
+      tree: tree,
+      strength: shake(tree, strength, velocity.x / speed, velocity.z / speed),
+    );
+  }
+
+  /// Sacude la copa de [tree] con fuerza [strength] (rad) hacia
+  /// ([dirX], [dirZ]) (en el suelo, de largo 1): un golpe, una voltereta
+  /// contra el tronco o un Pokémon que se mueve ahí arriba. El pino se
+  /// sacude menos. Devuelve la fuerza que le llegó.
+  double shake(Tree tree, double strength, double dirX, double dirZ) {
     final stiff = tree.kind.isPine ? pineStiffness : 1.0;
-    final strength = math.min(maxKnock, speed * knockPerSpeed) * stiff;
+    final s = strength * stiff;
     // Si aún se mueve por otro golpe, gana el más fuerte de los dos.
     final left = tree.isShaking
         ? tree._knock * math.exp(-tree._knockAge / knockDecay)
         : 0.0;
-    if (strength < left) return (tree: tree, strength: strength);
+    if (s < left) return s;
     tree
-      .._knock = strength
+      .._knock = s
       .._knockAge = 0
-      .._knockX = velocity.x / speed
-      .._knockZ = velocity.z / speed;
+      .._knockX = dirX
+      .._knockZ = dirZ;
     if (!_shaking.contains(tree)) _shaking.add(tree);
-    return (tree: tree, strength: strength);
+    return s;
   }
 
   /// Árboles que aún se sacuden por un golpe.

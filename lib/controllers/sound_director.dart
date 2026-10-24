@@ -70,6 +70,13 @@ class SoundDirector {
         sound.play(GameSound.dodge);
       case PokemonDazed():
         sound.play(GameSound.dazed);
+      case PokemonFellFromTree(:final wild):
+        // Se da un buen golpe: grita y queda viendo estrellitas.
+        sound.play(GameSound.dazed);
+        _cry(wild, force: true);
+      case TreeRustled(:final loudness):
+        // Algo se mueve en la copa: un susurro de hojas, más fuerte cerca.
+        sound.play(GameSound.bushRustle, volume: 0.15 + 0.45 * loudness);
       case Footstep(:final surface, :final loudness):
         sound.play(switch (surface) {
           GroundSurface.dirt => GameSound.stepDirt,

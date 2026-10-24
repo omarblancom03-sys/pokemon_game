@@ -525,10 +525,12 @@ class BallSystem {
     _impact?.call(ball.position);
   }
 
-  /// El primer Pokémon libre cuyo "cilindro" contiene el punto [p].
+  /// El primer Pokémon libre cuyo "cilindro" contiene el punto [p]. Los
+  /// de los árboles no: la bola da en el árbol (y se caen); ni mientras
+  /// caen.
   WildPokemon? _hitTest(Vector3 p, List<WildPokemon> wild) {
     for (final w in wild) {
-      if (!w.isFree) continue;
+      if (!w.isFree || w.isPerched || w.isFalling) continue;
       final dx = p.x - w.position.x;
       final dz = p.z - w.position.z;
       final r = w.hitRadius + ballRadius;

@@ -100,6 +100,24 @@ class PokemonDazed extends World3DEvent {
   final WildPokemon wild;
 }
 
+/// Un Pokémon escondido en la copa de [tree] se revolvió: la copa se agita
+/// y suelta unas hojas. [loudness] (0..1): lo cerca que lo tiene el
+/// jugador (cuánto se oye).
+class TreeRustled extends World3DEvent {
+  const TreeRustled(this.tree, this.loudness);
+
+  final Tree tree;
+  final double loudness;
+}
+
+/// Sacudieron el árbol donde se escondía [wild] (una bola o una
+/// voltereta contra el tronco) y se cayó: queda aturdido en el suelo.
+class PokemonFellFromTree extends World3DEvent {
+  const PokemonFellFromTree(this.wild);
+
+  final WildPokemon wild;
+}
+
 /// El jugador sacudió un arbusto; soltó [berries] bayas (0 = no le
 /// quedaba ninguna).
 class BushShaken extends World3DEvent {

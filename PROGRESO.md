@@ -76,6 +76,14 @@
     espaldas ("X asoma entre la hierba… ¡no te ha visto!"): la ocasión perfecta. Una bola que cae cerca
     también los hace salir, y si le das de lleno a la mata que se agita, ¡lo capturas por sorpresa!
     La mata donde se esconde escupe briznas grandes y claras a ratos; al salir, un surtidor de briznas.
+  - **Pokémon en los árboles:** algunos se esconden en la copa de un árbol de hojas (nunca en un
+    pino): no se ven ni salen en el minimapa. La pista: esa copa se sacude sola de vez en cuando y le
+    caen unas hojas (cerca se oye el susurro, y si te acercas se mueve más a menudo). Lánzale una bola
+    al árbol (o rueda contra el tronco con X) y el Pokémon se cae justo delante, de tu lado: "¡Un X
+    cayó del árbol! Está aturdido: ¡ahora!", con estrellitas. Cae de espaldas a ti y aturdido unos
+    3,5 s: la bola entra por la espalda y sin ser visto. Una bola que cae cerca solo lo pone
+    nervioso (la copa se agita), no lo hace bajar. Si nadie lo tira, a los 90 s se va. El cartel
+    "Consejo del entrenador" lo explica.
   - **Pokémon dormidos:** algunos Pokémon (1 de cada 5 de los que se ven) están DURMIENDO: tumbados,
     respirando despacio y con "Zzz" que suben (en el minimapa, un punto azul claro). No ven nada, pero
     te OYEN: andando te oyen a unos 5 m y corriendo a 11 m; agachado puedes llegar a su lado. Si las

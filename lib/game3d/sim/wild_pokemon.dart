@@ -5,6 +5,7 @@ import 'package:vector_math/vector_math.dart';
 import '../../models/pokemon.dart';
 import 'berries.dart';
 import 'cell_noise.dart';
+import 'trees.dart';
 
 /// Carácter de un Pokémon salvaje: qué hace cuando te descubre.
 enum Temperament {
@@ -103,6 +104,35 @@ class WildPokemon {
   /// Segundos que lleva escondido (si nadie lo encuentra, se va).
   double hiddenTime = 0;
 
+  /// EN UN ÁRBOL: escondido en la copa de este árbol (también está
+  /// [hidden]: no se ve ni se puede fijar). La copa se agita a ratos y
+  /// suelta hojas; un golpe al árbol lo hace caer (ver World3DSim). Su
+  /// [position] es el pie del tronco.
+  Tree? perch;
+
+  bool get isPerched => perch != null;
+
+  /// Segundos que faltan para que se mueva ahí arriba (y se agite la copa).
+  double rustleIn = 0;
+
+  /// CAÍDA del árbol: segundos desde que empezó a caer (null = no cae).
+  /// Cae desde [fallFrom] m en [fallTime] s y queda aturdido.
+  double? fallingFor;
+  double fallFrom = 0;
+
+  bool get isFalling => fallingFor != null;
+
+  /// Lo que tarda en caer del árbol (s).
+  static const fallTime = 0.45;
+
+  /// Altura sobre el suelo mientras cae (0 si no cae): caída libre.
+  double get fallHeight {
+    final t = fallingFor;
+    if (t == null || t >= fallTime) return 0;
+    final s = t / fallTime;
+    return fallFrom * (1 - s * s);
+  }
+
   /// Baya del suelo a la que va o que se está comiendo (null = ninguna).
   LooseBerry? bait;
 
@@ -147,8 +177,13 @@ class WildPokemon {
 
   bool get isDazed => dazedFor != null;
 
+  /// Lo que dura el aturdimiento ([dazeSeconds] al pasarse de largo;
+  /// [fallDazeSeconds] al caer de un árbol).
+  double dazeLength = dazeSeconds;
+
   /// Lo que dura el aturdimiento (s) y la rapidez al pasarse de largo.
   static const dazeSeconds = 2.5;
+  static const fallDazeSeconds = 3.5;
   static const overshootSpeed = 5.0;
 
   /// MANADA a la que pertenece (null = va solo). Los de una manada son de

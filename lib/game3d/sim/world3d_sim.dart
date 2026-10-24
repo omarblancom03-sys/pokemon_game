@@ -339,6 +339,41 @@ class World3DSim {
   /// Si nadie encuentra a un escondido en este tiempo (s), se va.
   static const hiddenLifetime = 60.0;
 
+  /// Probabilidad de que un Pokémon aparezca EN UN ÁRBOL: escondido en la
+  /// copa de un árbol de hojas del mapa (si hay alguno libre lejos del
+  /// jugador). Se puede cambiar (tests y vista previa).
+  static const defaultPerchChance = 0.15;
+  double perchChance = defaultPerchChance;
+
+  /// Si nadie lo tira del árbol en este tiempo (s), se va.
+  static const perchLifetime = 90.0;
+
+  /// Cada cuánto (s, de media) se revuelve ahí arriba y se agita la copa.
+  /// A menos de [perchNearRange] m del jugador, el doble de a menudo (se
+  /// pone nervioso); hasta [perchHearRange] m se oye.
+  static const perchRustleEvery = 4.0;
+  static const perchNearRange = 10.0;
+  static const perchHearRange = 20.0;
+
+  /// Fuerza (rad) con que se agita la copa cuando se revuelve, y la de una
+  /// voltereta contra el tronco.
+  static const perchRustle = 0.05;
+  static const rollKnock = 0.1;
+
+  /// A qué distancia (m) del centro del tronco cae: fuera de su casilla.
+  static const fallDistance = 1.7;
+
+  /// Azar de cuándo se agita cada copa (decorado: así el del juego no
+  /// cambia con el tiempo que pase cada uno en su árbol).
+  final math.Random _perchRandom = math.Random(37);
+
+  /// Árboles en los que se puede esconder un Pokémon: los de hojas (en el
+  /// pino no) dentro del mapa (los del bosque del borde no se alcanzan).
+  late final List<Tree> perchTrees = [
+    for (final t in trees.trees)
+      if (!t.kind.isPine && layout.contains(t.col, t.row)) t,
+  ];
+
   /// Probabilidad de que uno que NO se esconde aparezca DORMIDO ("Zzz").
   /// Se puede cambiar (tests y vista previa).
   static const defaultSleepChance = 0.2;
@@ -479,6 +514,12 @@ class World3DSim {
 
   double? _rollTime;
   final Vector3 _rollDir = Vector3(0, 0, 1);
+
+  /// Ya chocó contra un árbol en esta voltereta (lo sacude una vez).
+  bool _rollBumped = false;
+
+  /// Hasta dónde (m) por delante se nota el tronco al rodar contra él.
+  static const rollBumpReach = 0.7;
   double _rollWait = 0;
 
   bool get isRolling => _rollTime != null;
@@ -509,6 +550,7 @@ class World3DSim {
       _rollDir.setValues(math.sin(f), 0, math.cos(f));
     }
     _rollTime = 0;
+    _rollBumped = false;
     crouching = false;
     captureCam.release();
     // Los que te embisten de cerca van a por donde ESTABAS.
@@ -540,7 +582,19 @@ class World3DSim {
   void _updateRoll(double dt) {
     final t = _rollTime! + dt;
     final s = math.min(1.0, t / rollTime);
-    player.dash(dt, _rollDir, _rollSpeed * (1 - 0.5 * s));
+    final speed = _rollSpeed * (1 - 0.5 * s);
+    player.dash(dt, _rollDir, speed);
+    // Contra un árbol: lo sacude (y el que esté en la copa se cae).
+    if (!_rollBumped && player.velocity.dot(_rollDir) < speed * 0.6) {
+      final tree = trees.treeAt(player.position + _rollDir * rollBumpReach);
+      if (tree != null) {
+        _rollBumped = true;
+        final hit = trees.shake(tree, rollKnock, _rollDir.x, _rollDir.z);
+        fallingLeaves.shake(tree, hit);
+        _emit(TreeShaken(tree, hit));
+        _dropFromTree(tree);
+      }
+    }
     if (t >= rollTime) {
       _rollTime = null;
       _rollWait = rollCooldown;
@@ -567,10 +621,15 @@ class World3DSim {
   }
 
   /// Aturdido: quieto, sin enterarse de nada (cuenta como que no te ha
-  /// visto) durante [WildPokemon.dazeSeconds]. Al volver en sí sigue
-  /// mosqueado: si te ve, te descubre enseguida.
-  void _startDaze(WildPokemon w) {
+  /// visto) durante [seconds]. Al volver en sí sigue mosqueado: si te ve,
+  /// te descubre enseguida. Con [announce], se avisa ("se pasó de largo").
+  void _startDaze(
+    WildPokemon w, {
+    double seconds = WildPokemon.dazeSeconds,
+    bool announce = true,
+  }) {
     w
+      ..dazeLength = seconds
       ..overshootTo = null
       ..dazedFor = 0
       ..alertTime = 0
@@ -578,12 +637,12 @@ class World3DSim {
       ..target = null
       ..velocity = Vector3.zero();
     _dropBait(w);
-    _emit(PokemonDazed(w));
+    if (announce) _emit(PokemonDazed(w));
   }
 
   void _daze(WildPokemon w, double dt) {
     final t = w.dazedFor! + dt;
-    if (t < WildPokemon.dazeSeconds) {
+    if (t < w.dazeLength) {
       w.dazedFor = t;
       return;
     }
@@ -634,7 +693,9 @@ class World3DSim {
     for (final w in wild) {
       if (!w.isFree) continue;
       final d = w.position.distanceTo(ground);
-      if (w.hidden) {
+      if (w.isPerched) {
+        continue; // el arbusto no lo alcanza ahí arriba
+      } else if (w.hidden) {
         if (d < 4) _reveal(w, startled: true);
       } else if (d < shakeNoiseRange && !w.isAlert) {
         w
@@ -1283,10 +1344,11 @@ class World3DSim {
     }
   }
 
-  /// Dónde se agita la hierba: sobre los Pokémon escondidos.
+  /// Dónde se agita la hierba: sobre los Pokémon escondidos en ella (no
+  /// los de los árboles: esos agitan la copa).
   Iterable<Vector3> get grassRustlers sync* {
     for (final w in wild) {
-      if (w.hidden) yield w.position;
+      if (w.hidden && !w.isPerched) yield w.position;
     }
   }
 
@@ -1314,13 +1376,21 @@ class World3DSim {
                 );
                 return;
               }
-              final hidden = _random.nextDouble() < hiddenChance;
+              final roll = _random.nextDouble();
+              final hidden = roll < hiddenChance;
+              // En un árbol, con el MISMO número al azar: si no hay
+              // árboles libres, el resto de la partida no cambia.
+              final perch =
+                  !hidden &&
+                  roll < hiddenChance + perchChance &&
+                  _freePerches().isNotEmpty;
               spawn(
                 pokemon.pokemon,
                 captureRate: pokemon.captureRate,
                 hidden: hidden,
+                perch: perch,
                 // De los que se ven, algunos están durmiendo.
-                asleep: !hidden && _random.nextDouble() < sleepChance,
+                asleep: !hidden && !perch && _random.nextDouble() < sleepChance,
                 // Con su propio azar: es cosmético y no debe cambiar el
                 // resto de la partida.
                 shiny: _shinyRandom.nextDouble() < shinyChance,
@@ -1335,14 +1405,35 @@ class World3DSim {
 
   /// Hace aparecer [pokemon] en una casilla de hierba alta lejos del
   /// jugador y de los demás ([hidden]: escondido en la hierba; [asleep]:
-  /// dormido, si no está escondido). Devuelve null si no hay sitio.
+  /// dormido, si no está escondido). Con [perch], escondido en la copa de
+  /// un árbol libre (si no hay ninguno, en la hierba como siempre).
+  /// Devuelve null si no hay sitio.
   WildPokemon? spawn(
     Pokemon pokemon, {
     int captureRate = 45,
     bool hidden = false,
+    bool perch = false,
     bool asleep = false,
     bool shiny = false,
   }) {
+    final perches = perch ? _freePerches() : const <Tree>[];
+    if (perches.isNotEmpty) {
+      final tree = perches[_random.nextInt(perches.length)];
+      final w =
+          WildPokemon(
+              id: 'wild-${_spawnCount++}',
+              pokemon: pokemon,
+              captureRate: captureRate,
+              position: Vector3(tree.x, 0, tree.z),
+              facing: _random.nextDouble() * 2 * math.pi,
+              shiny: shiny,
+            )
+            ..hidden = true
+            ..perch = tree
+            ..rustleIn = _perchRandom.nextDouble() * perchRustleEvery;
+      wild.add(w);
+      return w;
+    }
     final playerPos = player.position;
     final spots =
         [for (final cell in _tallGrassCells) cellCenter(cell.col, cell.row)]
@@ -1367,6 +1458,18 @@ class World3DSim {
           ..asleep = asleep && !hidden;
     wild.add(w);
     return w;
+  }
+
+  /// Árboles donde podría esconderse uno ahora: lejos del jugador y sin
+  /// nadie dentro.
+  List<Tree> _freePerches() {
+    final playerPos = player.position;
+    return [
+      for (final t in perchTrees)
+        if (Vector3(t.x, 0, t.z).distanceTo(playerPos) >= minSpawnDistance &&
+            !wild.any((w) => w.perch == t))
+          t,
+    ];
   }
 
   /// Hace aparecer una MANADA de [size] [pokemon] (el guía, donde lo
@@ -1447,6 +1550,14 @@ class World3DSim {
     if (!w.isFree) {
       w.velocity = Vector3.zero();
       _dropBait(w); // dentro de una bola ya no come
+      return;
+    }
+    if (w.isPerched) {
+      _updatePerched(w, dt);
+      return;
+    }
+    if (w.isFalling) {
+      _fall(w, dt);
       return;
     }
     if (w.hidden) {
@@ -1591,7 +1702,7 @@ class World3DSim {
   /// por ella, sin verte.
   void _berryLanded(LooseBerry berry) {
     for (final w in wild) {
-      if (!w.hidden || !w.isFree) continue;
+      if (!w.hidden || !w.isFree || w.isPerched) continue;
       final to = berry.position - w.position
         ..y = 0;
       if (to.length < baitRevealRange) _reveal(w, startled: false);
@@ -1616,6 +1727,83 @@ class World3DSim {
     if (to.length < revealDistance(stealth, moving: player.isMoving)) {
       _reveal(w, startled: !sneaky);
     }
+  }
+
+  /// En la copa: no se mueve ni te busca. A ratos se revuelve ahí arriba
+  /// (la copa se agita y caen hojas; el doble de a menudo si estás cerca) y,
+  /// si nadie lo tira del árbol, se acaba yendo.
+  void _updatePerched(WildPokemon w, double dt) {
+    final tree = w.perch!;
+    w
+      ..velocity = Vector3.zero()
+      ..hiddenTime += dt;
+    if (w.hiddenTime > perchLifetime) {
+      removeWild(w.id);
+      return;
+    }
+    final d = player.position.distanceTo(w.position);
+    w.rustleIn -= d < perchNearRange ? dt * 2 : dt;
+    if (w.rustleIn > 0) return;
+    w.rustleIn = perchRustleEvery * (0.6 + 0.8 * _perchRandom.nextDouble());
+    final a = _perchRandom.nextDouble() * 2 * math.pi;
+    final strength = trees.shake(tree, perchRustle, math.sin(a), math.cos(a));
+    fallingLeaves.shake(tree, strength);
+    if (d < perchHearRange) _emit(TreeRustled(tree, 1 - d / perchHearRange));
+  }
+
+  /// Sacudieron [tree] (una bola, una voltereta): el que se escondía en su
+  /// copa se cae.
+  void _dropFromTree(Tree tree) {
+    for (final w in wild.toList()) {
+      if (w.perch == tree) _fallFromTree(w);
+    }
+  }
+
+  /// ¡Se cae del árbol! Del lado del jugador (fuera del tronco, donde se
+  /// pueda pisar: así se ve y se le puede lanzar), mirando al árbol (de
+  /// espaldas a ti), y el árbol suelta un buen puñado de hojas. Al llegar
+  /// al suelo queda aturdido.
+  void _fallFromTree(WildPokemon w) {
+    final tree = w.perch!;
+    final base = Vector3(tree.x, 0, tree.z);
+    final to = player.position - base
+      ..y = 0;
+    final towards = to.length2 > 1e-6 ? math.atan2(to.x, to.z) : 0.0;
+    var landing = base + Vector3(math.sin(towards), 0, math.cos(towards));
+    for (final turn in const [0.0, 0.8, -0.8, 1.6, -1.6, 2.4, -2.4, math.pi]) {
+      final a = towards + turn;
+      final p = base + Vector3(math.sin(a), 0, math.cos(a)) * fallDistance;
+      final c = cellAt(p);
+      if (layout.isWalkable(c.col, c.row)) {
+        landing = p;
+        break;
+      }
+    }
+    w
+      ..perch = null
+      ..hidden = false
+      ..hiddenTime = 0
+      ..position = landing
+      ..fallingFor = 0
+      ..fallFrom = math.max(1, tree.crown.y - w.displayHeight / 2)
+      ..facing = math.atan2(base.x - landing.x, base.z - landing.z)
+      ..target = null;
+    fallingLeaves.shake(tree, TreeField.maxKnock);
+    _emit(PokemonFellFromTree(w));
+  }
+
+  /// Cayendo del árbol: al tocar el suelo levanta polvo y queda aturdido
+  /// ([WildPokemon.fallDazeSeconds]: algo más que al pasarse de largo).
+  void _fall(WildPokemon w, double dt) {
+    final t = w.fallingFor! + dt;
+    w.velocity = Vector3.zero();
+    if (t < WildPokemon.fallTime) {
+      w.fallingFor = t;
+      return;
+    }
+    w.fallingFor = null;
+    dust.burst(w.position, strength: 0.5);
+    _startDaze(w, seconds: WildPokemon.fallDazeSeconds, announce: false);
   }
 
   /// Dormido: quieto y sin ver. Se despierta de golpe si te oye cerca o le
@@ -1685,12 +1873,14 @@ class World3DSim {
   }
 
   /// Una bola choca contra algo alto: si es un árbol, su copa se sacude,
-  /// suelta un puñado de hojas (el pino no) y suena el golpe en las hojas.
+  /// suelta un puñado de hojas (el pino no), suena el golpe en las hojas y
+  /// el que se escondía en ella se cae.
   void _knockTree(Vector3 at, Vector3 velocity) {
     final knocked = trees.knock(at, velocity);
     if (knocked == null) return;
     fallingLeaves.shake(knocked.tree, knocked.strength);
     _emit(TreeShaken(knocked.tree, knocked.strength));
+    _dropFromTree(knocked.tree);
   }
 
   /// Una bola que cae cerca asusta a los Pokémon (y a los pájaros) de
@@ -1698,8 +1888,12 @@ class World3DSim {
   void _startleAround(Vector3 at) {
     birds.startle(at, player.position);
     for (final w in wild) {
+      // Aturdido (o cayendo de un árbol) no se entera de nada.
+      if (w.isFalling || w.isDazed) continue;
       if (w.isFree && w.position.distanceTo(Vector3(at.x, 0, at.z)) < 4) {
-        if (w.hidden) {
+        if (w.isPerched) {
+          w.rustleIn = 0; // se revuelve ahí arriba, pero no baja
+        } else if (w.hidden) {
           _reveal(w, startled: true);
         } else if (w.asleep) {
           _wake(w, startled: true);

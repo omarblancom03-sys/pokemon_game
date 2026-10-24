@@ -177,9 +177,11 @@ Sigue el foco de 8.15 (lanzar y andar por el campo), que quedó completo.
 - [x] Lanzar con todo el cuerpo: la bola por ENCIMA del hombro (el torso gira antes que el brazo, el
       izquierdo apunta y se recoge, paso con la pierna izquierda, el brazo sigue de largo cruzado);
       la baya por DEBAJO, en globo (de abajo atrás a arriba delante)
-- [ ] Pokémon en las copas: algunos árboles esconden un Pokémon (la copa se agita a ratos y suelta
+- [x] Pokémon en las copas: algunos árboles esconden un Pokémon (la copa se agita a ratos y suelta
       hojas); una bola contra el árbol o una voltereta contra el tronco lo hace caer aturdido: ocasión
       de captura
+      (15 % de las apariciones, en árboles de hojas del mapa; se agita cada ~4 s, el doble cerca, y se
+      oye a < 20 m; cae de tu lado y de espaldas, aturdido 3,5 s; a los 90 s se va; cartel con la pista)
 - [ ] Apuntar sin tirones: la postura de apuntar entra y sale suave (~0,15 s) en vez de saltar
 - [ ] Viento que suena: las ráfagas (las mismas que mecen árboles y hierba) se oyen, y pájaros que
       pían a ratos cerca de las bandadas

@@ -642,3 +642,30 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
   (`handPosition`) no cambia: así las trayectorias y sus pruebas siguen igual. Lanzar sin apuntar
   salta al gesto en un fotograma (el tiro sale a los 0,18 s: no hay tiempo de preparar).
   Verificado con una lámina de fotogramas a ¼ de velocidad (Chrome con GPU) y de perfil.
+- **2026-10-23 — Pokémon en los árboles** (TODO 8.16; como en Leyendas Arceus, donde se sacuden los
+  árboles). Reutiliza el estado `hidden` (así ya queda fuera de la mira, el minimapa, el mapa grande,
+  los contactos y los variocolor vistos) más `perch` = el árbol; su posición es el pie del tronco. Solo
+  árboles de HOJAS del mapa (`perchTrees`; el pino no, por la forma, y el bosque del borde no se
+  alcanza), uno por árbol y a ≥ 9 m del jugador, como cualquier aparición. Probabilidad 15 %
+  (`perchChance`, cambiable) con el MISMO número al azar que decide si se esconde en la hierba
+  (`roll < 0,35` hierba, `< 0,50` árbol): en mapas sin árboles libres la partida sale igual que antes
+  (las pruebas con semilla no cambian). Cualquier especie (no hay tipo en el sorteo; un Gyarados en
+  un árbol hace gracia y no rompe nada). Nunca dormido ni en manada.
+  **La pista** es la copa: cada 2,4–5,6 s (el doble de a menudo a < 10 m: se pone nervioso) se
+  sacude un poco (0,05 rad, `TreeField.shake`, que ahora usan también la bola y la voltereta) y
+  suelta 4 hojas; a < 20 m se oye un susurro (más fuerte cerca). Con su propio azar (decorado).
+  **Bajarlo**: una bola que choca contra ESE árbol (cualquier fuerza que lo sacuda, > 2 m/s) o una
+  voltereta contra el tronco (`rollKnock` 0,1 rad, una vez por voltereta: se mira 0,7 m por delante
+  cuando la voltereta se frena). Una bola que solo cae cerca lo pone nervioso (se agita enseguida),
+  pero no baja: hay que darle al árbol. La bola no puede capturarlo arriba ni mientras cae (si no,
+  un golpe al tronco sería una captura gratis).
+  **La caída**: del lado del jugador, a 1,7 m del tronco (la primera casilla pisable girando ±45°),
+  desde la altura de la copa en 0,45 s (caída libre), MIRANDO AL ÁRBOL, es decir, de espaldas a ti;
+  al tocar el suelo, polvo y ATURDIDO 3,5 s (algo más que al pasarse de largo, 2,5: hay que encontrar
+  el árbol y darle) con las estrellitas de siempre. Así el premio es "por la espalda ×2" + "no te vio
+  ×1,5" si lanzas rápido. Aviso verde "¡Un X cayó del árbol! Está aturdido: ¡ahora!", grito y sonido
+  de aturdido. Cambio de paso: un Pokémon aturdido (o cayendo) ya no se asusta con una bola que cae al
+  lado (antes, al pasarse de largo, sí): "aturdido no se entera de nada", como promete el aturdimiento,
+  y si no, el primer choque de la bola contra el árbol lo asustaba en plena caída.
+  Si nadie lo tira, a los 90 s se va. Cartel "Consejo del entrenador": una línea nueva con la pista.
+  Verificado en Chrome con GPU (lanzamiento automático contra el árbol del prado).

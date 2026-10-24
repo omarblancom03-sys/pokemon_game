@@ -50,6 +50,9 @@ enum FieldNoticeKind {
   /// Uno que te embestía se pasó de largo (rodaste) y quedó aturdido.
   dazed,
 
+  /// Uno escondido en un árbol se cayó al sacudirlo y quedó aturdido.
+  fellFromTree,
+
   /// Uno que dormía se despertó por tu culpa (ruido, contacto, una bola).
   wokeUp,
 
@@ -186,6 +189,8 @@ class FieldController extends ChangeNotifier {
       // Solo sonidos (ver SoundDirector): no cambian la bolsa ni avisan.
       case PokemonDazed(:final wild):
         _post(FieldNoticeKind.dazed, pokemon: wild.pokemon);
+      case PokemonFellFromTree(:final wild):
+        _post(FieldNoticeKind.fellFromTree, pokemon: wild.pokemon);
       case PokemonWoke(:final wild, :final startled):
         // Si se despierta solo (lejos, sin que pase nada), no se avisa.
         if (startled) _post(FieldNoticeKind.wokeUp, pokemon: wild.pokemon);
@@ -201,6 +206,7 @@ class FieldController extends ChangeNotifier {
           PokemonNoticed() ||
           PlayerRolled() ||
           TreeShaken() ||
+          TreeRustled() ||
           Footstep():
         break;
     }

@@ -212,6 +212,13 @@ void main() {
     expect(field.notices.single.pokemon!.id, 7);
   });
 
+  test('one falling from a tree posts a notice; rustling leaves do not', () {
+    final field = newField(TrainerController())
+      ..onWorldEvent(PokemonFellFromTree(wild(9)));
+    expect(field.notices.single.kind, FieldNoticeKind.fellFromTree);
+    expect(field.notices.single.pokemon!.id, 9);
+  });
+
   test('a herd warned by one of them posts who and how many', () {
     final field = newField(TrainerController())
       ..onWorldEvent(HerdAlerted(wild(25), 2));

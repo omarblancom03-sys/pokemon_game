@@ -205,4 +205,25 @@ void main() {
     expect(sound.volumes[0], 1);
     expect(sound.volumes[1], closeTo(0.4, 1e-9));
   });
+
+  test('something moving up in a tree rustles (louder nearby); one falling '
+      'cries and sees stars', () {
+    final tree = TreeField.fromLayout(
+      MapLayout.parse(const ['T', '@']),
+      2,
+      outerRing: 0,
+    ).trees.single;
+    director
+      ..onWorldEvent(TreeRustled(tree, 1))
+      ..onWorldEvent(TreeRustled(tree, 0))
+      ..onWorldEvent(PokemonFellFromTree(wild('w', 25)));
+    expect(sound.played, [
+      GameSound.bushRustle,
+      GameSound.bushRustle,
+      GameSound.dazed,
+    ]);
+    expect(sound.volumes[0], closeTo(0.6, 1e-9));
+    expect(sound.volumes[1], closeTo(0.15, 1e-9));
+    expect(sound.cries, [25]);
+  });
 }

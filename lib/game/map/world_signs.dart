@@ -31,7 +31,9 @@ const Map<({int col, int row}), SignText> worldSigns = {
         'agachado se asoma sin verte; si corres, sale asustado. ¡O dale a la '
         'mata con una bola!\n'
         '¿Ves «Zzz»? Está dormido: no te ve, pero te oye. Ve agachado (la '
-        'mira solo lo fija de cerca): dormido se atrapa mejor (×2).',
+        'mira solo lo fija de cerca): dormido se atrapa mejor (×2).\n'
+        '¿Una copa se agita sola y caen hojas? Hay algo arriba: dale al árbol '
+        'con una bola (o rueda contra el tronco) y caerá aturdido.',
   ),
   (col: 20, row: 17): SignText(
     'Tienda de Poké Balls (cerrada)',
