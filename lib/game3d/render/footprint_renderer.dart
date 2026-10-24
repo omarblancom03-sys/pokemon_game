@@ -2,6 +2,7 @@ import 'package:flutter_scene/scene.dart';
 import 'package:vector_math/vector_math.dart' as vm;
 
 import '../mesh/footprint_mesh.dart';
+import '../mesh/mesh_builder.dart';
 import '../sim/footprints.dart';
 
 /// Dibuja las huellas: UNA malla instanciada (la huella repetida) con
@@ -9,8 +10,9 @@ import '../sim/footprints.dart';
 /// huella, hacia dónde apunta y lo borrada que está (alfa por instancia);
 /// los huecos libres se esconden bajo el suelo.
 class FootprintRenderer {
-  FootprintRenderer() {
-    final print = buildFootprint().toEngineSpace();
+  /// Con [mesh], otra forma de huella (las de los Pokémon).
+  FootprintRenderer({MeshBuffers? mesh}) {
+    final print = (mesh ?? buildFootprint()).toEngineSpace();
     _instances = InstancedMesh(
       geometry: MeshGeometry.fromArrays(
         positions: print.positions,
@@ -60,9 +62,10 @@ class FootprintRenderer {
           continue;
         }
         final p = prints[i];
-        final m = vm.Matrix4.translation(
-          vm.Vector3(p.position.x, _y, p.position.z),
-        )..rotateY(p.facing);
+        final m =
+            vm.Matrix4.translation(vm.Vector3(p.position.x, _y, p.position.z))
+              ..rotateY(p.facing)
+              ..scaleByDouble(p.size, 1, p.size, 1);
         transforms[i].setFrom(_flip.multiplied(m)..multiply(_flip));
       }
     }, recomputeWinding: false);

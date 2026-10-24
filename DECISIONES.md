@@ -702,3 +702,13 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
   latir, por si el aviso del final no llegara); `TensionEnded` lo devuelve de golpe y se emite ANTES
   de `PokemonCaught`/`PokemonBrokeFree`, para que el "¡clic!" o el "¡pop!" suenen a todo volumen. Una
   prueba de captura difícil (0,2) esperaba el resultado con el tiempo justo: se le dieron 2 s más.
+- **2026-10-23 — Huellas de Pokémon** (TODO 8.16). Otro `FootprintTrail` (`pawPrints`, mismo tope de
+  90 y misma vida que el del entrenador) con otra malla (`buildPawPrint`: almohadilla y tres dedos,
+  ~0,13 m, algo más oscura) y un tamaño por huella (`Footprint.size`: `displayHeight / 1,6` entre
+  0,7 y 1,8); el renderer de huellas acepta la malla. Una huella cada 0,5 m × tamaño, alternando
+  lados (0,12 m × tamaño), mirando hacia donde va. Solo en la TIERRA del camino (en la hierba alta ya
+  está la hierba pisada; en el césped no se vería) y solo si pisa el suelo (ni escondido, ni en un
+  árbol, ni cayendo, ni en el salto de una esquiva o al salir de la hierba, ni dentro de una bola).
+  Corriendo (más de 1,5 × la rapidez de paseo, medida con lo que avanzó desde la huella anterior: no
+  depende de cómo cada comportamiento rellene `velocity`) se marca más. Es escenario: los que
+  pasean no salen de la hierba alta, así que las huellas cuentan por dónde huyó o vino uno.

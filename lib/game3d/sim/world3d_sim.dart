@@ -157,6 +157,14 @@ class World3DSim {
   /// Huellas del entrenador en la tierra del camino (decorado).
   final FootprintTrail footprints = FootprintTrail();
 
+  /// Huellas de los Pokémon que cruzan la tierra del camino: se ve por
+  /// dónde pasó uno y hacia dónde iba (decorado).
+  final FootprintTrail pawPrints = FootprintTrail();
+
+  /// Cada cuántos metros (por unidad de [WildPokemon.pawSize]) deja una
+  /// huella un Pokémon.
+  static const pawSpacing = 0.5;
+
   /// Mariposas sobre los macizos de flores (decorado, con su propio azar).
   late final ButterflySwarm butterflies = ButterflySwarm.fromLayout(
     layout,
@@ -1290,6 +1298,7 @@ class World3DSim {
       _updateWild(w, dt);
     }
     _spotShinies();
+    _leavePawPrints(dt);
     trampled.update(dt);
     _checkDodges();
     ballSystem.update(
@@ -1403,6 +1412,49 @@ class World3DSim {
     }
     for (final b in ballSystem.balls) {
       if (b.pressesGrass) yield b.position;
+    }
+  }
+
+  /// Los Pokémon que andan o corren por la tierra del camino dejan
+  /// huellas (una pata a cada lado, hacia donde van); corriendo, más
+  /// marcadas. Los que no pisan el suelo (en una bola, escondidos, en un
+  /// árbol, cayendo o en mitad de un salto) no.
+  void _leavePawPrints(double dt) {
+    pawPrints.update(dt);
+    for (final w in wild) {
+      final grounded =
+          w.isFree &&
+          !w.hidden &&
+          !w.isFalling &&
+          !w.isDodging &&
+          w.revealedFor == null;
+      if (!grounded || !isDirtPath(w.position)) {
+        w.lastPawPrint = null;
+        continue;
+      }
+      final last = w.lastPawPrint;
+      final size = w.pawSize;
+      if (last != null && last.distanceTo(w.position) < pawSpacing * size) {
+        continue;
+      }
+      // Rapidez: lo que avanzó desde la última huella (la primera al
+      // llegar a la tierra, la que llevaba).
+      final elapsed = time - w.lastPawAt;
+      final speed = last != null && elapsed > 0
+          ? last.distanceTo(w.position) / elapsed
+          : w.velocity.length;
+      w
+        ..lastPawPrint = w.position
+        ..lastPawAt = time
+        ..pawLeft = !w.pawLeft;
+      final side = Vector3(math.cos(w.facing), 0, -math.sin(w.facing));
+      final running = speed > WildPokemon.wanderSpeed * 1.5;
+      pawPrints.step(
+        w.position + side * (0.12 * size * (w.pawLeft ? 1 : -1)),
+        w.facing,
+        depth: running ? FootprintTrail.runDepth : FootprintTrail.walkDepth,
+        size: size,
+      );
     }
   }
 

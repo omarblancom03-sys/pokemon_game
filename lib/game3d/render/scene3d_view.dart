@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_scene/scene.dart';
 import 'package:vector_math/vector_math.dart' as vm;
 
+import '../mesh/footprint_mesh.dart' show buildPawPrint;
 import '../mesh/mesh_builder.dart';
 import '../mesh/props.dart';
 import '../mesh/terrain_mesh.dart';
@@ -53,6 +54,7 @@ class _Scene3DViewState extends State<Scene3DView> {
   late BallRenderer _balls;
   late DustRenderer _dust;
   late FootprintRenderer _footprints;
+  late FootprintRenderer _pawPrints;
   late GrassBladeRenderer _blades;
   late FallingLeafRenderer _leaves;
   late ButterflyRenderer _butterflies;
@@ -161,6 +163,8 @@ class _Scene3DViewState extends State<Scene3DView> {
 
     _footprints = FootprintRenderer();
     scene.add(_footprints.node);
+    _pawPrints = FootprintRenderer(mesh: buildPawPrint());
+    scene.add(_pawPrints.node);
     _dust = DustRenderer();
     scene.add(_dust.node);
     _blades = GrassBladeRenderer(_mesh);
@@ -234,6 +238,7 @@ class _Scene3DViewState extends State<Scene3DView> {
     _wild.update(_sim.wild, _sim.balls, _sim.camera.yaw, _sim.time);
     _items.update(_sim.fieldItems.items, _sim.time);
     _footprints.update(_sim.footprints.prints);
+    _pawPrints.update(_sim.pawPrints.prints);
     _dust.update(_sim.dust.puffs);
     _blades.update(_sim.blades.blades);
     _leaves.update(_sim.fallingLeaves.leaves);

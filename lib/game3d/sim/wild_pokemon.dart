@@ -76,6 +76,17 @@ class WildPokemon {
   /// Metros recorridos: marca el ritmo de los saltitos.
   double distanceMoved = 0;
 
+  /// Dónde dejó su última huella en la tierra del camino (null = aún
+  /// ninguna desde que llegó a la tierra) y de qué lado toca la siguiente.
+  Vector3? lastPawPrint;
+  bool pawLeft = false;
+
+  /// Segundo del juego en que dejó esa huella (para saber si corría).
+  double lastPawAt = 0;
+
+  /// Tamaño de sus huellas: las de un Pokémon grande, más grandes.
+  double get pawSize => (displayHeight / 1.6).clamp(0.7, 1.8).toDouble();
+
   /// Segundos desde que apareció (para la animación de entrada).
   double age = 0;
 

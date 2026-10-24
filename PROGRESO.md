@@ -39,6 +39,9 @@
   - Hierba alta 3D que se mece con el viento y se aparta al pasar. Al pisarla saltan briznas que dan
     vueltas y caen planeando: tres por pisada corriendo, una andando y ninguna agachado (se ve el
     ruido que haces).
+  - **Huellas de Pokémon:** un Pokémon que cruza la tierra del camino deja huellas de pata
+    (almohadilla y tres dedos), una a cada lado y apuntando hacia donde iba: más grandes y separadas
+    si es un Pokémon grande, más marcadas si iba corriendo. Se borran como las tuyas (a los 30 s).
   - **Hierba pisada:** un Pokémon que cruza la hierba alta corriendo (huyendo de ti o cargando) deja un
     pasillo de matas tumbadas hacia donde iba y aplastadas: se ve por dónde se fue. Siguen así unos
     10 s y luego se levantan poco a poco. Los que pasean no dejan rastro.

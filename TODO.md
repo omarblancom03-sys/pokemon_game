@@ -192,7 +192,9 @@ Sigue el foco de 8.15 (lanzar y andar por el campo), que quedó completo.
       lenta (y el sonido se apaga) antes del resultado
       (menos de 35 % y tres sacudidas, no crítica; el mundo a ½ con la cámara de captura encuadrando; un
       latido cada 0,4 s; el resultado la rompe antes de sonar; moverse la corta)
-- [ ] Huellas de Pokémon en la tierra del camino: se puede seguir el rastro de uno que pasó
+- [x] Huellas de Pokémon en la tierra del camino: se puede seguir el rastro de uno que pasó
+      (pata con almohadilla y tres dedos, alternando lados, hacia donde iba; más grandes y separadas si
+      es grande, más marcadas si corría; duran como las del entrenador)
 
 ## Mejoras continuas
 - [x] Poké Ball rediseñada en alta calidad (2026-09-30, ficha de Claude Design): superficie lisa,

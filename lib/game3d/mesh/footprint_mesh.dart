@@ -30,3 +30,30 @@ MeshBuffers buildFootprint({int segments = 14}) {
   }
   return b.build();
 }
+
+/// HUELLA de Pokémon (una pata), plana en el suelo y con los dedos hacia
+/// +Z: una almohadilla grande y tres dedos en arco delante. Mide ~0,13 m
+/// (quien la dibuja la escala con el tamaño del Pokémon). Algo más oscura
+/// que la de zapatilla, para distinguirlas.
+MeshBuffers buildPawPrint({int segments = 12}) {
+  final b = MeshBuilder();
+  final color = srgb(0x5E4529);
+  // (centro en x, centro en z, radio en x, radio en z)
+  for (final (cx, cz, rx, rz) in const [
+    (0.0, -0.025, 0.045, 0.038),
+    (-0.042, 0.035, 0.016, 0.019),
+    (0.0, 0.05, 0.017, 0.02),
+    (0.042, 0.035, 0.016, 0.019),
+  ]) {
+    final center = Vector3(cx, 0, cz);
+    Vector3 at(int i) {
+      final a = i * 2 * math.pi / segments;
+      return Vector3(cx + math.cos(a) * rx, 0, cz + math.sin(a) * rz);
+    }
+
+    for (var i = 0; i < segments; i++) {
+      b.triangle(center, at(i + 1), at(i), color);
+    }
+  }
+  return b.build();
+}

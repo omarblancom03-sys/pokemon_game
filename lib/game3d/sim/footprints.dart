@@ -9,6 +9,7 @@ class Footprint {
     required Vector3 position,
     required this.facing,
     required this.depth,
+    this.size = 1,
   }) : position = Vector3(position.x, 0, position.z);
 
   /// En el suelo (y = 0).
@@ -20,6 +21,9 @@ class Footprint {
   /// Lo marcada que quedó, 0..1: corriendo se hunde más que andando y
   /// agachado casi no deja.
   final double depth;
+
+  /// Tamaño (1 = el de la malla): las de un Pokémon grande, más grandes.
+  final double size;
 
   double age = 0;
 
@@ -33,8 +37,9 @@ class Footprint {
   bool get isGone => age >= FootprintTrail.life;
 }
 
-/// HUELLAS del entrenador en la tierra del camino (Dart puro): una por
-/// pisada, que se borran solas con el tiempo. Es decorado: el renderer
+/// HUELLAS en la tierra del camino (Dart puro): una por pisada, que se
+/// borran solas con el tiempo. Hay dos rastros: el del entrenador y el de
+/// los Pokémon (con otra forma: almohadilla y dedos). Es decorado: el renderer
 /// las dibuja y los tests comprueban cuándo aparecen y desaparecen.
 class FootprintTrail {
   final List<Footprint> _prints = [];
@@ -59,13 +64,19 @@ class FootprintTrail {
       crouching ? crouchDepth : (running ? runDepth : walkDepth);
 
   /// Un pie que pisa la tierra en [foot] yendo hacia [facing].
-  void step(Vector3 foot, double facing, {double depth = walkDepth}) {
+  void step(
+    Vector3 foot,
+    double facing, {
+    double depth = walkDepth,
+    double size = 1,
+  }) {
     if (_prints.length >= maxPrints) _prints.removeAt(0); // la más vieja
     _prints.add(
       Footprint(
         position: foot,
         facing: facing,
         depth: math.max(0, math.min(1, depth)),
+        size: size,
       ),
     );
   }
