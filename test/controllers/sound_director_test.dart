@@ -226,4 +226,22 @@ void main() {
     expect(sound.volumes[1], closeTo(0.15, 1e-9));
     expect(sound.cries, [25]);
   });
+
+  test('gusts sound as strong as their peak; birds as loud as they are '
+      'near', () {
+    director
+      ..onWorldEvent(const WindGust(0.55))
+      ..onWorldEvent(const WindGust(1))
+      ..onWorldEvent(const BirdsChirped(0.5))
+      ..onWorldEvent(const BirdsTookOff(0.2));
+    expect(sound.played, [
+      GameSound.windGust,
+      GameSound.windGust,
+      GameSound.birdChirp,
+      GameSound.birdsTakeOff,
+    ]);
+    expect(sound.volumes[0], closeTo(0.35, 1e-9));
+    expect(sound.volumes[1], closeTo(1, 1e-9));
+    expect(sound.volumes.sublist(2), [0.5, 0.2]);
+  });
 }

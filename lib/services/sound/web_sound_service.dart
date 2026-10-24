@@ -98,6 +98,36 @@ class WebSoundService implements SoundService {
         case GameSound.bushRustle:
           _hiss(ctx, 700, to: 1600, q: 0.6, duration: 0.35, gain: 0.18);
           _hiss(ctx, 2500, duration: 0.25, at: 0.1, gain: 0.08);
+        case GameSound.windGust:
+          _wind(ctx, duration: 2.8, gain: 0.09);
+        case GameSound.birdChirp:
+          // Dos o tres trinos cortos, cada vez a una altura distinta.
+          final f = 3200 + _random.nextDouble() * 900;
+          final notes = 2 + _random.nextInt(2);
+          for (var i = 0; i < notes; i++) {
+            final up = i.isEven;
+            _tone(
+              ctx,
+              'sine',
+              f * (up ? 1 : 1.12),
+              to: f * (up ? 1.3 : 0.92),
+              duration: 0.07,
+              at: i * 0.11,
+              gain: 0.045,
+            );
+          }
+        case GameSound.birdsTakeOff:
+          // "Frrr": golpes de ala rápidos que se alejan.
+          for (var i = 0; i < 7; i++) {
+            _hiss(
+              ctx,
+              1300 - i * 60,
+              q: 1.4,
+              duration: 0.05,
+              at: i * 0.045,
+              gain: 0.1 * (1 - i / 9),
+            );
+          }
         case GameSound.treeKnock:
           _tone(ctx, 'triangle', 160, to: 90, duration: 0.09, gain: 0.2);
           _hiss(ctx, 1800, q: 3, duration: 0.04, gain: 0.1);
@@ -249,6 +279,43 @@ class WebSoundService implements SoundService {
     source
       ..start(t)
       ..stop(t + duration + 0.02);
+  }
+
+  /// Viento: ruido (en bucle, más largo que el búfer) por un paso bajo que
+  /// se abre y se cierra, y un silbido suave por encima. Sube despacio
+  /// hasta el 45 % y se va apagando.
+  void _wind(
+    web.AudioContext ctx, {
+    required double duration,
+    required double gain,
+  }) {
+    final t = ctx.currentTime;
+    final peak = t + duration * 0.45;
+    for (final (type, from, top, q, g) in [
+      ('lowpass', 320.0, 820.0, 0.7, gain),
+      ('bandpass', 900.0, 1400.0, 5.0, gain * 0.3),
+    ]) {
+      final source = ctx.createBufferSource()
+        ..buffer = _noiseBuffer(ctx)
+        ..loop = true;
+      final filter = ctx.createBiquadFilter()..type = type;
+      filter.frequency
+        ..setValueAtTime(from, t)
+        ..linearRampToValueAtTime(top, peak)
+        ..linearRampToValueAtTime(from * 0.9, t + duration);
+      filter.Q.setValueAtTime(q, t);
+      final amp = ctx.createGain();
+      amp.gain
+        ..setValueAtTime(0.0001, t)
+        ..linearRampToValueAtTime(math.max(0.0002, g * _level), peak)
+        ..exponentialRampToValueAtTime(0.0001, t + duration);
+      amp.connect(_master!);
+      source.connect(filter);
+      filter.connect(amp);
+      source
+        ..start(t, _random.nextDouble() * 0.9)
+        ..stop(t + duration + 0.05);
+    }
   }
 
   /// Volumen que sube en 10 ms hasta [gain] y cae hasta casi 0 al final.

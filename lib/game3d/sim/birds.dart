@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:vector_math/vector_math.dart';
 
 import '../../game/map/map_layout.dart';
+import 'cell_noise.dart';
 import 'wild_behavior.dart' show PlayerStealth;
 
 /// Un pájaro de una bandada: en el suelo picotea y da saltitos; en el aire
@@ -73,6 +74,10 @@ class BirdFlock {
   Vector3? cruise;
 
   bool get flying => birds.any((b) => b.flying || b.takeoffDelay > 0);
+
+  /// Segundos para el próximo trino (solo posada) y cuántos lleva.
+  double chirpIn = 1;
+  int chirps = 0;
 }
 
 /// PÁJAROS (Dart puro): bandadas que se posan en el campo abierto, picotean
@@ -129,6 +134,15 @@ class BirdSystem {
   final List<Vector3> spots;
   final math.Random _random;
   final List<BirdFlock> flocks = [];
+
+  /// Para el sonido (los pone la simulación): una bandada posada pía a
+  /// ratos ([onChirp]) y aletea al salir volando ([onTakeOff]).
+  void Function(BirdFlock flock)? onChirp;
+  void Function(BirdFlock flock)? onTakeOff;
+
+  /// Cada cuánto (s, de media) pía una bandada posada. Sin tocar su azar
+  /// (que decide saltitos y vuelos): el ritmo sale de un ruido fijo.
+  static const chirpEvery = 3.0;
 
   Iterable<Bird> get birds => flocks.expand((f) => f.birds);
 
@@ -211,12 +225,17 @@ class BirdSystem {
     required bool moving,
   }) {
     final reach = scareDistance(stealth, moving: moving);
-    for (final flock in flocks) {
+    for (var i = 0; i < flocks.length; i++) {
+      final flock = flocks[i];
       if (!flock.flying) {
         final near = flock.birds.any(
           (b) => b.position.distanceTo(Vector3(player.x, 0, player.z)) < reach,
         );
-        if (near) _takeOff(flock, player);
+        if (near) {
+          _takeOff(flock, player);
+        } else {
+          _chirp(flock, i, dt);
+        }
       }
       for (final b in flock.birds) {
         if (b.takeoffDelay > 0) {
@@ -244,6 +263,16 @@ class BirdSystem {
     }
   }
 
+  /// Posada, pía de vez en cuando (entre 0,6 y 1,4 veces [chirpEvery]).
+  void _chirp(BirdFlock flock, int index, double dt) {
+    flock.chirpIn -= dt;
+    if (flock.chirpIn > 0) return;
+    flock
+      ..chirps += 1
+      ..chirpIn = chirpEvery * (0.6 + 0.8 * cellNoise(index, flock.chirps, 41));
+    onChirp?.call(flock);
+  }
+
   /// Una Poké Ball cayó en [at]: la bandada que esté cerca sale volando.
   void startle(Vector3 at, Vector3 player) {
     for (final flock in flocks) {
@@ -259,6 +288,7 @@ class BirdSystem {
   /// Todos arriba (cada uno con un pequeño retraso), hacia un sitio lejos
   /// del jugador, pasando por un punto alto a medio camino.
   void _takeOff(BirdFlock flock, Vector3 player) {
+    onTakeOff?.call(flock); // aún en su sitio: desde ahí se oye el aleteo
     final from = flock.spot;
     final to = _pickSpot(
       player,
@@ -267,7 +297,8 @@ class BirdSystem {
     );
     flock
       ..spot = to
-      ..cruise = (from + to) * 0.5 + Vector3(0, cruiseHeight, 0);
+      ..cruise = (from + to) * 0.5 + Vector3(0, cruiseHeight, 0)
+      ..chirpIn = chirpEvery; // al posarse tardan un poco en volver a piar
     for (final b in flock.birds) {
       // Lo que estuviera haciendo en el suelo se queda a medias.
       b

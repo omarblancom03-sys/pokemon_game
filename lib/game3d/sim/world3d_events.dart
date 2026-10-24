@@ -100,6 +100,28 @@ class PokemonDazed extends World3DEvent {
   final WildPokemon wild;
 }
 
+/// Una ráfaga de viento llega al jugador (la misma que mece árboles y
+/// hierba): [strength] es su pico (0..1, ver TreeField.gustAt).
+class WindGust extends World3DEvent {
+  const WindGust(this.strength);
+
+  final double strength;
+}
+
+/// Una bandada posada pía; [loudness] (0..1): lo cerca que está.
+class BirdsChirped extends World3DEvent {
+  const BirdsChirped(this.loudness);
+
+  final double loudness;
+}
+
+/// Una bandada sale volando (aleteo); [loudness] (0..1): lo cerca que está.
+class BirdsTookOff extends World3DEvent {
+  const BirdsTookOff(this.loudness);
+
+  final double loudness;
+}
+
 /// Un Pokémon escondido en la copa de [tree] se revolvió: la copa se agita
 /// y suelta unas hojas. [loudness] (0..1): lo cerca que lo tiene el
 /// jugador (cuánto se oye).

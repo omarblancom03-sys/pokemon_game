@@ -184,8 +184,10 @@ Sigue el foco de 8.15 (lanzar y andar por el campo), que quedó completo.
       oye a < 20 m; cae de tu lado y de espaldas, aturdido 3,5 s; a los 90 s se va; cartel con la pista)
 - [x] Apuntar sin tirones: la postura de apuntar entra y sale suave (~0,15 s) en vez de saltar
       (también al acabar un lanzamiento apuntando; un tiro rápido arranca desde el brazo colgando)
-- [ ] Viento que suena: las ráfagas (las mismas que mecen árboles y hierba) se oyen, y pájaros que
+- [x] Viento que suena: las ráfagas (las mismas que mecen árboles y hierba) se oyen, y pájaros que
       pían a ratos cerca de las bandadas
+      (un soplo de 2,8 s por ráfaga que pasa de 0,55, tan fuerte como su pico; trinos cada 1,8–4,2 s por
+      bandada posada y aleteo al salir volando, a < 30 m y más fuerte cerca)
 - [ ] Última sacudida con tensión: con poca probabilidad de captura, la última sacudida va a cámara
       lenta (y el sonido se apaga) antes del resultado
 - [ ] Huellas de Pokémon en la tierra del camino: se puede seguir el rastro de uno que pasó

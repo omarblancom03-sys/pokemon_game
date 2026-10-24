@@ -37,6 +37,15 @@ enum GameSound {
   /// que se agitan.
   treeKnock,
 
+  /// Una ráfaga de viento: un soplo largo que sube y se va.
+  windGust,
+
+  /// Pájaros posados piando.
+  birdChirp,
+
+  /// Una bandada que sale volando: aleteo.
+  birdsTakeOff,
+
   /// Destellos: se ve un Pokémon variocolor.
   shiny,
 

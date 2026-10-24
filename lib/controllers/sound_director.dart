@@ -74,6 +74,16 @@ class SoundDirector {
         // Se da un buen golpe: grita y queda viendo estrellitas.
         sound.play(GameSound.dazed);
         _cry(wild, force: true);
+      case WindGust(:final strength):
+        // Un soplo largo; más fuerte cuanto más fuerte es la ráfaga.
+        sound.play(
+          GameSound.windGust,
+          volume: (0.35 + 0.65 * (strength - 0.55) / 0.45).clamp(0.35, 1),
+        );
+      case BirdsChirped(:final loudness):
+        sound.play(GameSound.birdChirp, volume: loudness);
+      case BirdsTookOff(:final loudness):
+        sound.play(GameSound.birdsTakeOff, volume: loudness);
       case TreeRustled(:final loudness):
         // Algo se mueve en la copa: un susurro de hojas, más fuerte cerca.
         sound.play(GameSound.bushRustle, volume: 0.15 + 0.45 * loudness);

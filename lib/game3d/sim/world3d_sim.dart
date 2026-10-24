@@ -166,12 +166,25 @@ class World3DSim {
 
   /// Bandadas de pájaros que se posan en el campo y salen volando al
   /// acercarte. Decorado con su propio azar.
-  late final BirdSystem birds = BirdSystem.fromLayout(
-    layout,
-    config.tileSize,
-    player: player.position,
-    random: math.Random(23),
-  );
+  late final BirdSystem birds =
+      BirdSystem.fromLayout(
+          layout,
+          config.tileSize,
+          player: player.position,
+          random: math.Random(23),
+        )
+        ..onChirp = ((f) => _hearBirds(f, BirdsChirped.new))
+        ..onTakeOff = ((f) => _hearBirds(f, BirdsTookOff.new));
+
+  /// Hasta dónde (m) se oyen los pájaros.
+  static const birdHearRange = 30.0;
+
+  /// Una RÁFAGA que llega al jugador se oye si pasa de [gustSound] (0..1,
+  /// ver TreeField.gustAt); no vuelve a sonar hasta que amaina por debajo
+  /// de [gustCalm].
+  static const gustSound = 0.55;
+  static const gustCalm = 0.25;
+  bool _gustHeard = false;
 
   /// Nubes que pasan con el viento (y sus sombras). Decorado con su
   /// propio azar, como el polvo.
@@ -1204,6 +1217,7 @@ class World3DSim {
 
     _kickUp(dt, wish);
     clouds.update(dt);
+    _listenToWind();
     birds.update(
       dt,
       player.position,
@@ -1366,6 +1380,32 @@ class World3DSim {
   Iterable<Vector3> get grassRustlers sync* {
     for (final w in wild) {
       if (w.hidden && !w.isPerched) yield w.position;
+    }
+  }
+
+  /// La bandada [f] pía o sale volando: se oye tanto más cuanto más cerca
+  /// (nada a más de [birdHearRange] m).
+  void _hearBirds(BirdFlock f, World3DEvent Function(double loudness) event) {
+    final p = player.position;
+    final d = Vector3(f.spot.x - p.x, 0, f.spot.z - p.z).length;
+    if (d < birdHearRange) _emit(event(1 - d / birdHearRange));
+  }
+
+  /// El viento que mece árboles y hierba también se oye: cuando una ráfaga
+  /// llega al jugador suena un soplo tan fuerte como su pico (se mira un
+  /// poco hacia delante: la ráfaga es una ola que se sabe cómo viene).
+  void _listenToWind() {
+    final p = player.position;
+    final g = TreeField.gustAt(time, p.x, p.z);
+    if (!_gustHeard && g > gustSound) {
+      _gustHeard = true;
+      var peak = g;
+      for (var k = 1; k <= 8; k++) {
+        peak = math.max(peak, TreeField.gustAt(time + k * 0.2, p.x, p.z));
+      }
+      _emit(WindGust(peak));
+    } else if (_gustHeard && g < gustCalm) {
+      _gustHeard = false;
     }
   }
 

@@ -677,3 +677,15 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
   encima de la cabeza, sin el salto de un fotograma de antes). Al acabar un lanzamiento se pone a 0:
   si sigues apuntando, el brazo vuelve a prepararse poco a poco desde colgando (−2π = 0, sin vuelta
   atrás). `TrainerPose.fromMotion` recibe `aim` (double) en vez de `aiming` (bool).
+- **2026-10-23 — El viento y los pájaros suenan** (TODO 8.16). Sin bucles de fondo: el sonido del
+  juego son disparos sueltos sintetizados y así sigue. VIENTO: la simulación mira la ráfaga en el
+  jugador (`TreeField.gustAt`, la MISMA ola que mece copas y hierba: lo que se oye es lo que se ve) y
+  cuando pasa de 0,55 emite `WindGust` con su PICO (mira 1,6 s hacia delante: la ola se sabe cómo
+  viene), y no vuelve a sonar hasta que baja de 0,25. Sale una cada ~10 s y no todas igual de fuertes
+  (volumen 0,35 → 1). El soplo: ruido EN BUCLE (el búfer dura 1 s y el soplo 2,8) por un paso bajo
+  que se abre de 320 a 820 Hz y vuelve, con un silbido suave por encima; sube lento hasta el 45 % y
+  se apaga. PÁJAROS: cada bandada posada pía cada 1,8–4,2 s (ritmo de un ruido fijo por bandada, NO
+  de su azar, que decide saltitos y vuelos: así sus pruebas con semilla no cambian) y al salir
+  volando aletea ("frrr", 7 golpes); ambos a < 30 m y con volumen 1 − d/30. El aviso de despegue va
+  ANTES de cambiar el sitio de la bandada (si no, la distancia sería la del destino). Comprobado en
+  Chrome contando nodos: 4 ráfagas y ~17 trinos en 40 s, sin errores.

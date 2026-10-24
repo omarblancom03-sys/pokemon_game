@@ -207,6 +207,9 @@ class FieldController extends ChangeNotifier {
           PlayerRolled() ||
           TreeShaken() ||
           TreeRustled() ||
+          WindGust() ||
+          BirdsChirped() ||
+          BirdsTookOff() ||
           Footstep():
         break;
     }
