@@ -90,7 +90,7 @@ void main() {
       maxNear = max(maxNear, tilt.angle);
       if (GrassField.rustleBurst(t, at) == 0) calmMoments++;
       final still = GrassField.tiltFor(far, t, const [], rustlers: [at]);
-      expect(still.angle, lessThanOrEqualTo(GrassField.windStrength + 1e-9));
+      expect(still.angle, lessThanOrEqualTo(GrassField.maxWind + 1e-9));
     }
     expect(maxNear, greaterThan(0.2));
     expect(calmMoments, greaterThan(50), reason: 'bursts, not constant');

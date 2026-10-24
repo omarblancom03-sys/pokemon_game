@@ -86,7 +86,8 @@ void main() {
       final tip = Vector2(-tilt.axisZ, tilt.axisX);
       final want = Vector2(bx, bz)..normalize();
       expect(tip.dot(want), greaterThan(0.98), reason: '($bx, $bz)');
-      expect(tilt.angle, closeTo(0.8, 0.1));
+      // (Más o menos lo que el viento la incline a la vez.)
+      expect(tilt.angle, closeTo(0.8, GrassField.maxWind));
     }
   });
 

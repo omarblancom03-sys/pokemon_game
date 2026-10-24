@@ -68,13 +68,13 @@ void main() {
 
   group('wind', () {
     test('gusts stay within 0..1 and travel with the wind', () {
-      final d = TreeField.windDirection;
+      final d = Wind.direction;
       for (var t = 0.0; t < 20; t += 0.37) {
-        final here = TreeField.gustAt(t, 3, 4);
+        final here = Wind.gustAt(t, 3, 4);
         expect(here, inInclusiveRange(0, 1));
         // La misma ráfaga, 14 m más allá a favor del viento, 2 s después.
-        final later = TreeField.gustAt(
-          t + 14 / TreeField.gustSpeed,
+        final later = Wind.gustAt(
+          t + 14 / Wind.gustSpeed,
           3 + d.x * 14,
           4 + d.z * 14,
         );
@@ -89,8 +89,7 @@ void main() {
       var maxAngle = 0.0;
       for (var t = 0.0; t < 60; t += 0.05) {
         final l = TreeField.leanOf(tree, t);
-        along +=
-            l.x * TreeField.windDirection.x + l.z * TreeField.windDirection.z;
+        along += l.x * Wind.direction.x + l.z * Wind.direction.z;
         maxAngle = max(maxAngle, sqrt(l.x * l.x + l.z * l.z));
       }
       expect(along, greaterThan(0));

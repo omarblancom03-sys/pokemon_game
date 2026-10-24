@@ -29,7 +29,7 @@ void main() {
   /// ([strong]) o en el que está en calma.
   double timeWith({required bool strong}) {
     for (var t = 0.0; t < 120; t += 0.05) {
-      final g = TreeField.gustAt(t, autumn.x, autumn.z);
+      final g = Wind.gustAt(t, autumn.x, autumn.z);
       if (strong ? g > 0.8 : g < 0.05) return t;
     }
     throw StateError('no gust found');

@@ -4,6 +4,7 @@ import 'package:vector_math/vector_math.dart';
 
 import '../../game/map/map_layout.dart';
 import 'cell_noise.dart';
+import 'wind.dart';
 
 /// Tipos de árbol (cada uno con su copa).
 enum TreeKind {
@@ -98,8 +99,8 @@ class Tree {
 }
 
 /// LOS ÁRBOLES como datos (Dart puro): dónde está cada uno, cuánto se mece
-/// con el viento (a RÁFAGAS que cruzan el campo: se ve la ola de viento
-/// pasar por el bosque) y cómo se sacuden si les da una Poké Ball. El
+/// con el viento (a RÁFAGAS que cruzan el campo, ver [Wind]: se ve la
+/// ola de viento pasar por el bosque) y cómo se sacuden si les da una Poké Ball. El
 /// tronco no se mueve: solo la copa, sobre su pivote. El renderer solo
 /// copia estas inclinaciones a la GPU.
 class TreeField {
@@ -193,16 +194,6 @@ class TreeField {
   Tree? treeAt(Vector3 p) =>
       _byCell[((p.x / tileSize).floor(), (p.z / tileSize).floor())];
 
-  /// Hacia dónde sopla el viento (en el suelo; el de la hierba y las
-  /// nubes también va hacia +X).
-  static final windDirection = Vector3(1, 0, 0.25)..normalize();
-
-  /// Las RÁFAGAS son olas que avanzan con el viento: una de [gustLength] m
-  /// a [gustSpeed] m/s (una cada ~6 s en cada sitio) y otra más larga y
-  /// lenta que hace que no todas sean iguales.
-  static const gustSpeed = 7.0;
-  static const gustLength = 45.0;
-
   /// Inclinación (rad) a favor del viento: siempre un poco y más en cada
   /// ráfaga; y el vaivén alrededor de ella.
   static const baseLean = 0.012;
@@ -226,21 +217,12 @@ class TreeField {
   static const knockSeconds = 2.0;
   static const minKnockSpeed = 2.0;
 
-  /// Fuerza de la ráfaga (0 = calma … 1 = ráfaga fuerte) en (x, z).
-  static double gustAt(double time, double x, double z) {
-    final along = x * windDirection.x + z * windDirection.z;
-    const k = 2 * math.pi / gustLength;
-    final a = math.sin((gustSpeed * time - along) * k);
-    final b = math.sin((gustSpeed * 0.7 * time - along) * k / 1.7 + 1.3);
-    final u = (0.6 * a + 0.4 * b + 1) / 2;
-    return u * u; // más rato en calma; las ráfagas, más cortas
-  }
-
   /// Inclinación de la copa de [tree] en [time]: a favor del viento (más
   /// en las ráfagas), con su vaivén, algo de lado y la sacudida de un
   /// golpe si la hay.
   static TreeLean leanOf(Tree tree, double time) {
-    final g = gustAt(time, tree.x, tree.z);
+    final g = Wind.gustAt(time, tree.x, tree.z);
+    final windDirection = Wind.direction;
     final stiff = tree.kind.isPine ? pineStiffness : 1.0;
     final w = 2 * math.pi * swayFrequency / math.sqrt(tree.height * tree.size);
     final sway = baseSway + gustSway * g;

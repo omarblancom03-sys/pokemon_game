@@ -36,7 +36,8 @@
   - **Hojas que caen:** los árboles otoñales que tienes cerca sueltan hojas naranjas, rojas y
     amarillas sin parar (muchas más cuando pasa una ráfaga): bajan balanceándose de lado a lado, el
     viento se las lleva y se quedan un rato en el suelo antes de desaparecer.
-  - Hierba alta 3D que se mece con el viento y se aparta al pasar. Al pisarla saltan briznas que dan
+  - Hierba alta 3D que se mece con el viento y se aparta al pasar. Las ráfagas que mecen los árboles
+    también la tumban un poco: se ve la ola de viento cruzar el prado. Al pisarla saltan briznas que dan
     vueltas y caen planeando: tres por pisada corriendo, una andando y ninguna agachado (se ve el
     ruido que haces).
   - **Huellas de Pokémon:** un Pokémon que cruza la tierra del camino deja huellas de pata

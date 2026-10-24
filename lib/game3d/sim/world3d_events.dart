@@ -113,7 +113,7 @@ class TensionEnded extends World3DEvent {
 }
 
 /// Una ráfaga de viento llega al jugador (la misma que mece árboles y
-/// hierba): [strength] es su pico (0..1, ver TreeField.gustAt).
+/// hierba): [strength] es su pico (0..1, ver Wind.gustAt).
 class WindGust extends World3DEvent {
   const WindGust(this.strength);
 

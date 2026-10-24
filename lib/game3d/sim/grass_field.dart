@@ -4,6 +4,7 @@ import 'package:vector_math/vector_math.dart';
 
 import '../../game/map/map_layout.dart';
 import 'cell_noise.dart';
+import 'wind.dart';
 
 /// Una mata de hierba alta: dónde está, cuánto mide y su fase de viento.
 class GrassTuft {
@@ -76,8 +77,17 @@ class GrassField {
   /// Inclinación máxima (rad) al apartarla.
   static const maxPush = 0.95;
 
-  /// Vaivén del viento (rad).
+  /// VIENTO: la hierba se inclina a favor de [Wind.direction] un poco
+  /// siempre ([calmLean]) y mucho más cuando pasa una ráfaga ([gustLean]:
+  /// la MISMA ola que mece los árboles, así se ve cruzar el prado), y se
+  /// mece alrededor ([windStrength], más en la ráfaga) (rad).
+  static const calmLean = 0.02;
+  static const gustLean = 0.16;
   static const windStrength = 0.08;
+  static const gustSway = 0.04;
+
+  /// Lo más que la inclina el viento solo (rad).
+  static const maxWind = calmLean + gustLean + windStrength + gustSway;
 
   /// Hierba que se agita sobre un Pokémon escondido: radio (m) y fuerza
   /// máxima de la sacudida (rad).
@@ -106,8 +116,14 @@ class GrassField {
     // Pisada: eje = arriba × dirección (la punta queda hacia donde iba).
     var vx = bend.z;
     var vz = -bend.x;
-    // El viento sopla hacia +X: gira alrededor del eje Z.
-    vz -= windStrength * math.sin(time * 1.8 + tuft.phase);
+    // El viento: eje = arriba × dirección (la punta va a favor).
+    final gust = Wind.gustAt(time, tuft.x, tuft.z);
+    final lean =
+        calmLean +
+        gustLean * gust +
+        (windStrength + gustSway * gust) * math.sin(time * 1.8 + tuft.phase);
+    vx += Wind.direction.z * lean;
+    vz -= Wind.direction.x * lean;
 
     for (final p in pushers) {
       final dx = tuft.x - p.x;

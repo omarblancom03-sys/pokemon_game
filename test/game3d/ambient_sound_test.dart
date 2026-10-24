@@ -36,14 +36,14 @@ void main() {
       expect(gusts.length, greaterThanOrEqualTo(3));
       final p = s.player.position;
       for (final (at, strength) in gusts) {
-        expect(TreeField.gustAt(at, p.x, p.z), greaterThan(0.55));
+        expect(Wind.gustAt(at, p.x, p.z), greaterThan(0.55));
         expect(strength, inInclusiveRange(World3DSim.gustSound, 1));
       }
       // Entre dos que suenan, el viento amainó (una sola vez por ráfaga).
       for (var i = 1; i < gusts.length; i++) {
         var calmed = false;
         for (var t = gusts[i - 1].$1; t < gusts[i].$1; t += 0.05) {
-          if (TreeField.gustAt(t, p.x, p.z) < World3DSim.gustCalm) {
+          if (Wind.gustAt(t, p.x, p.z) < World3DSim.gustCalm) {
             calmed = true;
             break;
           }

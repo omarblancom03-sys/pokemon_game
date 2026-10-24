@@ -32,6 +32,7 @@ import 'trainer_pose.dart';
 import 'trees.dart';
 import 'wild_behavior.dart';
 import 'wild_pokemon.dart';
+import 'wind.dart';
 import 'world3d_config.dart';
 import 'world3d_events.dart';
 
@@ -47,6 +48,7 @@ export 'throw_ring.dart' show ThrowRing;
 export 'throwing.dart' show BallPhase, ThrownBall;
 export 'trees.dart' show Tree, TreeField, TreeKind;
 export 'wild_behavior.dart' show PlayerStealth;
+export 'wind.dart' show Wind;
 export 'world3d_events.dart';
 
 /// Un Pokémon para hacer aparecer, con su ratio de captura real.
@@ -188,7 +190,7 @@ class World3DSim {
   static const birdHearRange = 30.0;
 
   /// Una RÁFAGA que llega al jugador se oye si pasa de [gustSound] (0..1,
-  /// ver TreeField.gustAt); no vuelve a sonar hasta que amaina por debajo
+  /// ver Wind.gustAt); no vuelve a sonar hasta que amaina por debajo
   /// de [gustCalm].
   static const gustSound = 0.55;
   static const gustCalm = 0.25;
@@ -1506,12 +1508,12 @@ class World3DSim {
   /// poco hacia delante: la ráfaga es una ola que se sabe cómo viene).
   void _listenToWind() {
     final p = player.position;
-    final g = TreeField.gustAt(time, p.x, p.z);
+    final g = Wind.gustAt(time, p.x, p.z);
     if (!_gustHeard && g > gustSound) {
       _gustHeard = true;
       var peak = g;
       for (var k = 1; k <= 8; k++) {
-        peak = math.max(peak, TreeField.gustAt(time + k * 0.2, p.x, p.z));
+        peak = math.max(peak, Wind.gustAt(time + k * 0.2, p.x, p.z));
       }
       _emit(WindGust(peak));
     } else if (_gustHeard && g < gustCalm) {

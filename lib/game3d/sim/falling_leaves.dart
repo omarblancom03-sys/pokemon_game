@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:vector_math/vector_math.dart';
 
 import 'trees.dart';
+import 'wind.dart';
 
 /// Una hoja que cae de un árbol: baja despacio balanceándose de lado a
 /// lado como un péndulo (se ladea en cada extremo y cae más deprisa al
@@ -96,7 +97,7 @@ class FallingLeaf {
 
 /// HOJAS QUE CAEN (Dart puro, decorado): los árboles otoñales cercanos al
 /// jugador sueltan hojas sin parar, muchas más cuando pasa una ráfaga de
-/// viento (la misma ola que mece las copas: [TreeField.gustAt]), y
+/// viento (la misma ola que mece las copas: [Wind.gustAt]), y
 /// cualquier árbol de hojas (no el pino) suelta un puñado si le da una
 /// Poké Ball. Solo es estado; el renderer las dibuja.
 class FallingLeafSystem {
@@ -233,11 +234,11 @@ class FallingLeafSystem {
       final dx = t.x - player.x;
       final dz = t.z - player.z;
       if (dx * dx + dz * dz > activeRadius * activeRadius) continue;
-      final gust = TreeField.gustAt(time, t.x, t.z);
+      final gust = Wind.gustAt(time, t.x, t.z);
       if (_random.nextDouble() < dropRate(gust) * dt) _drop(t);
     }
 
-    final wind = TreeField.windDirection;
+    final wind = Wind.direction;
     for (final leaf in _leaves) {
       leaf.age += dt;
       final landed = leaf.landedFor;
@@ -245,7 +246,7 @@ class FallingLeafSystem {
         leaf.landedFor = landed + dt;
         continue;
       }
-      final gust = TreeField.gustAt(time, leaf.position.x, leaf.position.z);
+      final gust = Wind.gustAt(time, leaf.position.x, leaf.position.z);
       final drift = calmDrift + gustDrift * gust;
       leaf
         ..swingPhase += 2 * math.pi * leaf.swingFrequency * dt

@@ -712,3 +712,9 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
   Corriendo (más de 1,5 × la rapidez de paseo, medida con lo que avanzó desde la huella anterior: no
   depende de cómo cada comportamiento rellene `velocity`) se marca más. Es escenario: los que
   pasean no salen de la hierba alta, así que las huellas cuentan por dónde huyó o vino uno.
+- **2026-10-23 — Un solo viento** (TODO 8.17). La ola de las ráfagas pasa de `TreeField` a
+  `sim/wind.dart` (`Wind.direction`, `Wind.gustAt`): la usan las copas, las hojas, el sonido y AHORA
+  también la hierba alta. Antes la hierba se mecía igual en todo el prado (seno en X); ahora se inclina
+  a favor del viento 0,02 rad siempre y hasta 0,16 más con la ráfaga, más su vaivén (0,08 + 0,04 en
+  ráfaga): se ve la ola cruzar el prado a la vez que mece el bosque. Las pruebas que acotaban "solo
+  viento" con `windStrength` usan ahora `GrassField.maxWind`.

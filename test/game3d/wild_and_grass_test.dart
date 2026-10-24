@@ -70,10 +70,40 @@ void main() {
       expect(cellNoise(-3, 7, 2), cellNoise(-3, 7, 2));
     });
 
+    test('the grass leans downwind, much more when a gust goes by (the '
+        'same wave that sways the trees)', () {
+      double along(GrassTuft tuft, double t) {
+        final tilt = GrassField.tiltFor(tuft, t, const []);
+        // La punta va hacia (-axisZ, axisX).
+        return tilt.angle *
+            (-tilt.axisZ * Wind.direction.x + tilt.axisX * Wind.direction.z);
+      }
+
+      const here = GrassTuft(x: 3, z: 4, yaw: 0, scale: 1, phase: 0.7);
+      // La media de un vaivén entero, en un momento de ráfaga y en calma.
+      double average(double t0) {
+        var sum = 0.0;
+        for (var k = 0; k < 35; k++) {
+          sum += along(here, t0 + k * 0.1);
+        }
+        return sum / 35;
+      }
+
+      var gusty = 0.0;
+      var calm = 0.0;
+      for (var t = 0.0; t < 60; t += 0.5) {
+        final g = Wind.gustAt(t + 1.7, here.x, here.z);
+        if (g > 0.8 && gusty == 0) gusty = average(t);
+        if (g < 0.05 && calm == 0) calm = average(t);
+      }
+      expect(calm, greaterThan(0)); // siempre un poco a favor
+      expect(gusty, greaterThan(calm + 0.08));
+    });
+
     test('only wind far away; bends away from a nearby pusher', () {
       const tuft = GrassTuft(x: 0, z: 0, yaw: 0, scale: 1, phase: 1);
       final calm = GrassField.tiltFor(tuft, 0.3, const []);
-      expect(calm.angle, lessThanOrEqualTo(GrassField.windStrength));
+      expect(calm.angle, lessThanOrEqualTo(GrassField.maxWind));
 
       // Alguien justo al oeste (-X): la punta debe irse hacia +X.
       final pushed = GrassField.tiltFor(tuft, 0.3, [Vector3(-0.3, 0, 0)]);
