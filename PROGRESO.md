@@ -29,6 +29,13 @@
     abre y la cierra (si la tocas antes, ya no se pliega sola).
   - **Nubes:** sus sombras cruzan despacio el suelo con el viento (se ve cómo se oscurece el césped
     y vuelve el sol); si levantas la cámara, hay nubes blancas lejanas sobre el bosque.
+  - **Árboles con viento:** las copas se mecen sobre su tronco (el pino, más rígido, apenas) y las
+    ráfagas cruzan el bosque como una ola: se ve cómo se inclinan unos tras otros. Si una Poké Ball
+    choca contra un árbol, la copa se sacude hacia donde iba la bola, suena un golpe en las hojas y
+    caen unas cuantas hojas (verdes o naranjas; del pino, ninguna).
+  - **Hojas que caen:** los árboles otoñales que tienes cerca sueltan hojas naranjas, rojas y
+    amarillas sin parar (muchas más cuando pasa una ráfaga): bajan balanceándose de lado a lado, el
+    viento se las lleva y se quedan un rato en el suelo antes de desaparecer.
   - Hierba alta 3D que se mece con el viento y se aparta al pasar. Al pisarla saltan briznas que dan
     vueltas y caen planeando: tres por pisada corriendo, una andando y ninguna agachado (se ve el
     ruido que haces).

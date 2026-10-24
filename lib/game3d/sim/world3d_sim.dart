@@ -16,6 +16,7 @@ import 'clouds.dart';
 import 'camera_input.dart';
 import 'capture_camera.dart';
 import 'dust.dart';
+import 'falling_leaves.dart';
 import 'field_items.dart';
 import 'footprints.dart';
 import 'grass_blades.dart';
@@ -36,6 +37,7 @@ import 'world3d_events.dart';
 
 export 'berries.dart' show BerryBush, BerrySystem, LooseBerry;
 export 'dust.dart' show DustPuff;
+export 'falling_leaves.dart' show FallingLeaf, FallingLeafSystem;
 export 'field_items.dart' show GroundItem;
 export 'footprints.dart' show Footprint, FootprintTrail;
 export 'grass_blades.dart' show GrassBlade;
@@ -182,6 +184,14 @@ class World3DSim {
   /// Los árboles (los del mapa y el bosque del borde): se mecen con el
   /// viento y se sacuden si les da una bola. Decorado: sin azar.
   late final TreeField trees = TreeField.fromLayout(layout, config.tileSize);
+
+  /// Hojas que caen de los árboles otoñales (más con las ráfagas) y de
+  /// cualquier árbol de hojas al que le da una bola. Decorado con su
+  /// propio azar, como el polvo.
+  late final FallingLeafSystem fallingLeaves = FallingLeafSystem(
+    trees,
+    random: math.Random(31),
+  );
 
   /// Carteles del mapa: cuál se puede leer y cuál está abierto.
   late final SignReader signReader = SignReader.fromLayout(
@@ -1157,6 +1167,7 @@ class World3DSim {
       knock: _knockTree,
     );
     trees.update(dt);
+    fallingLeaves.update(dt, time: time, player: player.position);
     _maybeSpawn(dt);
 
     if (_grace > 0) {
@@ -1668,11 +1679,12 @@ class World3DSim {
     _emit(PokemonRevealed(w, startled: startled));
   }
 
-  /// Una bola choca contra algo alto: si es un árbol, su copa se sacude
-  /// (y suena el golpe en las hojas).
+  /// Una bola choca contra algo alto: si es un árbol, su copa se sacude,
+  /// suelta un puñado de hojas (el pino no) y suena el golpe en las hojas.
   void _knockTree(Vector3 at, Vector3 velocity) {
     final knocked = trees.knock(at, velocity);
     if (knocked == null) return;
+    fallingLeaves.shake(knocked.tree, knocked.strength);
     _emit(TreeShaken(knocked.tree, knocked.strength));
   }
 

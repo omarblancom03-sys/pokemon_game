@@ -193,6 +193,35 @@ MeshBuffers buildCanopy(TreeKind kind) {
   return b.build();
 }
 
+/// Hoja suelta (las que caen de los árboles): plana en el suelo (plano
+/// XZ), de largo 1 a lo largo de Z (punta hacia +Z) y algo doblada por el
+/// nervio, que va más alto (así la luz la sombrea distinto a cada lado).
+/// Blanca en el nervio y gris en el borde: el color de cada hoja se
+/// multiplica por encima. Tiene las dos caras (se ve al darse la vuelta).
+MeshBuffers buildFallingLeaf() {
+  final stem = Vector3(0, 0, -0.5);
+  final mid = Vector3(0, 0.05, 0);
+  final tip = Vector3(0, 0, 0.5);
+  final vein = Vector4(1, 1, 1, 1);
+  final edge = Vector4(0.72, 0.72, 0.72, 1);
+  final b = MeshBuilder();
+  for (final s in const [-1.0, 1.0]) {
+    final back = Vector3(0.2 * s, -0.02, -0.22);
+    final front = Vector3(0.25 * s, -0.02, 0.12);
+    for (final (p, q, r, cp, cq, cr) in [
+      (stem, mid, back, vein, vein, edge),
+      (back, mid, front, edge, vein, edge),
+      (front, mid, tip, edge, vein, vein),
+    ]) {
+      // Una cara hacia arriba y otra hacia abajo (orden contrario).
+      b
+        ..shadedTriangle(p, q, r, cp, cq, cr)
+        ..shadedTriangle(p, r, q, cp, cr, cq);
+    }
+  }
+  return b.build();
+}
+
 /// Arbusto: racimo de bolas verdes ([bushLeafBalls], la forma que también
 /// usa la simulación). Las bayas NO van aquí: se sacuden y vuelven a
 /// crecer, así que las dibuja aparte el renderer de arbustos.

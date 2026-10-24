@@ -167,7 +167,10 @@ el campo (movimiento, cámara, hierba alta, encuentros, escenario). Va antes que
       (20 % de las apariciones, si caben: 3 de la misma especie; siguen al guía al pasear; el aviso
       pasa de uno a otro cada 0,3 s hasta 16 m; también al asustarse o escaparse de una bola; al
       capturar a uno, los demás miran alrededor "?")
-- [ ] Árboles que se mecen con el viento y hojas que caen de los otoñales
+- [x] Árboles que se mecen con el viento y hojas que caen de los otoñales
+      (copas aparte sobre su pivote, ráfagas que cruzan el bosque como una ola, el pino más rígido;
+      una bola que choca sacude la copa, suena y suelta hojas; los otoñales a < 30 m sueltan hojas
+      que caen balanceándose, más con cada ráfaga, y se quedan un rato en el suelo)
 
 ## Mejoras continuas
 - [x] Poké Ball rediseñada en alta calidad (2026-09-30, ficha de Claude Design): superficie lisa,

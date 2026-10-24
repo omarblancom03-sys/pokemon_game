@@ -17,6 +17,7 @@ import 'bush_renderer.dart';
 import 'butterfly_renderer.dart';
 import 'cloud_renderer.dart';
 import 'dust_renderer.dart';
+import 'falling_leaf_renderer.dart';
 import 'footprint_renderer.dart';
 import 'grass_blade_renderer.dart';
 import 'grass_renderer.dart';
@@ -53,6 +54,7 @@ class _Scene3DViewState extends State<Scene3DView> {
   late DustRenderer _dust;
   late FootprintRenderer _footprints;
   late GrassBladeRenderer _blades;
+  late FallingLeafRenderer _leaves;
   late ButterflyRenderer _butterflies;
   late CloudRenderer _clouds;
   late BirdRenderer _birds;
@@ -163,6 +165,8 @@ class _Scene3DViewState extends State<Scene3DView> {
     scene.add(_dust.node);
     _blades = GrassBladeRenderer(_mesh);
     scene.add(_blades.node);
+    _leaves = FallingLeafRenderer(_mesh);
+    scene.add(_leaves.node);
     _butterflies = ButterflyRenderer(_sim.butterflies, _mesh);
     scene.add(_butterflies.node);
     _clouds = CloudRenderer(_sim.clouds);
@@ -231,6 +235,7 @@ class _Scene3DViewState extends State<Scene3DView> {
     _footprints.update(_sim.footprints.prints);
     _dust.update(_sim.dust.puffs);
     _blades.update(_sim.blades.blades);
+    _leaves.update(_sim.fallingLeaves.leaves);
     _butterflies.update();
     _clouds.update();
     _birds.update();

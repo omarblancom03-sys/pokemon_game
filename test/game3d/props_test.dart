@@ -117,6 +117,23 @@ void main() {
     }
   });
 
+  test('a falling leaf is small, almost flat and seen from both sides', () {
+    final leaf = buildFallingLeaf();
+    expect(leaf.isEmpty, isFalse);
+    var up = 0;
+    var down = 0;
+    for (var i = 0; i < leaf.vertexCount; i++) {
+      expect(leaf.positions[i * 3].abs(), lessThanOrEqualTo(0.25 + 1e-6));
+      expect(leaf.positions[i * 3 + 1].abs(), lessThanOrEqualTo(0.05 + 1e-6));
+      expect(leaf.positions[i * 3 + 2].abs(), lessThanOrEqualTo(0.5 + 1e-6));
+      if (leaf.normals[i * 3 + 1] > 0.5) up++;
+      if (leaf.normals[i * 3 + 1] < -0.5) down++;
+    }
+    // Tantas caras hacia arriba como hacia abajo.
+    expect(up, greaterThan(0));
+    expect(up, down);
+  });
+
   test('a house covers its block and faces the door to +Z', () {
     final b = MeshBuilder();
     addHouse(b, (col: 1, row: 1, width: 4, height: 3), 2, Palette.roofRed);

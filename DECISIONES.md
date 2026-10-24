@@ -606,3 +606,24 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
   finas, porque con las de la ficha algún triángulo plano quedaba por debajo de la carcasa (lo vigila
   un test); aro de luz hasta r 0,198 para tapar la costura entre sus 24 lados y los 32 del aro.
   Verificado a ojo con una lámina de flutter_scene (Chrome headless con GPU) con las vistas de la ficha.
+- **2026-10-23 — Árboles que se mecen y hojas que caen** (TODO 8.15). Empezado en el commit "Árboles
+  en 3D (trabajo a medias del bucle)" y terminado aquí. Los árboles pasan a ser DATOS
+  (`sim/trees.dart`: `TreeField` con los del mapa y el bosque del borde, mismo ruido por casilla que
+  antes, así el bosque no cambia). El TRONCO sigue en la malla fija; la COPA va aparte
+  (`TreeRenderer`: una malla instanciada por tipo) y se inclina sobre su PIVOTE (lo alto del tronco;
+  la base de las ramas en el pino) para no despegarse. Viento: inclinación a favor (0,012 rad + 0,03
+  en ráfaga) más un vaivén en ocho; las RÁFAGAS son olas que avanzan con el viento (45 m a 7 m/s): se
+  ve la ola cruzar el bosque. El pino se mece al 55 %. Ángulos pequeños a propósito: más marea. Una
+  bola que choca contra un árbol (a > 2 m/s) sacude la copa hacia donde iba (oscilación amortiguada
+  de 2 s, tope 0,16 rad) y suena (`treeKnock`); un golpe flojo no corta uno fuerte.
+  **Hojas** (`sim/falling_leaves.dart`, decorado con su propio azar): solo los OTOÑALES las sueltan
+  solos (0,12/s y hasta 1,22/s con la ráfaga que les llega: la misma ola que mece la copa, así se ve
+  que el viento las arranca) y solo los que están a < 30 m del jugador (más lejos no se verían y
+  gastarían huecos; como mucho 72 a la vez, se quita la más vieja). Cualquier árbol DE HOJAS suelta 3
+  a 12 si le da una bola (verdes del redondo; el pino nada): es la respuesta visual al golpe.
+  Caída de "hoja de papel" sin física: el centro baja a 0,55–0,85 m/s (más deprisa al pasar por el
+  centro del vaivén), se aparta 0,25–0,5 m a cada lado como un péndulo ladeándose hasta 0,7 rad en
+  los extremos, gira despacio y el viento la arrastra (0,25 m/s + 1,4 en ráfaga). En el suelo queda
+  plana 3,5 s y se encoge (sin transparencias, como las briznas). La hoja sale EXACTAMENTE de su punto
+  de partida (el centro del vaivén se corrige al crearla): si no, daba un salto de medio metro.
+  Las hojas no cambian nada del juego (ni asustan ni tapan): es escenario.
