@@ -98,6 +98,12 @@ class WebSoundService implements SoundService {
         case GameSound.bushRustle:
           _hiss(ctx, 700, to: 1600, q: 0.6, duration: 0.35, gain: 0.18);
           _hiss(ctx, 2500, duration: 0.25, at: 0.1, gain: 0.08);
+        case GameSound.heartbeat:
+          _duck(ctx, 0.3, restoreIn: 1);
+          _tone(ctx, 'sine', 110, to: 70, duration: 0.13, gain: 0.55);
+          _tone(ctx, 'sine', 100, to: 64, duration: 0.15, at: 0.2, gain: 0.45);
+        case GameSound.tensionRelease:
+          _duck(ctx, 1);
         case GameSound.windGust:
           _wind(ctx, duration: 2.8, gain: 0.09);
         case GameSound.birdChirp:
@@ -279,6 +285,19 @@ class WebSoundService implements SoundService {
     source
       ..start(t)
       ..stop(t + duration + 0.02);
+  }
+
+  /// Baja el volumen general a [level] (de [volume]) en un momento y, con
+  /// [restoreIn], lo devuelve solo pasado ese tiempo (por si no llega el
+  /// aviso de que acabó).
+  void _duck(web.AudioContext ctx, double level, {double? restoreIn}) {
+    final gain = _master!.gain;
+    final t = ctx.currentTime;
+    gain
+      ..cancelScheduledValues(t)
+      ..setValueAtTime(gain.value, t)
+      ..setTargetAtTime(volume * level, t, level < 1 ? 0.06 : 0.02);
+    if (restoreIn != null) gain.setTargetAtTime(volume, t + restoreIn, 0.15);
   }
 
   /// Viento: ruido (en bucle, más largo que el búfer) por un paso bajo que

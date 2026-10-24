@@ -100,6 +100,18 @@ class PokemonDazed extends World3DEvent {
   final WildPokemon wild;
 }
 
+/// Tensión (cámara lenta de la última sacudida de una captura difícil):
+/// un latido. Suena el corazón y lo demás se apaga.
+class TensionBeat extends World3DEvent {
+  const TensionBeat();
+}
+
+/// Se acabó la tensión (se sabe el resultado o el jugador tomó el
+/// control): el sonido vuelve a su volumen.
+class TensionEnded extends World3DEvent {
+  const TensionEnded();
+}
+
 /// Una ráfaga de viento llega al jugador (la misma que mece árboles y
 /// hierba): [strength] es su pico (0..1, ver TreeField.gustAt).
 class WindGust extends World3DEvent {

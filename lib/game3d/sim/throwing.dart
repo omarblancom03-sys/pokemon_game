@@ -210,6 +210,19 @@ class ThrownBall {
     return null;
   }
 
+  /// TENSIÓN: una captura difícil (menos de [tenseChance]) que llega a su
+  /// TERCERA sacudida sin ser crítica. Desde que empieza esa sacudida hasta
+  /// el resultado no se sabe si entrará: con tres sacudidas se captura y
+  /// también se escapa (ver World3DSim: cámara lenta).
+  bool get isTense {
+    final r = result;
+    if (phase != BallPhase.shaking || r == null || r.critical) return false;
+    if (r.chance >= tenseChance || r.shakes < 3) return false;
+    return phaseTime >= shakeStart(2);
+  }
+
+  static const tenseChance = 0.35;
+
   /// Sacudidas que ya han empezado.
   int get shakesStarted {
     if (phase != BallPhase.shaking) return shakesDone;

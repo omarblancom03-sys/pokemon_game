@@ -74,6 +74,10 @@ class SoundDirector {
         // Se da un buen golpe: grita y queda viendo estrellitas.
         sound.play(GameSound.dazed);
         _cry(wild, force: true);
+      case TensionBeat():
+        sound.play(GameSound.heartbeat);
+      case TensionEnded():
+        sound.play(GameSound.tensionRelease);
       case WindGust(:final strength):
         // Un soplo largo; más fuerte cuanto más fuerte es la ráfaga.
         sound.play(

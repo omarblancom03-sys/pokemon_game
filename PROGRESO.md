@@ -110,6 +110,9 @@
   - **Sacudidas con tensión:** cada sacudida ladea la bola más que la anterior y la espera entre una
     y otra se alarga; tras la última, un silencio más largo antes del "¡clic!" (o del escape). El
     "toc" suena justo cuando empieza cada vaivén.
+  - **La última sacudida, con el corazón en un puño:** si la captura era difícil (menos de un 35 %)
+    y la bola llega a la tercera sacudida, el mundo entero va a cámara lenta, todo se oye apagado y
+    suena un latido… hasta el "¡clic!" (o el escape), que suena a todo volumen. Si te mueves, se corta.
   - **El final:** si lo capturas, tras el "¡clic!" y las estrellas la bola sale volando en arco y
     se mete en la mochila del entrenador (con un destellito al llegar). Si se escapa, la bola se
     parte: la tapa sale volando, la base se vuelca, un fogonazo corto y saltan chispas.

@@ -1131,9 +1131,61 @@ class World3DSim {
   /// Deja de aceptar Pokémon que lleguen tarde (la pantalla se cerró).
   void dispose() => _disposed = true;
 
-  /// Avanza la simulación [dt] segundos.
+  /// CÁMARA LENTA de la última sacudida de una captura difícil (ver
+  /// ThrownBall.isTense) mientras la cámara de captura la encuadra: el
+  /// mundo entero va a [tenseTimeScale] (se llega en 0,1 s) y late un
+  /// corazón cada [tenseBeat] s del juego. Al saberse el resultado (o si
+  /// el jugador toma el control) vuelve a su ritmo.
+  double timeScale = 1;
+  static const tenseTimeScale = 0.5;
+  static const tenseBeat = 0.4;
+  bool _tense = false;
+  double _beatIn = 0;
+
+  /// ¿Está en cámara lenta por la tensión?
+  bool get isTense => _tense;
+
+  void _updateTension(double realDt) {
+    final tense =
+        !_paused &&
+        captureCam.engaged &&
+        ballSystem.balls.any((b) => b.isTense);
+    if (tense && !_tense) {
+      _tense = true;
+      _beatIn = 0;
+    } else if (!tense) {
+      _endTension();
+    }
+    // Rampa de 0,1 s entre el ritmo normal y la cámara lenta.
+    final goal = _tense ? tenseTimeScale : 1.0;
+    final step = realDt * (1 - tenseTimeScale) / 0.1;
+    timeScale = timeScale < goal
+        ? math.min(goal, timeScale + step)
+        : math.max(goal, timeScale - step);
+  }
+
+  /// Late el corazón mientras dura la tensión ([dt] ya en cámara lenta).
+  void _beat(double dt) {
+    if (!_tense) return;
+    _beatIn -= dt;
+    if (_beatIn > 0) return;
+    _beatIn += tenseBeat;
+    _emit(const TensionBeat());
+  }
+
+  void _endTension() {
+    if (!_tense) return;
+    _tense = false;
+    _emit(const TensionEnded());
+  }
+
+  /// Avanza la simulación [dt] segundos (de reloj: en cámara lenta, el
+  /// mundo avanza menos).
   void update(double dt) {
+    _updateTension(dt);
+    dt *= timeScale;
     time += dt;
+    _beat(dt);
     if (_paused) aiming = false;
     final turned = _updateCamera(dt);
     final freshAim = aiming && !_aimWas;
@@ -1247,16 +1299,22 @@ class World3DSim {
       remove: (w) => removeWild(w.id),
       // Un golpe congela el mundo un instante. En el Safari, una bola
       // fallada se pierde y el que se escapa puede huir (el aviso lo dice).
-      emit: (event) => _emit(switch (event) {
-        BallHit() => _startHitStop(event),
-        BallMissed(:final ball) when safariActive => BallMissed(
-          ball,
-          lost: true,
-        ),
-        PokemonBrokeFree() => _maybeFlee(_herdAfterEscape(event)),
-        PokemonCaught() => _herdAfterCatch(event),
-        _ => event,
-      }),
+      emit: (event) {
+        // El resultado rompe la tensión ANTES de sonar (a todo volumen).
+        if (event is PokemonCaught || event is PokemonBrokeFree) {
+          _endTension();
+        }
+        _emit(switch (event) {
+          BallHit() => _startHitStop(event),
+          BallMissed(:final ball) when safariActive => BallMissed(
+            ball,
+            lost: true,
+          ),
+          PokemonBrokeFree() => _maybeFlee(_herdAfterEscape(event)),
+          PokemonCaught() => _herdAfterCatch(event),
+          _ => event,
+        });
+      },
       impact: _startleAround,
       bounce: (at, speed) {
         if (speed > 2) dust.burst(at, strength: speed / 10);

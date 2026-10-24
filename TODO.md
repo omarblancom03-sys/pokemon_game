@@ -188,8 +188,10 @@ Sigue el foco de 8.15 (lanzar y andar por el campo), que quedó completo.
       pían a ratos cerca de las bandadas
       (un soplo de 2,8 s por ráfaga que pasa de 0,55, tan fuerte como su pico; trinos cada 1,8–4,2 s por
       bandada posada y aleteo al salir volando, a < 30 m y más fuerte cerca)
-- [ ] Última sacudida con tensión: con poca probabilidad de captura, la última sacudida va a cámara
+- [x] Última sacudida con tensión: con poca probabilidad de captura, la última sacudida va a cámara
       lenta (y el sonido se apaga) antes del resultado
+      (menos de 35 % y tres sacudidas, no crítica; el mundo a ½ con la cámara de captura encuadrando; un
+      latido cada 0,4 s; el resultado la rompe antes de sonar; moverse la corta)
 - [ ] Huellas de Pokémon en la tierra del camino: se puede seguir el rastro de uno que pasó
 
 ## Mejoras continuas

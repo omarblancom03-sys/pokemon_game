@@ -358,7 +358,8 @@ void main() {
         eating: false,
         asleep: false,
       ));
-      step(s, 6.4);
+      // (Difícil, 0,2: la última sacudida va a cámara lenta y tarda más.)
+      step(s, 8.4);
       expect(
         events.whereType<PokemonCaught>().single.result.chance,
         closeTo(0.2, 1e-9),
@@ -667,5 +668,80 @@ void main() {
     s.aiming = false;
     stepFor(World3DSim.aimBlendTime + 1 / 60);
     expect(s.aimPose, 0);
+  });
+
+  group('tension', () {
+    /// Lanza a uno a 9 m (la cámara de captura se acerca) y espera a que
+    /// la bola esté en el suelo sacudiéndose.
+    ThrownBall throwAt(World3DSim s, {required int captureRate}) {
+      addWild(
+        s,
+        s.player.position + Vector3(9, 0, 0),
+        captureRate: captureRate,
+      );
+      step(s, 0.1);
+      s.throwBall(PokeBallType.poke);
+      var guard = 0;
+      while (s.balls.isEmpty || s.balls.single.phase != BallPhase.shaking) {
+        s.update(1 / 60);
+        expect(++guard, lessThan(400));
+      }
+      return s.balls.single;
+    }
+
+    test('a hard capture: the last shake goes in slow motion with a '
+        'heartbeat, and the result breaks it before it sounds', () {
+      final events = <World3DEvent>[];
+      final s = world(events: events);
+      final ball = throwAt(s, captureRate: 3);
+      expect(ball.result!.chance, lessThan(ThrownBall.tenseChance));
+      expect(ball.result!.shakes, 3);
+      var slowest = 1.0;
+      var tenseBeforeThird = false;
+      while (ball.phase == BallPhase.shaking) {
+        s.update(1 / 60);
+        if (ball.shakesStarted < 3 && s.isTense) tenseBeforeThird = true;
+        slowest = min(slowest, s.timeScale);
+      }
+      expect(tenseBeforeThird, isFalse);
+      expect(slowest, World3DSim.tenseTimeScale);
+      expect(events.whereType<TensionBeat>().length, greaterThanOrEqualTo(3));
+      final ended = events.indexWhere((e) => e is TensionEnded);
+      final caught = events.indexWhere((e) => e is PokemonCaught);
+      expect(ended, isNot(-1));
+      expect(ended, lessThan(caught));
+      expect(events.whereType<TensionEnded>(), hasLength(1));
+      // Y vuelve a su ritmo enseguida.
+      step(s, 0.3);
+      expect(s.isTense, isFalse);
+      expect(s.timeScale, 1);
+    });
+
+    test('an easy capture has no tension', () {
+      final events = <World3DEvent>[];
+      final s = world(events: events);
+      final ball = throwAt(s, captureRate: 255);
+      expect(ball.result!.chance, greaterThanOrEqualTo(ThrownBall.tenseChance));
+      while (ball.phase == BallPhase.shaking) {
+        s.update(1 / 60);
+        expect(s.timeScale, 1);
+      }
+      expect(events.whereType<TensionBeat>(), isEmpty);
+    });
+
+    test('taking control (moving) ends the slow motion at once', () {
+      final events = <World3DEvent>[];
+      final s = world(events: events);
+      final ball = throwAt(s, captureRate: 3);
+      while (!s.isTense) {
+        s.update(1 / 60);
+        expect(ball.phase, BallPhase.shaking);
+      }
+      s.input.setKeyboardDirection(Vector2(0, -1));
+      step(s, 0.3);
+      expect(s.isTense, isFalse);
+      expect(s.timeScale, 1);
+      expect(events.whereType<TensionEnded>(), hasLength(1));
+    });
   });
 }

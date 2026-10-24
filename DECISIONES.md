@@ -689,3 +689,16 @@ Registro de decisiones tomadas durante la ejecución autónoma (fecha + motivo).
   volando aletea ("frrr", 7 golpes); ambos a < 30 m y con volumen 1 − d/30. El aviso de despegue va
   ANTES de cambiar el sitio de la bandada (si no, la distancia sería la del destino). Comprobado en
   Chrome contando nodos: 4 ráfagas y ~17 trinos en 40 s, sin errores.
+- **2026-10-23 — Tensión en la última sacudida** (TODO 8.16). Cuándo: el resultado ya está decidido
+  al golpear, pero el jugador no lo sabe; con TRES sacudidas puede capturarse o escaparse (con menos,
+  ya se sabe que se escapa), así que la tensión es desde que empieza la tercera hasta el resultado,
+  solo si la probabilidad era < 35 % (`ThrownBall.tenseChance`; las fáciles no merecen la espera) y
+  no es crítica (una sola sacudida). Además la cámara de captura tiene que estar encuadrándola: si
+  el jugador se mueve o gira la cámara, la tensión se corta (manda el jugador). Cómo: el MUNDO
+  ENTERO va a ½ (`World3DSim.timeScale`, rampa lineal de 0,1 s; se escala el `dt` de `update`, así
+  todo, bola, Pokémon, viento, partículas, va igual de lento y no hay que tocar cada sistema). Son
+  (0,85 + 0,8) s de juego → 3,3 s reales. Sonido: un latido grave cada 0,4 s de juego
+  (`TensionBeat`) que baja el volumen general al 30 % (y lo devuelve solo al segundo si deja de
+  latir, por si el aviso del final no llegara); `TensionEnded` lo devuelve de golpe y se emite ANTES
+  de `PokemonCaught`/`PokemonBrokeFree`, para que el "¡clic!" o el "¡pop!" suenen a todo volumen. Una
+  prueba de captura difícil (0,2) esperaba el resultado con el tiempo justo: se le dieron 2 s más.

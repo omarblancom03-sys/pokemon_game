@@ -37,6 +37,13 @@ enum GameSound {
   /// que se agitan.
   treeKnock,
 
+  /// Tensión en la última sacudida: un latido, y lo demás se apaga (vuelve
+  /// solo si deja de latir).
+  heartbeat,
+
+  /// Se acabó la tensión: todo vuelve a su volumen.
+  tensionRelease,
+
   /// Una ráfaga de viento: un soplo largo que sube y se va.
   windGust,
 

@@ -244,4 +244,19 @@ void main() {
     expect(sound.volumes[1], closeTo(1, 1e-9));
     expect(sound.volumes.sublist(2), [0.5, 0.2]);
   });
+
+  test(
+    'tension: a heartbeat per beat, and the volume comes back at the end',
+    () {
+      director
+        ..onWorldEvent(const TensionBeat())
+        ..onWorldEvent(const TensionBeat())
+        ..onWorldEvent(const TensionEnded());
+      expect(sound.played, [
+        GameSound.heartbeat,
+        GameSound.heartbeat,
+        GameSound.tensionRelease,
+      ]);
+    },
+  );
 }

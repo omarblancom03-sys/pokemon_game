@@ -208,6 +208,8 @@ class FieldController extends ChangeNotifier {
           TreeShaken() ||
           TreeRustled() ||
           WindGust() ||
+          TensionBeat() ||
+          TensionEnded() ||
           BirdsChirped() ||
           BirdsTookOff() ||
           Footstep():
