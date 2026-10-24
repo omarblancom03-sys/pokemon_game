@@ -199,7 +199,7 @@ Sigue el foco de 8.15 (lanzar y andar por el campo), que quedó completo.
 ## 8.17 Captura y exploración: el campo vivo (añadido 2026-10-23)
 8.16 quedó completo; siguen mejoras del mismo foco (lanzar y explorar).
 - [x] La hierba alta se mece con las MISMAS ráfagas que los árboles (se ve la ola cruzar el prado)
-      (viento en su archivo, : lo usan copas, hierba, hojas y sonido)
+      (el viento, en su archivo `Wind`: lo usan copas, hierba, hojas y sonido)
 - [ ] Vilanos (semillas de diente de león) que flotan con el viento sobre el césped y el prado; al
       pasar corriendo se levantan más
 - [ ] Atrapar al vuelo: darle a un Pokémon en mitad de un salto (esquiva, salida de la hierba o
