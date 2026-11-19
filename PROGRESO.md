@@ -40,6 +40,9 @@
     también la tumban un poco: se ve la ola de viento cruzar el prado. Al pisarla saltan briznas que dan
     vueltas y caen planeando: tres por pisada corriendo, una andando y ninguna agachado (se ve el
     ruido que haces).
+  - **Vilanos:** semillas de diente de león flotan alrededor del entrenador, arrastradas por el
+    viento (mucho más deprisa en cada ráfaga) y subiendo y bajando despacio. Si pasas corriendo
+    entre ellos, salen despedidos hacia arriba.
   - **Huellas de Pokémon:** un Pokémon que cruza la tierra del camino deja huellas de pata
     (almohadilla y tres dedos), una a cada lado y apuntando hacia donde iba: más grandes y separadas
     si es un Pokémon grande, más marcadas si iba corriendo. Se borran como las tuyas (a los 30 s).

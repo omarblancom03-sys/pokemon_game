@@ -211,8 +211,8 @@ Error → Failed (overlay Reintentar/Cancelar). Guard contra doble disparo.
       (sensación de captura y exploración; Pokémon dormidos 2026-09-28). 2026-09-30: Poké Ball
       rediseñada (ficha de Claude Design; ver DECISIONES.md). 2026-10-23: 8.15 completa (árboles con
       viento y hojas que caen) y 8.16 (gesto de lanzar con todo el cuerpo, Pokémon en los árboles, apuntar
-      suave, viento y pájaros que suenan, tensión en la última sacudida, huellas de Pokémon); 8.17 en curso.
-      574 tests. El detalle, en TODO.md.
+      suave, viento y pájaros que suenan, tensión en la última sacudida, huellas de Pokémon); 8.17 en curso
+      (hierba con ráfagas y vilanos hechos, 2026-11-18). 579 tests. El detalle, en TODO.md.
 
 ### Notas / siguiente paso
 - **Vista previa por fase (pedido del usuario):** al terminar cada fase, poner un parche superficial marcado

@@ -200,8 +200,8 @@ Sigue el foco de 8.15 (lanzar y andar por el campo), que quedó completo.
 8.16 quedó completo; siguen mejoras del mismo foco (lanzar y explorar).
 - [x] La hierba alta se mece con las MISMAS ráfagas que los árboles (se ve la ola cruzar el prado)
       (el viento, en su archivo `Wind`: lo usan copas, hierba, hojas y sonido)
-- [ ] Vilanos (semillas de diente de león) que flotan con el viento sobre el césped y el prado; al
-      pasar corriendo se levantan más
+- [x] Vilanos (semillas de diente de león) que flotan con el viento sobre el césped y el prado; al
+      pasar corriendo se levantan más (`SeedDrift` en sim/seeds.dart + `SeedRenderer`, sin luz)
 - [ ] Atrapar al vuelo: darle a un Pokémon en mitad de un salto (esquiva, salida de la hierba o
       caída del árbol) da "¡Al vuelo! ×1,5"
 - [ ] Vida en reposo: quieto un rato, el entrenador mira a los lados y se estira (sin moverse del sitio)

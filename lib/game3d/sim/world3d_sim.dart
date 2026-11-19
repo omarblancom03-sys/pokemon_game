@@ -25,6 +25,7 @@ import 'grass_trampling.dart';
 import 'orbit_camera.dart';
 import 'player_body.dart';
 import 'reach.dart';
+import 'seeds.dart';
 import 'signs.dart';
 import 'throw_ring.dart';
 import 'throwing.dart';
@@ -43,6 +44,7 @@ export 'field_items.dart' show GroundItem;
 export 'footprints.dart' show Footprint, FootprintTrail;
 export 'grass_blades.dart' show GrassBlade;
 export 'grass_trampling.dart' show GrassTrampling;
+export 'seeds.dart' show FloatingSeed, SeedDrift;
 export 'signs.dart' show MapCell;
 export 'throw_ring.dart' show ThrowRing;
 export 'throwing.dart' show BallPhase, ThrownBall;
@@ -215,6 +217,10 @@ class World3DSim {
     trees,
     random: math.Random(31),
   );
+
+  /// Vilanos que flotan con el viento alrededor del jugador (se levantan
+  /// si pasa corriendo). Decorado con su propio azar.
+  final SeedDrift seeds = SeedDrift(random: math.Random(43));
 
   /// Carteles del mapa: cuál se puede leer y cuál está abierto.
   late final SignReader signReader = SignReader.fromLayout(
@@ -1334,6 +1340,12 @@ class World3DSim {
     );
     trees.update(dt);
     fallingLeaves.update(dt, time: time, player: player.position);
+    seeds.update(
+      dt,
+      time: time,
+      player: player.position,
+      running: player.speed > config.walkSpeed * 1.15,
+    );
     _maybeSpawn(dt);
 
     if (_grace > 0) {
